@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 
 import { ResultFigure } from "@/components/result-figure";
+import { RotatingBrainBackdrop } from "@/components/rotating-brain-backdrop";
 import { SectionHeading } from "@/components/section-heading";
 import { SiteFooter } from "@/components/site-footer";
 import { StatusBadge } from "@/components/status-badge";
@@ -17,6 +18,7 @@ import {
   resultPlaceholders,
   sourceReferences,
 } from "@/lib/research-content";
+import { heroBackdrops } from "@/lib/hero-backdrops";
 import { researchPortals } from "@/lib/research-portals";
 
 const [
@@ -30,7 +32,11 @@ const [
 export default function Home() {
   return (
     <main id="main-content">
-      <section className="paper-masthead" aria-labelledby="paper-title">
+      <section
+        className="paper-masthead paper-masthead--visual"
+        aria-labelledby="paper-title"
+      >
+        <RotatingBrainBackdrop images={heroBackdrops} />
         <div className="container paper-masthead__inner">
           <div className="paper-masthead__meta">
             <p>{paperMasthead.publication}</p>

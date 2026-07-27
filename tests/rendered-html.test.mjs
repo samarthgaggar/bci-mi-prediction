@@ -307,6 +307,9 @@ test("publishes only approved web imagery and excludes scientific data formats",
     "images/research-portals/eeg-methodology-portal.jpg",
     "images/research-portals/brain-signal-results-portal.jpg",
     "images/research-portals/bci-research-background.jpg",
+    "images/hero-backdrops/digital-brain-deepmind.jpg",
+    "images/hero-backdrops/neural-connections-virus.jpg",
+    "images/hero-backdrops/brain-interface-patel.jpg",
   ]) {
     assert.ok(
       relativeFiles.includes(requiredImage),
@@ -318,6 +321,49 @@ test("publishes only approved web imagery and excludes scientific data formats",
     true,
     "public assets must remain limited to approved web image formats",
   );
+});
+
+test("replays section reveals and rotates credited stock brain imagery", async () => {
+  const [home, layoutSource, backdropSource, backdropData, revealSource] =
+    await Promise.all([
+      htmlFor("/"),
+      readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
+      readFile(
+        new URL(
+          "../components/rotating-brain-backdrop.tsx",
+          import.meta.url,
+        ),
+        "utf8",
+      ),
+      readFile(new URL("../lib/hero-backdrops.ts", import.meta.url), "utf8"),
+      readFile(
+        new URL(
+          "../components/scroll-reveal-controller.tsx",
+          import.meta.url,
+        ),
+        "utf8",
+      ),
+    ]);
+
+  assert.match(home, /data-stock-backgrounds/i);
+  assert.match(home, /data-rotation-interval="6000"/i);
+  assert.match(home, /Representative stock visualization/i);
+  assert.equal(
+    [...backdropData.matchAll(/https:\/\/unsplash\.com\/photos\//g)].length,
+    3,
+  );
+  assert.match(backdropSource, /ROTATION_INTERVAL_MS = 6000/);
+  assert.match(backdropSource, /window\.setInterval/);
+  assert.match(backdropSource, /useReducedMotion/);
+  assert.match(backdropSource, /onError=/);
+
+  assert.match(layoutSource, /<ScrollRevealController \/>/);
+  assert.match(revealSource, /IntersectionObserver/);
+  assert.match(revealSource, /entry\.isIntersecting/);
+  assert.match(revealSource, /"visible"\s*:\s*"idle"/);
+  assert.match(revealSource, /useReducedMotion/);
+  assert.match(revealSource, /\.method-section/);
+  assert.match(revealSource, /\.publication-gate/);
 });
 
 test("renders accessible, source-credited research portals", async () => {

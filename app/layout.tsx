@@ -4,6 +4,7 @@ import "@fontsource-variable/newsreader";
 import { headers } from "next/headers";
 
 import { SiteHeader } from "@/components/site-header";
+import { ScrollRevealController } from "@/components/scroll-reveal-controller";
 import { ThemeProvider } from "@/components/theme-provider";
 import { BciPageRevealProvider } from "@/components/ui/bci-page-reveal";
 import { siteTitle } from "@/lib/research-content";
@@ -81,6 +82,7 @@ export default function RootLayout({
               Skip to content
             </a>
             <SiteHeader />
+            <ScrollRevealController />
             {children}
           </BciPageRevealProvider>
         </ThemeProvider>

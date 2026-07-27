@@ -18,6 +18,11 @@
   --overlay: oklch(0.13 0.018 258 / 0.58);
   --media-surface: oklch(0.12 0.02 258 / 0.86);
   --media-foreground: oklch(0.97 0.008 82);
+  --hero-scrim: oklch(0.08 0.03 258 / 0.72);
+  --hero-foreground: oklch(0.985 0.006 82);
+  --hero-muted: oklch(0.86 0.012 82);
+  --hero-border: oklch(0.91 0.012 82 / 0.42);
+  --hero-credit-surface: oklch(0.08 0.025 258 / 0.84);
   --font-sans: "Manrope Variable", "Helvetica Neue", Arial, sans-serif;
   --font-serif: "Newsreader Variable", "Iowan Old Style", Georgia, serif;
   --header-height: 4.5rem;
@@ -42,6 +47,11 @@
   --overlay: oklch(0.05 0.012 258 / 0.78);
   --media-surface: oklch(0.08 0.016 258 / 0.9);
   --media-foreground: oklch(0.97 0.008 82);
+  --hero-scrim: oklch(0.045 0.025 258 / 0.76);
+  --hero-foreground: oklch(0.985 0.006 82);
+  --hero-muted: oklch(0.86 0.012 82);
+  --hero-border: oklch(0.91 0.012 82 / 0.42);
+  --hero-credit-surface: oklch(0.04 0.02 258 / 0.88);
 }
 
 @theme inline {
@@ -416,7 +426,99 @@ svg {
   border-bottom: 1px solid var(--border-strong);
 }
 
+.paper-masthead--visual {
+  position: relative;
+  overflow: hidden;
+  background: var(--media-surface);
+  color: var(--hero-foreground);
+  isolation: isolate;
+}
+
+.home-backdrop,
+.home-backdrop__media,
+.home-backdrop__layer,
+.home-backdrop__veil {
+  position: absolute;
+  inset: 0;
+}
+
+.home-backdrop {
+  z-index: -1;
+}
+
+.home-backdrop__media {
+  overflow: hidden;
+}
+
+.home-backdrop__layer {
+  opacity: 0;
+  transform: scale(1.025);
+  transition:
+    opacity 1100ms ease,
+    transform 6800ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.home-backdrop__layer[data-active="true"] {
+  opacity: 1;
+  transform: scale(1.075);
+}
+
+.home-backdrop__layer img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home-backdrop__veil {
+  background: var(--hero-scrim);
+}
+
+.home-backdrop__credit {
+  position: absolute;
+  z-index: 3;
+  right: clamp(1rem, 3vw, 2.5rem);
+  bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0.55rem 0.7rem;
+  background: var(--hero-credit-surface);
+  color: var(--hero-muted);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.home-backdrop__credit > span {
+  padding-right: 0.7rem;
+  border-right: 1px solid var(--hero-border);
+}
+
+.home-backdrop__credit a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.home-backdrop__credit a:hover {
+  color: var(--hero-foreground);
+}
+
+.home-backdrop__credit svg {
+  width: 0.7rem;
+  height: 0.7rem;
+}
+
+.home-backdrop__credit--fallback {
+  display: block;
+}
+
 .paper-masthead__inner {
+  position: relative;
+  z-index: 1;
   display: flex;
   min-height: calc(100svh - var(--header-height));
   flex-direction: column;
@@ -445,6 +547,23 @@ svg {
   font-weight: 750;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.paper-masthead--visual .paper-masthead__meta > p,
+.paper-masthead--visual .paper-masthead__byline > span,
+.paper-masthead--visual .paper-masthead__abstract > p,
+.paper-masthead--visual .paper-masthead__abstract > span {
+  color: var(--hero-muted);
+}
+
+.paper-masthead--visual .paper-masthead__summary,
+.paper-masthead--visual .paper-masthead__byline {
+  border-color: var(--hero-border);
+}
+
+.paper-masthead--visual .status-label,
+.paper-masthead--visual .text-link {
+  color: var(--hero-foreground);
 }
 
 .paper-masthead h1 {
@@ -2048,6 +2167,24 @@ svg {
   line-height: 1.65;
 }
 
+[data-scroll-reveal] {
+  transform-origin: 50% 25%;
+  will-change: opacity, transform;
+}
+
+[data-scroll-reveal="idle"] {
+  opacity: 0.12;
+  transform: translate3d(0, 2.8rem, 0) scale(0.992);
+}
+
+[data-scroll-reveal="visible"] {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+  transition:
+    opacity 720ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 820ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -2248,6 +2385,16 @@ svg {
   .paper-masthead h1 {
     margin-block: 4rem;
     font-size: clamp(3rem, 14vw, 4.6rem);
+  }
+
+  .home-backdrop__credit {
+    right: 1rem;
+    bottom: 0.75rem;
+    max-width: calc(100% - 2rem);
+  }
+
+  .home-backdrop__credit > span {
+    display: none;
   }
 
   .paper-masthead__summary {
@@ -2565,5 +2712,10 @@ svg {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  [data-scroll-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
