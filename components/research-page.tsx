@@ -121,7 +121,7 @@ export function ResearchPage() {
     const reducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
-    const pixelsPerSecond = reducedMotion ? 28 : 46;
+    const pixelsPerSecond = reducedMotion ? 36 : 64;
     const previousScrollBehavior =
       document.documentElement.style.scrollBehavior;
     document.documentElement.style.scrollBehavior = "auto";
