@@ -17,6 +17,16 @@ Primary public sources:
 - [Zenodo dataset record](https://zenodo.org/records/8089820)
 - [Scientific Data descriptor](https://www.nature.com/articles/s41597-023-02445-z)
 
+## Visual asset
+
+The proportional pink brain in `public/brain-anatomy.svg` is the CC0-licensed
+Wikimedia Commons file
+[Brain-diagram-pink-6289600.svg](https://commons.wikimedia.org/wiki/File:Brain-diagram-pink-6289600.svg).
+Its SHA-256 digest is
+`b6884cae09fdb505b0b37b741850ee95f8b4144956f41c8282c25fe499dd1806`.
+The branching neuron field and signal pulses are original code-based
+illustrations and are not diagnostic models.
+
 ## Development
 
 Requires Node.js 22.13 or newer.

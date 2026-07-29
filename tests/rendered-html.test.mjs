@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
@@ -84,6 +85,7 @@ test("server-renders the complete motor imagery BCI research page", async () => 
   assert.match(html, /Zenodo 8089820/);
   assert.match(html, /Scientific Data/);
   assert.match(html, /Research in progress/);
+  assert.match(html, /CC0 lateral-view illustration via Wikimedia Commons/);
   assert.match(html, /Skip to the project overview/);
   assert.doesNotMatch(
     html,
@@ -227,4 +229,18 @@ test("ships a correctly sized, project-local social preview", async () => {
   assert.equal(fallback.readUInt32BE(16), 700);
   assert.equal(fallback.readUInt32BE(20), 700);
   assert.ok(fallbackDetails.size < 2_000_000);
+});
+
+test("ships a verified local anatomical brain graphic", async () => {
+  const brainPath = path.join(projectRoot, "public/brain-anatomy.svg");
+  const brain = await readFile(brainPath, "utf8");
+  const digest = createHash("sha256").update(brain).digest("hex");
+
+  assert.equal(
+    digest,
+    "b6884cae09fdb505b0b37b741850ee95f8b4144956f41c8282c25fe499dd1806",
+  );
+  assert.match(brain, /viewBox="0 0 1200 1200"/);
+  assert.match(brain, /#d78282/i);
+  assert.doesNotMatch(brain, /<script|<foreignObject|\bonload=|xlink:href=/i);
 });

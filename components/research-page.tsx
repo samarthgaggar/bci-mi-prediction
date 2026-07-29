@@ -20,6 +20,7 @@ import {
   Sun,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import {
   lazy,
   Suspense,
@@ -59,6 +60,11 @@ function supportsWebGL() {
 
 function clamp(value: number) {
   return Math.min(1, Math.max(0, value));
+}
+
+function smooth(value: number) {
+  const bounded = clamp(value);
+  return bounded * bounded * (3 - 2 * bounded);
 }
 
 export function ResearchPage() {
@@ -186,6 +192,16 @@ export function ResearchPage() {
     [activeId],
   );
   const activeSection = researchSections[activeIndex];
+  const approachZoom = smooth(transitionProgress);
+  const returnZoom = smooth(clamp((progress - 0.955) / 0.045));
+  const brainOpacity = Math.max(
+    1 - smooth(clamp((transitionProgress - 0.68) / 0.28)),
+    returnZoom,
+  );
+  const brainScale =
+    returnZoom > 0
+      ? 6.25 - returnZoom * 5.25
+      : 1 + approachZoom * 5.25;
 
   return (
     <>
@@ -263,6 +279,19 @@ export function ResearchPage() {
         <div className="scene-grid" />
         <div className="scene-halo scene-halo-coral" />
         <div className="scene-halo scene-halo-blue" />
+        <Image
+          className="anatomical-brain"
+          src="/brain-anatomy.svg"
+          alt=""
+          width={1200}
+          height={1200}
+          priority
+          unoptimized
+          style={{
+            opacity: brainOpacity,
+            transform: `translate(-50%, -50%) rotate(${(-1.5 + approachZoom * 3) * (motionEnabled ? 1 : 0)}deg) scale(${brainScale})`,
+          }}
+        />
         {sceneReady && webGL ? (
           <Suspense fallback={<BrainFallback label="Preparing the brain visualization" />}>
             <BrainScene progress={progress} motionEnabled={motionEnabled} dark={theme === "dark"} />
@@ -379,9 +408,17 @@ export function ResearchPage() {
           <a href="#start">Back to overview</a>
         </div>
         <p className="asset-credit">
-          The animated brain is an educational illustration, not an anatomical or
-          diagnostic model. Research facts link to the public Zenodo record and
-          Scientific Data descriptor.
+          Anatomical brain graphic:{" "}
+          <a
+            href="https://commons.wikimedia.org/wiki/File:Brain-diagram-pink-6289600.svg"
+            target="_blank"
+            rel="noreferrer"
+          >
+            CC0 lateral-view illustration via Wikimedia Commons
+          </a>
+          . The neuron animation is an educational visualization, not a diagnostic
+          model. Research facts link to the public Zenodo record and Scientific Data
+          descriptor.
         </p>
       </footer>
     </>

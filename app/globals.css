@@ -451,6 +451,8 @@ p {
 }
 
 .scene-layer canvas {
+  position: relative;
+  z-index: 2;
   width: 100% !important;
   height: 100% !important;
 }
@@ -463,6 +465,7 @@ p {
     linear-gradient(90deg, var(--page-deep) 0%, color-mix(in srgb, var(--page-deep) 72%, transparent) 25%, transparent 58%, transparent 86%, var(--page-deep) 100%),
     linear-gradient(0deg, var(--page-deep) 0%, transparent 18%, transparent 91%, var(--page-deep) 100%);
   opacity: 0.42;
+  z-index: 3;
 }
 
 .scene-grid {
@@ -498,21 +501,28 @@ p {
   background: var(--cyan);
 }
 
+.anatomical-brain {
+  position: absolute;
+  z-index: 1;
+  top: 51%;
+  left: 72%;
+  width: min(39vw, 500px);
+  height: auto;
+  object-fit: contain;
+  transform-origin: 50% 50%;
+  will-change: transform, opacity;
+  filter:
+    saturate(1.08)
+    drop-shadow(0 28px 62px color-mix(in srgb, var(--coral) 26%, transparent))
+    drop-shadow(0 0 24px color-mix(in srgb, var(--cyan) 18%, transparent));
+}
+
 .brain-fallback {
   position: absolute;
-  top: 50%;
-  left: 69%;
-  width: min(58vw, 720px);
-  aspect-ratio: 1;
-  background: url("/brain-fallback.png") center / cover no-repeat;
-  border-radius: 50%;
-  -webkit-mask-image: radial-gradient(circle at 50% 48%, #000 48%, transparent 75%);
-  mask-image: radial-gradient(circle at 50% 48%, #000 48%, transparent 75%);
-  filter:
-    saturate(0.95)
-    hue-rotate(8deg)
-    drop-shadow(0 30px 70px color-mix(in srgb, var(--cyan) 30%, transparent));
-  transform: translate(-50%, -50%);
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
 }
 
 .brain-fallback > span {
@@ -1371,6 +1381,15 @@ p {
   line-height: 1.6;
 }
 
+.site-footer .asset-credit a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+
+.site-footer .asset-credit a:hover {
+  color: var(--cyan);
+}
+
 @keyframes state-pulse {
   0%,
   100% {
@@ -1449,9 +1468,10 @@ p {
     background: linear-gradient(0deg, var(--page-deep) 0%, transparent 48%, transparent 92%, var(--page-deep) 100%);
   }
 
-  .brain-fallback {
-    left: 50%;
-    width: min(88vw, 590px);
+  .anatomical-brain {
+    top: 47%;
+    left: 53%;
+    width: min(72vw, 370px);
   }
 
   .hero-section {
