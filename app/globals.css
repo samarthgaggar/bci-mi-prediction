@@ -219,6 +219,7 @@ p {
 }
 
 .contents-button,
+.auto-scroll-button,
 .icon-button {
   display: inline-flex;
   height: 40px;
@@ -242,11 +243,52 @@ p {
   font-weight: 750;
 }
 
+.auto-scroll-button {
+  gap: 7px;
+  min-width: 126px;
+  padding: 0 8px 0 12px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.auto-scroll-button.is-active {
+  border-color: color-mix(in srgb, var(--green) 58%, var(--line));
+  background: color-mix(in srgb, var(--green-soft) 86%, var(--surface-soft));
+  box-shadow: 0 0 22px color-mix(in srgb, var(--green) 14%, transparent);
+}
+
+.auto-scroll-state {
+  min-width: 27px;
+  padding: 3px 6px;
+  color: var(--ink-soft);
+  background: color-mix(in srgb, var(--page-deep) 62%, transparent);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.auto-scroll-button.is-active .auto-scroll-state {
+  color: var(--page-deep);
+  background: var(--green);
+}
+
+.auto-scroll-announcement {
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
 .icon-button {
   width: 40px;
 }
 
 .contents-button:hover,
+.auto-scroll-button:hover,
 .icon-button:hover,
 .contents-close:hover {
   border-color: var(--line-strong);
@@ -1448,6 +1490,15 @@ p {
     padding: 0;
   }
 
+  .auto-scroll-button {
+    min-width: 66px;
+    padding: 0 8px;
+  }
+
+  .auto-scroll-label {
+    display: none;
+  }
+
   .scene-layer {
     height: 56vh;
   }
@@ -1569,6 +1620,10 @@ p {
 }
 
 @media (max-width: 470px) {
+  .brand-copy {
+    display: none;
+  }
+
   .brand-copy strong {
     font-size: 14px;
   }

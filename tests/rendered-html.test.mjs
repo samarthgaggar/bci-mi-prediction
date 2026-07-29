@@ -117,6 +117,10 @@ test("renders every stable section anchor and accessibility control", async () =
   assert.match(html, /id="approach"/);
   assert.match(html, /aria-label="Research contents"/);
   assert.match(html, /role="dialog"/);
+  assert.match(html, />Auto scroll</);
+  assert.match(html, /aria-pressed="false"/);
+  assert.match(html, /Turn on automatic scrolling/);
+  assert.match(html, /aria-live="polite"/);
   assert.match(html, /Pause visual motion/);
   assert.match(html, /Switch to (?:light|dark) theme/);
   assert.match(html, /<details class="technical-note"/);
@@ -141,8 +145,22 @@ test("uses restrained research typography and removes visible travel instruction
   assert.doesNotMatch(css, /\.hero-copy h1[\s\S]{0,700}-webkit-text-stroke/);
   assert.doesNotMatch(
     visibleText,
-    /\b(?:scroll|story|journey|adventure|train|station|route|stop|depart|walkthrough)\b|explore the project/i,
+    /\b(?:story|journey|adventure|train|station|route|stop|depart|walkthrough)\b|explore the project/i,
   );
+});
+
+test("implements reversible looping auto scroll", async () => {
+  const page = await readFile(
+    path.join(projectRoot, "components/research-page.tsx"),
+    "utf8",
+  );
+
+  assert.match(page, /setAutoScrollEnabled\(\(value\) => !value\)/);
+  assert.match(page, /window\.requestAnimationFrame\(advance\)/);
+  assert.match(page, /window\.scrollBy/);
+  assert.match(page, /window\.scrollTo\(0, 0\)/);
+  assert.match(page, /window\.cancelAnimationFrame/);
+  assert.match(page, /prefers-reduced-motion: reduce/);
 });
 
 test("keeps unapproved results gated and nonnumeric", async () => {

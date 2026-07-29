@@ -6,6 +6,8 @@ import {
   Brain,
   Check,
   ChevronDown,
+  ChevronsDown,
+  CirclePause,
   Database,
   FlaskConical,
   Gauge,
@@ -75,10 +77,14 @@ export function ResearchPage() {
   const [webGL, setWebGL] = useState(true);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [motionEnabled, setMotionEnabled] = useState(true);
+  const [autoScrollEnabled, setAutoScrollEnabled] = useState(false);
   const [contentsOpen, setContentsOpen] = useState(false);
   const transitionRef = useRef<HTMLElement>(null);
   const contentsButtonRef = useRef<HTMLButtonElement>(null);
   const contentsPanelRef = useRef<HTMLElement>(null);
+  const autoScrollFrameRef = useRef(0);
+  const autoScrollTimeRef = useRef(0);
+  const autoScrollLoopPauseRef = useRef(0);
 
   useEffect(() => {
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -103,6 +109,51 @@ export function ResearchPage() {
   useEffect(() => {
     document.documentElement.dataset.motion = motionEnabled ? "full" : "reduced";
   }, [motionEnabled]);
+
+  useEffect(() => {
+    if (!autoScrollEnabled) {
+      window.cancelAnimationFrame(autoScrollFrameRef.current);
+      autoScrollTimeRef.current = 0;
+      autoScrollLoopPauseRef.current = 0;
+      return;
+    }
+
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const pixelsPerSecond = reducedMotion ? 28 : 46;
+    const previousScrollBehavior =
+      document.documentElement.style.scrollBehavior;
+    document.documentElement.style.scrollBehavior = "auto";
+
+    const advance = (time: number) => {
+      if (!autoScrollTimeRef.current) autoScrollTimeRef.current = time;
+      const elapsed = Math.min(time - autoScrollTimeRef.current, 64);
+      autoScrollTimeRef.current = time;
+
+      if (!contentsOpen && time >= autoScrollLoopPauseRef.current) {
+        const maximum =
+          document.documentElement.scrollHeight - window.innerHeight;
+
+        if (window.scrollY >= maximum - 2) {
+          window.scrollTo(0, 0);
+          autoScrollLoopPauseRef.current = time + 1100;
+        } else {
+          window.scrollBy(0, (pixelsPerSecond * elapsed) / 1000);
+        }
+      }
+
+      autoScrollFrameRef.current = window.requestAnimationFrame(advance);
+    };
+
+    autoScrollFrameRef.current = window.requestAnimationFrame(advance);
+    return () => {
+      window.cancelAnimationFrame(autoScrollFrameRef.current);
+      autoScrollTimeRef.current = 0;
+      autoScrollLoopPauseRef.current = 0;
+      document.documentElement.style.scrollBehavior = previousScrollBehavior;
+    };
+  }, [autoScrollEnabled, contentsOpen]);
 
   useEffect(() => {
     const sections = researchSections
@@ -225,6 +276,29 @@ export function ResearchPage() {
             Research in progress
           </span>
           <button
+            className={`auto-scroll-button ${
+              autoScrollEnabled ? "is-active" : ""
+            }`}
+            type="button"
+            onClick={() => setAutoScrollEnabled((value) => !value)}
+            aria-pressed={autoScrollEnabled}
+            aria-label={
+              autoScrollEnabled
+                ? "Turn off automatic scrolling"
+                : "Turn on automatic scrolling"
+            }
+          >
+            {autoScrollEnabled ? (
+              <CirclePause size={17} aria-hidden="true" />
+            ) : (
+              <ChevronsDown size={17} aria-hidden="true" />
+            )}
+            <span className="auto-scroll-label">Auto scroll</span>
+            <span className="auto-scroll-state">
+              {autoScrollEnabled ? "On" : "Off"}
+            </span>
+          </button>
+          <button
             ref={contentsButtonRef}
             className="contents-button"
             type="button"
@@ -254,6 +328,9 @@ export function ResearchPage() {
           </button>
         </div>
       </header>
+      <span className="auto-scroll-announcement" aria-live="polite">
+        Automatic scrolling is {autoScrollEnabled ? "on" : "off"}.
+      </span>
 
       {contentsOpen && (
         <div
