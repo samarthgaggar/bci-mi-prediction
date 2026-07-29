@@ -56,18 +56,21 @@ function contrast(foreground, background) {
   return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 }
 
-test("server-renders the complete BCI signal journey", async () => {
+test("server-renders the complete motor imagery BCI walkthrough", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>Signals in Motion · A BCI Research Journey<\/title>/i);
-  assert.match(html, /Signals in Motion/i);
-  assert.match(html, /Begin the journey/i);
-  assert.match(html, /Follow the/i);
-  assert.match(html, /Can computers read minds\?/i);
-  assert.match(html, /BCIs? do not literally read thoughts|Not quite/i);
+  assert.match(
+    html,
+    /<title>Predicting Motor Imagery from EEG · BCI Research Project<\/title>/i,
+  );
+  assert.match(html, /Predicting Motor Imagery from EEG/i);
+  assert.match(html, /Explore the project/i);
+  assert.match(html, /From EEG recording/i);
+  assert.match(html, /What does a brain–computer interface measure\?/i);
+  assert.match(html, /classifier receives sensor measurements/i);
   assert.match(html, />87</);
   assert.match(html, />694</);
   assert.match(html, />32</);
@@ -77,11 +80,15 @@ test("server-renders the complete BCI signal journey", async () => {
   assert.match(html, /Zenodo 8089820/);
   assert.match(html, /Scientific Data/);
   assert.match(html, /Research in progress/);
-  assert.match(html, /Skip to the brain journey/);
+  assert.match(html, /Skip to the project overview/);
+  assert.doesNotMatch(
+    html,
+    /Signals in Motion|Admit one curious mind|Evidence first\. Curiosity always|Ride again|Neural line/i,
+  );
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton|Starter Project/);
 });
 
-test("renders every stable journey anchor and accessibility control", async () => {
+test("renders every stable section anchor and accessibility control", async () => {
   const html = await (await render()).text();
   const anchors = [
     "start",
@@ -102,7 +109,7 @@ test("renders every stable journey anchor and accessibility control", async () =
     assert.match(html, new RegExp(`href="#${anchor}"`));
   }
 
-  assert.match(html, /aria-label="Brain journey stations"/);
+  assert.match(html, /aria-label="Research sections"/);
   assert.match(html, /Pause cinematic motion/);
   assert.match(html, /Switch to (?:light|dark) theme/);
   assert.match(html, /<details class="technical-note"/);

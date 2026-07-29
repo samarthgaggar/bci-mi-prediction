@@ -497,7 +497,7 @@ function BrainWorld(props: BrainSceneProps) {
 export default function BrainScene(props: BrainSceneProps) {
   return (
     <Canvas
-      aria-label="A luminous brain opens into an animated neural route with eight research stations"
+      aria-label="A luminous brain opens into an animated EEG pathway with eight research sections"
       camera={{ position: [0, 0, 8.1], fov: 36, near: 0.06, far: 130 }}
       dpr={[1, 1.5]}
       gl={{

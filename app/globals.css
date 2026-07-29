@@ -620,10 +620,10 @@ p {
 }
 
 .hero-copy h1 {
-  max-width: 7.5ch;
+  max-width: 8.8ch;
   margin-bottom: 22px;
   font-family: var(--display);
-  font-size: clamp(76px, 10.5vw, 158px);
+  font-size: clamp(70px, 9vw, 134px);
   font-weight: 780;
   letter-spacing: -0.075em;
   line-height: 0.72;
@@ -1631,7 +1631,7 @@ p {
 
 @media (max-width: 1099px) {
   .hero-copy h1 {
-    font-size: clamp(72px, 11vw, 116px);
+    font-size: clamp(68px, 9.5vw, 104px);
   }
 
   .hero-layout {
@@ -1720,7 +1720,7 @@ p {
 
   .hero-copy h1 {
     max-width: 6.7ch;
-    font-size: clamp(66px, 18vw, 102px);
+    font-size: clamp(56px, 16vw, 82px);
   }
 
   .hero-intro {
@@ -1860,7 +1860,8 @@ p {
   }
 
   .hero-copy h1 {
-    font-size: clamp(62px, 19vw, 82px);
+    max-width: 7.8ch;
+    font-size: clamp(52px, 15.5vw, 68px);
   }
 
   .hero-note {

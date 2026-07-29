@@ -157,17 +157,17 @@ export function JourneyPage() {
   return (
     <>
       <a className="skip-link" href="#start">
-        Skip to the brain journey
+        Skip to the project overview
       </a>
 
       <header className="site-header">
-        <a className="brand" href="#start" aria-label="Signals in Motion home">
+        <a className="brand" href="#start" aria-label="Motor Imagery BCI project home">
           <span className="brand-mark" aria-hidden="true">
             <Brain size={19} strokeWidth={2.2} />
           </span>
           <span className="brand-copy">
-            <strong>Signals in Motion</strong>
-            <small>BCI research journey</small>
+            <strong>Motor Imagery BCI</strong>
+            <small>EEG classification research</small>
           </span>
         </a>
         <div className="header-actions">
@@ -183,7 +183,7 @@ export function JourneyPage() {
             aria-controls="route-map"
           >
             <Route size={17} />
-            <span>Route</span>
+            <span>Sections</span>
           </button>
           <button
             className="icon-button"
@@ -241,25 +241,28 @@ export function JourneyPage() {
         >
           <div className="approach-sticky">
             <div className="approach-copy">
-              <span className="mono-label">Now departing · Exterior</span>
+              <span className="mono-label">Project walkthrough</span>
               <h2 id="approach-title">
-                Follow the
-                <em> signal.</em>
+                From EEG recording
+                <em> to prediction</em>
               </h2>
               <p>
-                Scroll to approach the glowing entry point. The route continues
-                beneath the surface.
+                Scroll through the brain to review the research question, dataset,
+                acquisition protocol, cleaning process, modeling pipeline, and
+                current results status.
               </p>
-              <div className="approach-meter" aria-label={`${Math.round(approachProgress * 100)} percent to first station`}>
+              <div className="approach-meter" aria-label={`${Math.round(approachProgress * 100)} percent to the first research section`}>
                 <span style={{ transform: `scaleX(${approachProgress})` }} />
               </div>
               <small>
-                {approachProgress < 0.88 ? "Approaching neural entry…" : "Next stop: What is a BCI?"}
+                {approachProgress < 0.88
+                  ? "Opening the research walkthrough…"
+                  : "Next section: What is a BCI?"}
               </small>
             </div>
             <div className="entry-reticle" style={{ opacity: 0.3 + approachProgress * 0.7 }}>
               <span />
-              <strong>Neural entry</strong>
+              <strong>EEG signal pathway</strong>
             </div>
           </div>
         </section>
@@ -296,7 +299,7 @@ export function JourneyPage() {
                       {stop.statusLabel}
                     </span>
                     <span className="platform-label">
-                      Platform {String(index).padStart(2, "0")}
+                      Research stage {String(index).padStart(2, "0")}
                     </span>
                   </div>
 
@@ -311,7 +314,7 @@ export function JourneyPage() {
 
                   <details className="technical-note" open={isFinal}>
                     <summary>
-                      <span>{isFinal ? "The careful answer" : "Open the evidence ticket"}</span>
+                      <span>{isFinal ? "Project scope and interpretation" : "View technical details"}</span>
                       <ChevronDown size={17} aria-hidden="true" />
                     </summary>
                     <div className="technical-body">
@@ -334,7 +337,7 @@ export function JourneyPage() {
               {!isFinal && nextStop && (
                 <a className="next-stop" href={`#${nextStop.id}`}>
                   <span>
-                    <small>Next stop</small>
+                    <small>Next section</small>
                     <strong>{nextStop.navLabel}</strong>
                   </span>
                   <ArrowRight size={19} aria-hidden="true" />
@@ -347,8 +350,8 @@ export function JourneyPage() {
 
       <footer className="site-footer">
         <div>
-          <span className="footer-kicker">BCI motor-imagery research</span>
-          <p>Evidence first. Curiosity always.</p>
+          <span className="footer-kicker">Motor imagery BCI research</span>
+          <p>Methods, evidence, and limitations.</p>
         </div>
         <div className="footer-links">
           <a href={primarySources.zenodo.href} target="_blank" rel="noreferrer">
@@ -358,12 +361,12 @@ export function JourneyPage() {
             Paper
           </a>
           <a href="#integrity">Integrity</a>
-          <a href="#start">Ride again</a>
+          <a href="#start">Back to overview</a>
         </div>
         <p className="asset-credit">
-          The animated brain and neural route are original procedural educational
-          illustrations, not anatomical or diagnostic models. Research facts link
-          to the public Zenodo record and Scientific Data descriptor.
+          The animated brain is an educational illustration, not an anatomical or
+          diagnostic model. Research facts link to the public Zenodo record and
+          Scientific Data descriptor.
         </p>
       </footer>
     </>
@@ -384,29 +387,29 @@ function HeroStop({ active }: { active: boolean }) {
         <article className="hero-copy">
           <span className="hero-ticket">
             <Ticket size={15} />
-            Admit one curious mind
+            Project overview
           </span>
-          <p className="hero-kicker">Motor-imagery BCI · Interactive research story</p>
+          <p className="hero-kicker">Motor imagery BCI research · EEG classification</p>
           <h1 id="start-title">
-            Signals
-            <span>in Motion</span>
+            Predicting
+            <span>Motor Imagery</span>
           </h1>
           <p className="hero-intro">{stop.simpleAnswer}</p>
           <p className="hero-welcome">
-            Board a guided route through the brain, from first signal to careful
-            scientific conclusion.
+            Review the dataset, recording protocol, cleaning process, modeling
+            pipeline, limitations, and publication status.
           </p>
           <div className="hero-actions">
             <a className="primary-button" href="#approach">
-              Begin the journey
+              Explore the project
               <ArrowDown size={17} aria-hidden="true" />
             </a>
-            <span className="hero-note">8 stations · scroll at your own pace</span>
+            <span className="hero-note">8 sections · technical details available</span>
           </div>
         </article>
 
-        <div className="route-preview" aria-label="Journey route overview">
-          <span className="route-preview-label">Today&apos;s route</span>
+        <div className="route-preview" aria-label="Research sections overview">
+          <span className="route-preview-label">Research sections</span>
           <ol>
             {journeyStops.slice(1, -1).map((journeyStop, index) => (
               <li key={journeyStop.id}>
@@ -418,7 +421,7 @@ function HeroStop({ active }: { active: boolean }) {
         </div>
       </div>
       <a className="scroll-cue" href="#approach">
-        <span>Scroll to depart</span>
+        <span>Scroll to continue</span>
         <ArrowDown size={16} aria-hidden="true" />
       </a>
     </section>
@@ -440,13 +443,13 @@ function RouteMap({
     <nav
       className={`route-map ${open ? "is-open" : ""}`}
       id="route-map"
-      aria-label="Brain journey stations"
+      aria-label="Research sections"
       aria-hidden={!open}
     >
       <div className="route-map-head">
         <span>
           <Route size={17} />
-          Neural line
+          Project sections
         </span>
         <button
           type="button"
@@ -460,7 +463,7 @@ function RouteMap({
       <div className="route-current">
         <span>{String(activeIndex + 1).padStart(2, "0")}</span>
         <p>
-          Current stop
+          Current section
           <strong>{journeyStops[activeIndex].navLabel}</strong>
         </p>
       </div>
@@ -477,7 +480,7 @@ function RouteMap({
                 {index < activeIndex ? <Check size={11} /> : null}
               </span>
               <span>
-                <small>{index === 0 ? "DEP" : index === journeyStops.length - 1 ? "END" : `S${String(index).padStart(2, "0")}`}</small>
+                <small>{index === 0 ? "OVR" : index === journeyStops.length - 1 ? "SUM" : `S${String(index).padStart(2, "0")}`}</small>
                 <strong>{stop.navLabel}</strong>
               </span>
             </a>

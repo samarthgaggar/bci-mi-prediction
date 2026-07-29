@@ -24,32 +24,32 @@ const mono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://bci-performance-variability.ucd-cosmos-a-8231.chatgpt.site"),
-  title: "Signals in Motion · A BCI Research Journey",
+  title: "Predicting Motor Imagery from EEG · BCI Research Project",
   description:
-    "Board a playful scientific journey through motor-imagery BCI research, from brain signals and data collection to careful evaluation.",
+    "A research project studying whether machine-learning models can distinguish imagined left- and right-hand movements from EEG recordings.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
   },
   openGraph: {
-    title: "Signals in Motion",
+    title: "Predicting Motor Imagery from EEG",
     description:
-      "A journey through motor-imagery brain–computer interface research.",
+      "Dataset, acquisition, cleaning, modeling, and evaluation for a motor-imagery BCI classification project.",
     type: "website",
     images: [
       {
         url: "/og.png",
         width: 1200,
         height: 630,
-        alt: "Signals in Motion, with a luminous brain crossed by a glowing neural transit route.",
+        alt: "Predicting Motor Imagery from EEG, shown with a luminous brain and EEG signal pathway.",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Signals in Motion",
+    title: "Predicting Motor Imagery from EEG",
     description:
-      "A journey through motor-imagery brain–computer interface research.",
+      "A motor-imagery BCI research project using EEG recordings.",
     images: ["/og.png"],
   },
 };

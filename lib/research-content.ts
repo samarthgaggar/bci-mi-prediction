@@ -60,20 +60,20 @@ export const primarySources = {
 export const journeyStops: readonly JourneyStop[] = [
   {
     id: "start",
-    navLabel: "Departure",
-    stationLabel: "Departure platform",
-    question: "Signals in Motion",
+    navLabel: "Overview",
+    stationLabel: "Project overview",
+    question: "Predicting Motor Imagery from EEG",
     simpleAnswer:
-      "A journey through motor-imagery brain–computer interface research.",
+      "This project studies whether machine-learning models can distinguish imagined left- and right-hand movements from EEG recordings.",
     technicalDetail:
-      "This experience follows a research project that studies measurable brain-signal patterns while people imagine moving their left or right hand. It does not receive private thoughts, memories, or inner speech.",
+      "The analysis uses a public motor-imagery dataset and a participant-disjoint evaluation process. It focuses on one defined classification task and does not attempt to recover private thoughts, memories, or inner speech.",
     status: "process",
     statusLabel: "Research in progress",
     side: "left",
     stage: "exterior",
     visualType: "orientation",
     accessibilitySummary:
-      "A complete luminous brain is shown before the journey begins.",
+      "A complete luminous brain introduces a research walkthrough about classifying motor-imagery EEG signals.",
     camera: {
       position: [0, 0, 8],
       target: [0, 0, 0],
@@ -83,11 +83,11 @@ export const journeyStops: readonly JourneyStop[] = [
   },
   {
     id: "bci",
-    navLabel: "BCI",
-    stationLabel: "Station 01 · What is a BCI?",
-    question: "Can computers read minds?",
+    navLabel: "BCI basics",
+    stationLabel: "Section 01 · What is a BCI?",
+    question: "What does a brain–computer interface measure?",
     simpleAnswer:
-      "Not quite. A BCI measures tiny electrical patterns and learns what a small, defined signal may mean.",
+      "A BCI records signals from the nervous system and uses them to recognize a specific, predefined task.",
     technicalDetail:
       "This project studies motor imagery: changes in recorded brain activity while a person imagines moving their left or right hand. The classifier receives sensor measurements—not thoughts, memories, intentions outside the task, or inner speech.",
     status: "verified",
@@ -96,7 +96,7 @@ export const journeyStops: readonly JourneyStop[] = [
     stage: "interior",
     visualType: "signal",
     accessibilitySummary:
-      "The first interior station explains the difference between brain-signal classification and mind reading.",
+      "The first section explains that this project classifies task-related EEG patterns rather than reading thoughts.",
     camera: {
       position: [0.25, 0.05, -8],
       target: [0, 0, -12],
@@ -107,10 +107,10 @@ export const journeyStops: readonly JourneyStop[] = [
   {
     id: "background",
     navLabel: "Background",
-    stationLabel: "Station 02 · Research background",
-    question: "What are we listening for?",
+    stationLabel: "Section 02 · Research background",
+    question: "Why study imagined movement?",
     simpleAnswer:
-      "When you imagine movement, groups of brain cells change rhythm. EEG sensors can measure part of that change from the scalp.",
+      "Imagining a movement can change measurable EEG rhythms even when the body does not move.",
     technicalDetail:
       "The study focuses on left- versus right-hand motor imagery. These patterns are subtle, vary across people, and can change from run to run—so a useful model must generalize beyond the people it learned from.",
     status: "verified",
@@ -130,10 +130,10 @@ export const journeyStops: readonly JourneyStop[] = [
   {
     id: "dataset",
     navLabel: "Dataset",
-    stationLabel: "Station 03 · The dataset",
-    question: "How much did researchers record?",
+    stationLabel: "Section 03 · Dataset",
+    question: "What data does this project use?",
     simpleAnswer:
-      "Eighty-seven volunteers completed one session each, producing hundreds of carefully documented recordings.",
+      "The public dataset contains one recorded session from each of 87 participants.",
     technicalDetail:
       "The published corpus contains participant groups A1–A60, B61–B81, and C82–C87. A complete motor-imagery run contains 40 trials: 20 left-hand and 20 right-hand trials.",
     status: "verified",
@@ -175,8 +175,8 @@ export const journeyStops: readonly JourneyStop[] = [
   {
     id: "method",
     navLabel: "Acquisition",
-    stationLabel: "Station 04 · Experiment & acquisition",
-    question: "What did one session look like?",
+    stationLabel: "Section 04 · Experiment and acquisition",
+    question: "How were the EEG recordings collected?",
     simpleAnswer:
       "People rested, followed visual cues, imagined hand movements, and then received feedback as the system learned.",
     technicalDetail:
@@ -210,10 +210,10 @@ export const journeyStops: readonly JourneyStop[] = [
   {
     id: "integrity",
     navLabel: "Integrity",
-    stationLabel: "Station 05 · Cleaning & integrity",
-    question: "How do we protect the evidence?",
+    stationLabel: "Section 05 · Cleaning and integrity",
+    question: "How is the data kept reliable?",
     simpleAnswer:
-      "We keep the original science untouched, make only authorized changes, and leave a trail that can be checked.",
+      "The original files remain unchanged, and every approved cleaning step is documented and checked.",
     technicalDetail:
       "Scientific measurements, identifiers, spreadsheets, questionnaires, and configuration files remain unchanged. Authorized text normalization must preserve parsed cells exactly; known noisy channels, trial notes, and missing assets are documented—not guessed away.",
     status: "verified",
@@ -255,10 +255,10 @@ export const journeyStops: readonly JourneyStop[] = [
   {
     id: "pipeline",
     navLabel: "Pipeline",
-    stationLabel: "Station 06 · Data-science pipeline",
-    question: "How does a signal become a prediction?",
+    stationLabel: "Section 06 · Data-science pipeline",
+    question: "How are the models developed and tested?",
     simpleAnswer:
-      "The work moves through a locked sequence: understand, verify, prepare, measure, train, and test.",
+      "The pipeline prepares the signals, develops models, and evaluates them on participants excluded from training.",
     technicalDetail:
       "The analysis policy separates participants across development and evaluation, controls information leakage, and reserves the locked test for a one-time final check. Public claims stay gated until their artifacts are approved and versioned.",
     status: "process",
@@ -267,7 +267,7 @@ export const journeyStops: readonly JourneyStop[] = [
     stage: "interior",
     visualType: "pipeline",
     accessibilitySummary:
-      "A nine-step route shows the analysis path and its participant-disjoint evaluation gate.",
+      "A nine-step diagram shows the analysis path and its participant-disjoint evaluation gate.",
     camera: {
       position: [-0.85, 0.2, -43],
       target: [0.35, 0, -48],
@@ -278,10 +278,10 @@ export const journeyStops: readonly JourneyStop[] = [
   {
     id: "results",
     navLabel: "Results",
-    stationLabel: "Station 07 · Results status",
-    question: "What did the models find?",
+    stationLabel: "Section 07 · Results status",
+    question: "What results are currently available?",
     simpleAnswer:
-      "The evaluation artifacts exist locally, but they are not yet approved for public reporting.",
+      "Final model results are not shown because the analysis outputs have not yet been approved and versioned for publication.",
     technicalDetail:
       "Model comparisons, performance distributions, spectral findings, and subgroup analyses will appear here only after the corresponding outputs are reviewed, versioned, and traceable to the locked protocol.",
     status: "pending",
@@ -300,11 +300,11 @@ export const journeyStops: readonly JourneyStop[] = [
   },
   {
     id: "future",
-    navLabel: "Next",
-    stationLabel: "Station 08 · Limits & future directions",
-    question: "What should we stay cautious about?",
+    navLabel: "Limitations",
+    stationLabel: "Section 08 · Limitations and future work",
+    question: "What are the study’s limitations?",
     simpleAnswer:
-      "Brain signals are noisy, people differ, and one dataset cannot answer every question.",
+      "The dataset covers one session and one motor-imagery task, and EEG patterns can differ substantially between people.",
     technicalDetail:
       "The study covers one session per participant and a specific left/right motor-imagery task. Future work should test robustness across sessions, equipment, settings, and broader participant groups without tuning against the locked evaluation.",
     status: "verified",
@@ -323,20 +323,20 @@ export const journeyStops: readonly JourneyStop[] = [
   },
   {
     id: "return",
-    navLabel: "Terminus",
-    stationLabel: "Final stop · Return to the full brain",
-    question: "Small signals. Careful answers.",
+    navLabel: "Summary",
+    stationLabel: "Project summary",
+    question: "What is this project designed to test?",
     simpleAnswer:
-      "A computer cannot read a mind—but careful experiments can help it recognize a small, measurable pattern in brain activity.",
+      "The project tests whether left- and right-hand motor imagery can be classified from EEG recordings across participants.",
     technicalDetail:
-      "The promise of BCI research depends on the same things that make it difficult: transparent methods, honest uncertainty, participant-aware validation, and evidence that can be reproduced.",
+      "Any public conclusion must be supported by transparent methods, participant-disjoint validation, stated uncertainty, and reproducible evidence.",
     status: "verified",
-    statusLabel: "Journey complete",
+    statusLabel: "Project scope",
     side: "center",
     stage: "return",
     visualType: "summary",
     accessibilitySummary:
-      "The camera returns to the full brain while the final takeaway and primary sources are presented.",
+      "The camera returns to the full brain while the project scope and primary sources are presented.",
     camera: {
       position: [0, 0, 8.4],
       target: [0, 0, 0],
