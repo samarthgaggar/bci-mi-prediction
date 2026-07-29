@@ -62,7 +62,10 @@ test("server-renders the complete BCI signal journey", async () => {
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>Can Computers Read Minds\? · BCI Signal Journey<\/title>/i);
+  assert.match(html, /<title>Signals in Motion · A BCI Research Journey<\/title>/i);
+  assert.match(html, /Signals in Motion/i);
+  assert.match(html, /Begin the journey/i);
+  assert.match(html, /Follow the/i);
   assert.match(html, /Can computers read minds\?/i);
   assert.match(html, /BCIs? do not literally read thoughts|Not quite/i);
   assert.match(html, />87</);
@@ -82,6 +85,8 @@ test("renders every stable journey anchor and accessibility control", async () =
   const html = await (await render()).text();
   const anchors = [
     "start",
+    "approach",
+    "bci",
     "background",
     "dataset",
     "method",
@@ -97,9 +102,9 @@ test("renders every stable journey anchor and accessibility control", async () =
     assert.match(html, new RegExp(`href="#${anchor}"`));
   }
 
-  assert.match(html, /aria-label="Journey progress"/);
+  assert.match(html, /aria-label="Brain journey stations"/);
   assert.match(html, /Pause cinematic motion/);
-  assert.match(html, /Switch to dark theme/);
+  assert.match(html, /Switch to (?:light|dark) theme/);
   assert.match(html, /<details class="technical-note"/);
   assert.match(html, /aria-label="Sources for this section"/);
 });
@@ -153,14 +158,14 @@ test("keeps the site one-page and retires accidental subroutes", async () => {
 
 test("meets core light and dark theme contrast requirements", () => {
   const pairs = [
-    ["14213d", "f6f3ec"],
-    ["4f5c70", "f6f3ec"],
-    ["636d7f", "f6f3ec"],
-    ["f6f4eb", "090d18"],
-    ["b8c1d2", "090d18"],
-    ["8792a7", "090d18"],
-    ["24765a", "dff4e9"],
-    ["7b5421", "fff0cf"],
+    ["f7fbff", "050b1c"],
+    ["bfd0e7", "050b1c"],
+    ["8ea5c2", "050b1c"],
+    ["102443", "eef6ff"],
+    ["3f5877", "eef6ff"],
+    ["526a87", "eef6ff"],
+    ["1d7759", "dcf4e8"],
+    ["765019", "fff0cb"],
   ];
 
   for (const [foreground, background] of pairs) {
@@ -185,7 +190,7 @@ test("ships a correctly sized, project-local social preview", async () => {
   assert.equal(image.readUInt32BE(20), 630);
   assert.ok(details.size < 2_500_000);
   assert.equal(fallback.toString("ascii", 1, 4), "PNG");
-  assert.equal(fallback.readUInt32BE(16), 630);
-  assert.equal(fallback.readUInt32BE(20), 630);
-  assert.ok(fallbackDetails.size < 1_000_000);
+  assert.equal(fallback.readUInt32BE(16), 700);
+  assert.equal(fallback.readUInt32BE(20), 700);
+  assert.ok(fallbackDetails.size < 2_000_000);
 });

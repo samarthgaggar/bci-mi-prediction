@@ -3,6 +3,7 @@
 import {
   Activity,
   ArrowDown,
+  ArrowRight,
   ArrowUpRight,
   Brain,
   Check,
@@ -11,13 +12,17 @@ import {
   FlaskConical,
   Gauge,
   Info,
+  MapPin,
   Moon,
   Pause,
   Play,
   Radio,
+  Route,
   ShieldCheck,
   Sparkles,
   Sun,
+  Ticket,
+  X,
 } from "lucide-react";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -48,27 +53,27 @@ function supportsWebGL() {
   }
 }
 
+function clamp(value: number) {
+  return Math.min(1, Math.max(0, value));
+}
+
 export function JourneyPage() {
   const [activeId, setActiveId] = useState("start");
   const [progress, setProgress] = useState(0);
+  const [approachProgress, setApproachProgress] = useState(0);
   const [sceneReady, setSceneReady] = useState(false);
   const [webGL, setWebGL] = useState(true);
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [motionEnabled, setMotionEnabled] = useState(true);
+  const [routeOpen, setRouteOpen] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
+  const approachRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const savedTheme = window.localStorage.getItem("bci-theme");
     const setup = window.requestAnimationFrame(() => {
-      setTheme(
-        savedTheme === "dark" || savedTheme === "light"
-          ? savedTheme
-          : prefersDark
-            ? "dark"
-            : "light",
-      );
+      setTheme(savedTheme === "light" || savedTheme === "dark" ? savedTheme : "dark");
       setMotionEnabled(!prefersReduced);
       setWebGL(supportsWebGL());
     });
@@ -100,7 +105,7 @@ export function JourneyPage() {
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
         if (visible) setActiveId(visible.target.id);
       },
-      { rootMargin: "-28% 0px -44% 0px", threshold: [0.1, 0.35, 0.65] },
+      { rootMargin: "-26% 0px -48% 0px", threshold: [0.08, 0.3, 0.6] },
     );
 
     sections.forEach((section) => observer.observe(section));
@@ -110,29 +115,44 @@ export function JourneyPage() {
   useEffect(() => {
     let frame = 0;
     const update = () => {
-      const root = mainRef.current;
-      if (!root) return;
-      const journeyHeight = root.scrollHeight - window.innerHeight;
-      setProgress(journeyHeight > 0 ? window.scrollY / journeyHeight : 0);
+      const pageHeight = document.documentElement.scrollHeight - window.innerHeight;
+      setProgress(pageHeight > 0 ? clamp(window.scrollY / pageHeight) : 0);
+
+      const approach = approachRef.current;
+      if (approach) {
+        const rect = approach.getBoundingClientRect();
+        const travel = rect.height - window.innerHeight;
+        setApproachProgress(travel > 0 ? clamp(-rect.top / travel) : 0);
+      }
     };
     const onScroll = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(update);
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(update);
     };
-    frame = requestAnimationFrame(update);
+    frame = window.requestAnimationFrame(update);
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
     return () => {
-      cancelAnimationFrame(frame);
+      window.cancelAnimationFrame(frame);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
   }, []);
 
+  useEffect(() => {
+    if (!routeOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setRouteOpen(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [routeOpen]);
+
   const activeIndex = useMemo(
     () => Math.max(0, journeyStops.findIndex((stop) => stop.id === activeId)),
     [activeId],
   );
+  const activeStop = journeyStops[activeIndex];
 
   return (
     <>
@@ -141,17 +161,30 @@ export function JourneyPage() {
       </a>
 
       <header className="site-header">
-        <a className="brand" href="#start" aria-label="BCI Signal Journey home">
+        <a className="brand" href="#start" aria-label="Signals in Motion home">
           <span className="brand-mark" aria-hidden="true">
             <Brain size={19} strokeWidth={2.2} />
           </span>
-          <span>BCI / Signal Journey</span>
+          <span className="brand-copy">
+            <strong>Signals in Motion</strong>
+            <small>BCI research journey</small>
+          </span>
         </a>
         <div className="header-actions">
           <span className="research-state">
             <span className="state-dot" aria-hidden="true" />
             Research in progress
           </span>
+          <button
+            className="route-button"
+            type="button"
+            onClick={() => setRouteOpen((value) => !value)}
+            aria-expanded={routeOpen}
+            aria-controls="route-map"
+          >
+            <Route size={17} />
+            <span>Route</span>
+          </button>
           <button
             className="icon-button"
             type="button"
@@ -172,38 +205,25 @@ export function JourneyPage() {
         </div>
       </header>
 
-      <nav className="journey-nav" aria-label="Journey progress">
-        <span className="journey-count" aria-hidden="true">
-          {String(activeIndex + 1).padStart(2, "0")} / {String(journeyStops.length).padStart(2, "0")}
-        </span>
-        <div className="progress-track" aria-hidden="true">
-          <span style={{ transform: `scaleX(${Math.min(1, Math.max(0, progress))})` }} />
-        </div>
-        <ol>
-          {journeyStops.map((stop) => (
-            <li key={stop.id}>
-              <a
-                href={`#${stop.id}`}
-                aria-current={activeId === stop.id ? "step" : undefined}
-              >
-                <span className="nav-dot" aria-hidden="true" />
-                <span className="nav-label">{stop.navLabel}</span>
-              </a>
-            </li>
-          ))}
-        </ol>
-      </nav>
+      <RouteMap
+        activeId={activeId}
+        activeIndex={activeIndex}
+        open={routeOpen}
+        onClose={() => setRouteOpen(false)}
+      />
 
-      <div className="scene-layer" aria-hidden="true">
+      <div className="journey-progress" aria-hidden="true">
+        <span className="journey-progress-fill" style={{ transform: `scaleX(${progress})` }} />
+        <span className="journey-progress-signal" style={{ left: `${progress * 100}%` }} />
+      </div>
+
+      <div className="scene-layer" aria-hidden="true" data-stage={activeStop.stage}>
+        <div className="scene-grid" />
         <div className="scene-halo scene-halo-coral" />
         <div className="scene-halo scene-halo-blue" />
         {sceneReady && webGL ? (
           <Suspense fallback={<BrainFallback label="Preparing the brain…" />}>
-            <BrainScene
-              progress={progress}
-              motionEnabled={motionEnabled}
-              dark={theme === "dark"}
-            />
+            <BrainScene progress={progress} motionEnabled={motionEnabled} dark={theme === "dark"} />
           </Suspense>
         ) : (
           <BrainFallback label={webGL ? "Preparing the brain…" : "Static brain view"} />
@@ -211,44 +231,77 @@ export function JourneyPage() {
       </div>
 
       <main ref={mainRef} className="journey-main">
-        {journeyStops.map((stop, index) => {
+        <HeroStop active={activeId === "start"} />
+
+        <section
+          ref={approachRef}
+          className="approach-stop"
+          id="approach"
+          aria-labelledby="approach-title"
+        >
+          <div className="approach-sticky">
+            <div className="approach-copy">
+              <span className="mono-label">Now departing · Exterior</span>
+              <h2 id="approach-title">
+                Follow the
+                <em> signal.</em>
+              </h2>
+              <p>
+                Scroll to approach the glowing entry point. The route continues
+                beneath the surface.
+              </p>
+              <div className="approach-meter" aria-label={`${Math.round(approachProgress * 100)} percent to first station`}>
+                <span style={{ transform: `scaleX(${approachProgress})` }} />
+              </div>
+              <small>
+                {approachProgress < 0.88 ? "Approaching neural entry…" : "Next stop: What is a BCI?"}
+              </small>
+            </div>
+            <div className="entry-reticle" style={{ opacity: 0.3 + approachProgress * 0.7 }}>
+              <span />
+              <strong>Neural entry</strong>
+            </div>
+          </div>
+        </section>
+
+        {journeyStops.slice(1).map((stop, visibleIndex) => {
+          const index = visibleIndex + 1;
           const StatusIcon = statusIcons[stop.status];
-          const isHero = index === 0;
-          const isFinal = index === journeyStops.length - 1;
+          const isFinal = stop.id === "return";
+          const nextStop = journeyStops[index + 1];
           return (
             <section
-              className={`story-stop story-stop-${stop.side} ${isHero ? "hero-stop" : ""} ${
+              className={`story-stop story-stop-${stop.side} ${
                 isFinal ? "final-stop" : ""
-              }`}
+              } ${activeId === stop.id ? "is-active" : ""}`}
               id={stop.id}
               key={stop.id}
               aria-labelledby={`${stop.id}-title`}
+              data-stage={stop.stage}
             >
+              <div className="arrival-light" aria-hidden="true" />
               <div className="story-inner">
-                <article className="story-card">
+                <article className="station-card">
+                  <div className="station-sign">
+                    <span className="station-number">
+                      {isFinal ? "END" : String(index).padStart(2, "0")}
+                    </span>
+                    <span>{stop.stationLabel}</span>
+                    <MapPin size={15} aria-hidden="true" />
+                  </div>
+
                   <div className="eyebrow">
-                    <span>{stop.eyebrow}</span>
                     <span className={`status-chip status-${stop.status}`}>
                       <StatusIcon size={14} aria-hidden="true" />
                       {stop.statusLabel}
                     </span>
+                    <span className="platform-label">
+                      Platform {String(index).padStart(2, "0")}
+                    </span>
                   </div>
-                  <h1 id={`${stop.id}-title`} className={isHero ? "hero-title" : undefined}>
-                    {stop.question}
-                  </h1>
-                  <p className="simple-answer">{stop.simpleAnswer}</p>
 
-                  {isHero && (
-                    <div className="hero-actions">
-                      <a className="primary-button" href="#background">
-                        Enter the brain
-                        <ArrowDown size={17} aria-hidden="true" />
-                      </a>
-                      <span className="hero-note">
-                        Scroll normally · about 4 minutes
-                      </span>
-                    </div>
-                  )}
+                  <h2 id={`${stop.id}-title`}>{stop.question}</h2>
+                  <p className="simple-answer">{stop.simpleAnswer}</p>
 
                   {stop.metrics && <Metrics metrics={stop.metrics} />}
                   {stop.id === "method" && <MethodDiagram />}
@@ -258,7 +311,7 @@ export function JourneyPage() {
 
                   <details className="technical-note" open={isFinal}>
                     <summary>
-                      <span>{isFinal ? "The careful answer" : "Go deeper"}</span>
+                      <span>{isFinal ? "The careful answer" : "Open the evidence ticket"}</span>
                       <ChevronDown size={17} aria-hidden="true" />
                     </summary>
                     <div className="technical-body">
@@ -277,10 +330,14 @@ export function JourneyPage() {
                   {isFinal && <FinalSources />}
                 </article>
               </div>
-              {!isFinal && (
-                <a className="next-cue" href={`#${journeyStops[index + 1].id}`}>
-                  <span>Continue</span>
-                  <ArrowDown size={16} aria-hidden="true" />
+
+              {!isFinal && nextStop && (
+                <a className="next-stop" href={`#${nextStop.id}`}>
+                  <span>
+                    <small>Next stop</small>
+                    <strong>{nextStop.navLabel}</strong>
+                  </span>
+                  <ArrowRight size={19} aria-hidden="true" />
                 </a>
               )}
             </section>
@@ -301,31 +358,133 @@ export function JourneyPage() {
             Paper
           </a>
           <a href="#integrity">Integrity</a>
-          <a href="#start">Back to top</a>
+          <a href="#start">Ride again</a>
         </div>
         <p className="asset-credit">
-          Brain scene rendered procedurally in Three.js after the approved CC BY model download
-          required authenticated access. It is an educational visual, not a diagnostic model.
-          Approved references:{" "}
-          <a
-            href="https://sketchfab.com/3d-models/human-brain-c9c9d4d671b94345952d012cc2ea7a24"
-            target="_blank"
-            rel="noreferrer"
-          >
-            “Human Brain” by AH
-          </a>{" "}
-          and{" "}
-          <a
-            href="https://sketchfab.com/3d-models/human-brain-7a27c17fd6c0488bb31ab093236a47fb"
-            target="_blank"
-            rel="noreferrer"
-          >
-            “Human Brain” by 3DRT Studios
-          </a>
-          .
+          The animated brain and neural route are original procedural educational
+          illustrations, not anatomical or diagnostic models. Research facts link
+          to the public Zenodo record and Scientific Data descriptor.
         </p>
       </footer>
     </>
+  );
+}
+
+function HeroStop({ active }: { active: boolean }) {
+  const stop = journeyStops[0];
+  return (
+    <section
+      className={`story-stop hero-stop ${active ? "is-active" : ""}`}
+      id="start"
+      aria-labelledby="start-title"
+    >
+      <div className="hero-orbit hero-orbit-one" aria-hidden="true" />
+      <div className="hero-orbit hero-orbit-two" aria-hidden="true" />
+      <div className="story-inner hero-layout">
+        <article className="hero-copy">
+          <span className="hero-ticket">
+            <Ticket size={15} />
+            Admit one curious mind
+          </span>
+          <p className="hero-kicker">Motor-imagery BCI · Interactive research story</p>
+          <h1 id="start-title">
+            Signals
+            <span>in Motion</span>
+          </h1>
+          <p className="hero-intro">{stop.simpleAnswer}</p>
+          <p className="hero-welcome">
+            Board a guided route through the brain, from first signal to careful
+            scientific conclusion.
+          </p>
+          <div className="hero-actions">
+            <a className="primary-button" href="#approach">
+              Begin the journey
+              <ArrowDown size={17} aria-hidden="true" />
+            </a>
+            <span className="hero-note">8 stations · scroll at your own pace</span>
+          </div>
+        </article>
+
+        <div className="route-preview" aria-label="Journey route overview">
+          <span className="route-preview-label">Today&apos;s route</span>
+          <ol>
+            {journeyStops.slice(1, -1).map((journeyStop, index) => (
+              <li key={journeyStop.id}>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                {journeyStop.navLabel}
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
+      <a className="scroll-cue" href="#approach">
+        <span>Scroll to depart</span>
+        <ArrowDown size={16} aria-hidden="true" />
+      </a>
+    </section>
+  );
+}
+
+function RouteMap({
+  activeId,
+  activeIndex,
+  open,
+  onClose,
+}: {
+  activeId: string;
+  activeIndex: number;
+  open: boolean;
+  onClose: () => void;
+}) {
+  return (
+    <nav
+      className={`route-map ${open ? "is-open" : ""}`}
+      id="route-map"
+      aria-label="Brain journey stations"
+      aria-hidden={!open}
+    >
+      <div className="route-map-head">
+        <span>
+          <Route size={17} />
+          Neural line
+        </span>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close route map"
+          tabIndex={open ? 0 : -1}
+        >
+          <X size={18} />
+        </button>
+      </div>
+      <div className="route-current">
+        <span>{String(activeIndex + 1).padStart(2, "0")}</span>
+        <p>
+          Current stop
+          <strong>{journeyStops[activeIndex].navLabel}</strong>
+        </p>
+      </div>
+      <ol>
+        {journeyStops.map((stop, index) => (
+          <li key={stop.id} className={index < activeIndex ? "is-complete" : ""}>
+            <a
+              href={`#${stop.id}`}
+              aria-current={activeId === stop.id ? "step" : undefined}
+              onClick={onClose}
+              tabIndex={open ? 0 : -1}
+            >
+              <span className="route-dot" aria-hidden="true">
+                {index < activeIndex ? <Check size={11} /> : null}
+              </span>
+              <span>
+                <small>{index === 0 ? "DEP" : index === journeyStops.length - 1 ? "END" : `S${String(index).padStart(2, "0")}`}</small>
+                <strong>{stop.navLabel}</strong>
+              </span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
   );
 }
 
@@ -344,9 +503,14 @@ function Metrics({
 }) {
   return (
     <dl className="metrics-grid">
-      {metrics.map((metric) => (
+      {metrics.map((metric, index) => (
         <div className="metric-card" key={`${metric.label}-${metric.value}`}>
-          <dt>{metric.label}</dt>
+          <span className="ticket-notch ticket-notch-left" aria-hidden="true" />
+          <span className="ticket-notch ticket-notch-right" aria-hidden="true" />
+          <dt>
+            <span>{String(index + 1).padStart(2, "0")}</span>
+            {metric.label}
+          </dt>
           <dd>{metric.value}</dd>
           <p>{metric.detail}</p>
         </div>
@@ -404,13 +568,11 @@ function PendingResults() {
       {resultPanels.map((panel) => (
         <article className="pending-panel" key={panel.title}>
           <div className="pending-visual" aria-hidden="true">
-            <span />
-            <span />
-            <span />
+            <Gauge size={22} />
             <span />
           </div>
           <div>
-            <h2>{panel.title}</h2>
+            <h3>{panel.title}</h3>
             <p>{panel.description}</p>
           </div>
           <span className="pending-badge">

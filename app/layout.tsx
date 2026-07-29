@@ -1,45 +1,55 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import {
+  Bricolage_Grotesque,
+  IBM_Plex_Mono,
+  Manrope,
+} from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const display = Bricolage_Grotesque({
+  variable: "--font-display",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const body = Manrope({
+  variable: "--font-body",
+  subsets: ["latin"],
+});
+
+const mono = IBM_Plex_Mono({
+  variable: "--font-mono",
+  weight: ["400", "500", "600"],
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://bci-performance-variability.ucd-cosmos-a-8231.chatgpt.site"),
-  title: "Can Computers Read Minds? · BCI Signal Journey",
+  title: "Signals in Motion · A BCI Research Journey",
   description:
-    "Travel through a brain and discover how motor-imagery BCI research turns measurable signals into carefully tested predictions.",
+    "Board a playful scientific journey through motor-imagery BCI research, from brain signals and data collection to careful evaluation.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
   },
   openGraph: {
-    title: "Can Computers Read Minds?",
+    title: "Signals in Motion",
     description:
-      "A playful, evidence-first journey through motor-imagery brain–computer interface research.",
+      "A journey through motor-imagery brain–computer interface research.",
     type: "website",
     images: [
       {
         url: "/og.png",
         width: 1200,
         height: 630,
-        alt: "Can Computers Read Minds? A coral and blue brain crossed by glowing signal paths.",
+        alt: "Signals in Motion, with a luminous brain crossed by a glowing neural transit route.",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Can Computers Read Minds?",
+    title: "Signals in Motion",
     description:
-      "A playful, evidence-first journey through motor-imagery brain–computer interface research.",
+      "A journey through motor-imagery brain–computer interface research.",
     images: ["/og.png"],
   },
 };
@@ -52,7 +62,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${display.variable} ${body.variable} ${mono.variable} antialiased`}
       >
         {children}
       </body>

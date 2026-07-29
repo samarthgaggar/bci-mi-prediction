@@ -1,4 +1,15 @@
 export type JourneyStatus = "verified" | "process" | "pending";
+export type JourneyStage = "exterior" | "interior" | "return";
+export type VisualType =
+  | "orientation"
+  | "signal"
+  | "dataset"
+  | "acquisition"
+  | "integrity"
+  | "pipeline"
+  | "results"
+  | "limitations"
+  | "summary";
 
 export type Metric = {
   value: string;
@@ -20,13 +31,16 @@ export type CameraCue = {
 export type JourneyStop = {
   id: string;
   navLabel: string;
-  eyebrow: string;
+  stationLabel: string;
   question: string;
   simpleAnswer: string;
   technicalDetail: string;
   status: JourneyStatus;
   statusLabel: string;
   side: "left" | "right" | "center";
+  stage: JourneyStage;
+  visualType: VisualType;
+  accessibilitySummary: string;
   camera: CameraCue;
   metrics?: readonly Metric[];
   sources: readonly SourceReference[];
@@ -46,38 +60,69 @@ export const primarySources = {
 export const journeyStops: readonly JourneyStop[] = [
   {
     id: "start",
-    navLabel: "Start",
-    eyebrow: "A journey through brain signals",
-    question: "Can computers read minds?",
+    navLabel: "Departure",
+    stationLabel: "Departure platform",
+    question: "Signals in Motion",
     simpleAnswer:
-      "Not quite. A brain–computer interface listens for tiny electrical patterns and learns what those signals may mean.",
+      "A journey through motor-imagery brain–computer interface research.",
     technicalDetail:
-      "This project studies motor imagery: measurable changes in brain activity while a person imagines moving their left or right hand. The system never receives private thoughts, memories, or inner speech.",
-    status: "verified",
-    statusLabel: "Plain-language orientation",
+      "This experience follows a research project that studies measurable brain-signal patterns while people imagine moving their left or right hand. It does not receive private thoughts, memories, or inner speech.",
+    status: "process",
+    statusLabel: "Research in progress",
     side: "left",
+    stage: "exterior",
+    visualType: "orientation",
+    accessibilitySummary:
+      "A complete luminous brain is shown before the journey begins.",
     camera: {
-      position: [0, 0, 7.8],
+      position: [0, 0, 8],
       target: [0, 0, 0],
       highlight: "whole",
     },
     sources: [primarySources.paper],
   },
   {
+    id: "bci",
+    navLabel: "BCI",
+    stationLabel: "Station 01 · What is a BCI?",
+    question: "Can computers read minds?",
+    simpleAnswer:
+      "Not quite. A BCI measures tiny electrical patterns and learns what a small, defined signal may mean.",
+    technicalDetail:
+      "This project studies motor imagery: changes in recorded brain activity while a person imagines moving their left or right hand. The classifier receives sensor measurements—not thoughts, memories, intentions outside the task, or inner speech.",
+    status: "verified",
+    statusLabel: "Plain-language orientation",
+    side: "right",
+    stage: "interior",
+    visualType: "signal",
+    accessibilitySummary:
+      "The first interior station explains the difference between brain-signal classification and mind reading.",
+    camera: {
+      position: [0.25, 0.05, -8],
+      target: [0, 0, -12],
+      highlight: "left",
+    },
+    sources: [primarySources.paper],
+  },
+  {
     id: "background",
-    navLabel: "Why",
-    eyebrow: "Stop 01 · Background",
+    navLabel: "Background",
+    stationLabel: "Station 02 · Research background",
     question: "What are we listening for?",
     simpleAnswer:
-      "When you imagine a movement, groups of brain cells change rhythm. EEG sensors can measure part of that change from the scalp.",
+      "When you imagine movement, groups of brain cells change rhythm. EEG sensors can measure part of that change from the scalp.",
     technicalDetail:
       "The study focuses on left- versus right-hand motor imagery. These patterns are subtle, vary across people, and can change from run to run—so a useful model must generalize beyond the people it learned from.",
     status: "verified",
     statusLabel: "Source-backed context",
-    side: "right",
+    side: "left",
+    stage: "interior",
+    visualType: "signal",
+    accessibilitySummary:
+      "Animated signal paths illustrate that EEG measures changing electrical rhythms from the scalp.",
     camera: {
-      position: [2.45, 0.55, 5.2],
-      target: [-0.7, 0.3, 0],
+      position: [-0.8, 0.35, -15],
+      target: [0.4, 0, -20],
       highlight: "left",
     },
     sources: [primarySources.paper],
@@ -85,18 +130,22 @@ export const journeyStops: readonly JourneyStop[] = [
   {
     id: "dataset",
     navLabel: "Dataset",
-    eyebrow: "Stop 02 · Dataset",
-    question: "How much did the researchers record?",
+    stationLabel: "Station 03 · The dataset",
+    question: "How much did researchers record?",
     simpleAnswer:
       "Eighty-seven volunteers completed one session each, producing hundreds of carefully documented recordings.",
     technicalDetail:
       "The published corpus contains participant groups A1–A60, B61–B81, and C82–C87. A complete motor-imagery run contains 40 trials: 20 left-hand and 20 right-hand trials.",
     status: "verified",
     statusLabel: "Verified dataset facts",
-    side: "left",
+    side: "right",
+    stage: "interior",
+    visualType: "dataset",
+    accessibilitySummary:
+      "Four ticket-shaped metric cards summarize the verified dataset composition.",
     camera: {
-      position: [-2.25, 0.15, 4.7],
-      target: [0.6, 0, 0],
+      position: [0.9, -0.2, -22],
+      target: [-0.4, 0.1, -27],
       highlight: "deep",
     },
     metrics: [
@@ -125,8 +174,8 @@ export const journeyStops: readonly JourneyStop[] = [
   },
   {
     id: "method",
-    navLabel: "Method",
-    eyebrow: "Stop 03 · Acquisition",
+    navLabel: "Acquisition",
+    stationLabel: "Station 04 · Experiment & acquisition",
     question: "What did one session look like?",
     simpleAnswer:
       "People rested, followed visual cues, imagined hand movements, and then received feedback as the system learned.",
@@ -134,10 +183,14 @@ export const journeyStops: readonly JourneyStop[] = [
       "The documented complete structure includes two baseline recordings, acquisition runs R1–R2, and online runs R3–R6. Exceptions—such as missing runs or trigger differences—remain part of the record rather than being silently repaired.",
     status: "verified",
     statusLabel: "Documented protocol",
-    side: "right",
+    side: "left",
+    stage: "interior",
+    visualType: "acquisition",
+    accessibilitySummary:
+      "A four-step diagram shows baseline, acquisition, imagined movement, and feedback.",
     camera: {
-      position: [0.55, -0.45, 3.9],
-      target: [0, 0.15, 0],
+      position: [-0.65, 0.35, -29],
+      target: [0.45, -0.1, -34],
       highlight: "deep",
     },
     metrics: [
@@ -157,7 +210,7 @@ export const journeyStops: readonly JourneyStop[] = [
   {
     id: "integrity",
     navLabel: "Integrity",
-    eyebrow: "Stop 04 · Cleaning",
+    stationLabel: "Station 05 · Cleaning & integrity",
     question: "How do we protect the evidence?",
     simpleAnswer:
       "We keep the original science untouched, make only authorized changes, and leave a trail that can be checked.",
@@ -165,10 +218,14 @@ export const journeyStops: readonly JourneyStop[] = [
       "Scientific measurements, identifiers, spreadsheets, questionnaires, and configuration files remain unchanged. Authorized text normalization must preserve parsed cells exactly; known noisy channels, trial notes, and missing assets are documented—not guessed away.",
     status: "verified",
     statusLabel: "Post-clean validation passed",
-    side: "left",
+    side: "right",
+    stage: "interior",
+    visualType: "integrity",
+    accessibilitySummary:
+      "Verified traceability counts are presented with a clear explanation of immutable source data.",
     camera: {
-      position: [-1.65, 0.65, 4.15],
-      target: [0.35, -0.1, 0],
+      position: [0.85, -0.3, -36],
+      target: [-0.35, 0.1, -41],
       highlight: "network",
     },
     metrics: [
@@ -198,7 +255,7 @@ export const journeyStops: readonly JourneyStop[] = [
   {
     id: "pipeline",
     navLabel: "Pipeline",
-    eyebrow: "Stop 05 · Data science",
+    stationLabel: "Station 06 · Data-science pipeline",
     question: "How does a signal become a prediction?",
     simpleAnswer:
       "The work moves through a locked sequence: understand, verify, prepare, measure, train, and test.",
@@ -206,10 +263,14 @@ export const journeyStops: readonly JourneyStop[] = [
       "The analysis policy separates participants across development and evaluation, controls information leakage, and reserves the locked test for a one-time final check. Public claims stay gated until their artifacts are approved and versioned.",
     status: "process",
     statusLabel: "Protocol defined · results gated",
-    side: "right",
+    side: "left",
+    stage: "interior",
+    visualType: "pipeline",
+    accessibilitySummary:
+      "A nine-step route shows the analysis path and its participant-disjoint evaluation gate.",
     camera: {
-      position: [1.8, 0.35, 4.2],
-      target: [-0.35, 0, 0],
+      position: [-0.85, 0.2, -43],
+      target: [0.35, 0, -48],
       highlight: "network",
     },
     sources: [primarySources.paper],
@@ -217,7 +278,7 @@ export const journeyStops: readonly JourneyStop[] = [
   {
     id: "results",
     navLabel: "Results",
-    eyebrow: "Stop 06 · Results status",
+    stationLabel: "Station 07 · Results status",
     question: "What did the models find?",
     simpleAnswer:
       "The evaluation artifacts exist locally, but they are not yet approved for public reporting.",
@@ -225,18 +286,22 @@ export const journeyStops: readonly JourneyStop[] = [
       "Model comparisons, performance distributions, spectral findings, and subgroup analyses will appear here only after the corresponding outputs are reviewed, versioned, and traceable to the locked protocol.",
     status: "pending",
     statusLabel: "Awaiting verified analysis",
-    side: "left",
+    side: "right",
+    stage: "interior",
+    visualType: "results",
+    accessibilitySummary:
+      "Three empty visualization frames are explicitly labeled as awaiting verified analysis.",
     camera: {
-      position: [-1.9, -0.45, 4.45],
-      target: [0.5, 0.15, 0],
+      position: [0.75, -0.25, -50],
+      target: [-0.4, 0.1, -55],
       highlight: "network",
     },
     sources: [primarySources.zenodo, primarySources.paper],
   },
   {
     id: "future",
-    navLabel: "Limits",
-    eyebrow: "Stop 07 · Limits & next steps",
+    navLabel: "Next",
+    stationLabel: "Station 08 · Limits & future directions",
     question: "What should we stay cautious about?",
     simpleAnswer:
       "Brain signals are noisy, people differ, and one dataset cannot answer every question.",
@@ -244,26 +309,34 @@ export const journeyStops: readonly JourneyStop[] = [
       "The study covers one session per participant and a specific left/right motor-imagery task. Future work should test robustness across sessions, equipment, settings, and broader participant groups without tuning against the locked evaluation.",
     status: "verified",
     statusLabel: "Scope stated explicitly",
-    side: "right",
+    side: "left",
+    stage: "interior",
+    visualType: "limitations",
+    accessibilitySummary:
+      "Three limitation notes explain the single-session task, narrow cue set, and differences between people.",
     camera: {
-      position: [1.35, 0.2, 5.35],
-      target: [-0.2, 0, 0],
+      position: [-0.5, 0.2, -57],
+      target: [0.2, 0, -62],
       highlight: "out",
     },
     sources: [primarySources.paper],
   },
   {
     id: "return",
-    navLabel: "Return",
-    eyebrow: "Journey complete",
-    question: "So, can computers read minds?",
+    navLabel: "Terminus",
+    stationLabel: "Final stop · Return to the full brain",
+    question: "Small signals. Careful answers.",
     simpleAnswer:
-      "No. But with careful experiments, they can learn small, measurable patterns in brain activity—and help us ask better questions.",
+      "A computer cannot read a mind—but careful experiments can help it recognize a small, measurable pattern in brain activity.",
     technicalDetail:
       "The promise of BCI research depends on the same things that make it difficult: transparent methods, honest uncertainty, participant-aware validation, and evidence that can be reproduced.",
     status: "verified",
-    statusLabel: "What we know—and what we do not",
+    statusLabel: "Journey complete",
     side: "center",
+    stage: "return",
+    visualType: "summary",
+    accessibilitySummary:
+      "The camera returns to the full brain while the final takeaway and primary sources are presented.",
     camera: {
       position: [0, 0, 8.4],
       target: [0, 0, 0],
