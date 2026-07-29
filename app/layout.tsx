@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import {
-  Bricolage_Grotesque,
   IBM_Plex_Mono,
   Manrope,
+  Nunito_Sans,
 } from "next/font/google";
 import "./globals.css";
 
-const display = Bricolage_Grotesque({
+const display = Nunito_Sans({
   variable: "--font-display",
   subsets: ["latin"],
+  weight: ["700", "800", "900"],
 });
 
 const body = Manrope({
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://bci-performance-variability.ucd-cosmos-a-8231.chatgpt.site"),
   title: "Predicting Motor Imagery from EEG · BCI Research Project",
   description:
-    "A research project studying whether machine-learning models can distinguish imagined left- and right-hand movements from EEG recordings.",
+    "A research project testing whether machine-learning models can distinguish imagined left- and right-hand movement from EEG recordings.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",

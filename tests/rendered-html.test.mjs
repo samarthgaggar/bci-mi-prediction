@@ -56,7 +56,7 @@ function contrast(foreground, background) {
   return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 }
 
-test("server-renders the complete motor imagery BCI walkthrough", async () => {
+test("server-renders the complete motor imagery BCI research page", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
@@ -67,8 +67,12 @@ test("server-renders the complete motor imagery BCI walkthrough", async () => {
     /<title>Predicting Motor Imagery from EEG · BCI Research Project<\/title>/i,
   );
   assert.match(html, /Predicting Motor Imagery from EEG/i);
-  assert.match(html, /Explore the project/i);
-  assert.match(html, /From EEG recording/i);
+  assert.match(
+    html,
+    /This project tests whether machine-learning models can distinguish imagined left- and right-hand movement from EEG recordings/i,
+  );
+  assert.match(html, />Contents</i);
+  assert.match(html, /01 — BCI basics/i);
   assert.match(html, /What does a brain–computer interface measure\?/i);
   assert.match(html, /classifier receives sensor measurements/i);
   assert.match(html, />87</);
@@ -83,16 +87,15 @@ test("server-renders the complete motor imagery BCI walkthrough", async () => {
   assert.match(html, /Skip to the project overview/);
   assert.doesNotMatch(
     html,
-    /Signals in Motion|Admit one curious mind|Evidence first\. Curiosity always|Ride again|Neural line/i,
+    /Signals in Motion|Admit one curious mind|Evidence first\. Curiosity always|Ride again|Neural line|Explore the project/i,
   );
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton|Starter Project/);
 });
 
 test("renders every stable section anchor and accessibility control", async () => {
   const html = await (await render()).text();
-  const anchors = [
+  const linkedAnchors = [
     "start",
-    "approach",
     "bci",
     "background",
     "dataset",
@@ -104,16 +107,40 @@ test("renders every stable section anchor and accessibility control", async () =
     "return",
   ];
 
-  for (const anchor of anchors) {
+  for (const anchor of linkedAnchors) {
     assert.match(html, new RegExp(`id="${anchor}"`));
     assert.match(html, new RegExp(`href="#${anchor}"`));
   }
 
-  assert.match(html, /aria-label="Research sections"/);
-  assert.match(html, /Pause cinematic motion/);
+  assert.match(html, /id="approach"/);
+  assert.match(html, /aria-label="Research contents"/);
+  assert.match(html, /role="dialog"/);
+  assert.match(html, /Pause visual motion/);
   assert.match(html, /Switch to (?:light|dark) theme/);
   assert.match(html, /<details class="technical-note"/);
   assert.match(html, /aria-label="Sources for this section"/);
+});
+
+test("uses restrained research typography and removes visible travel instructions", async () => {
+  const [html, layout, css] = await Promise.all([
+    (await render()).text(),
+    readFile(path.join(projectRoot, "app/layout.tsx"), "utf8"),
+    readFile(path.join(projectRoot, "app/globals.css"), "utf8"),
+  ]);
+  const visibleText = html
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&(?:nbsp|amp|quot|#x27);/gi, " ")
+    .replace(/\s+/g, " ");
+
+  assert.match(layout, /Nunito_Sans/);
+  assert.doesNotMatch(layout, /Bricolage_Grotesque/);
+  assert.doesNotMatch(css, /\.hero-copy h1[\s\S]{0,700}-webkit-text-stroke/);
+  assert.doesNotMatch(
+    visibleText,
+    /\b(?:scroll|story|journey|adventure|train|station|route|stop|depart|walkthrough)\b|explore the project/i,
+  );
 });
 
 test("keeps unapproved results gated and nonnumeric", async () => {

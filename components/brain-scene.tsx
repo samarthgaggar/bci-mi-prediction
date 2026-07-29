@@ -93,13 +93,13 @@ function Hemisphere({
         <meshPhysicalMaterial
           color={dark ? "#6eaafa" : "#b9ddff"}
           emissive="#285fb8"
-          emissiveIntensity={dark ? 0.62 : 0.22}
+          emissiveIntensity={dark ? 0.74 : 0.24}
           roughness={0.16}
           metalness={0.02}
           clearcoat={1}
           clearcoatRoughness={0.13}
           transparent
-          opacity={opacity * (dark ? 0.43 : 0.58)}
+          opacity={opacity * (dark ? 0.5 : 0.6)}
           depthWrite={false}
           side={THREE.DoubleSide}
         />
@@ -109,7 +109,7 @@ function Hemisphere({
           color={glow}
           wireframe
           transparent
-          opacity={opacity * (dark ? 0.24 : 0.15)}
+          opacity={opacity * (dark ? 0.31 : 0.17)}
           depthWrite={false}
         />
       </mesh>
@@ -148,6 +148,30 @@ const exteriorPaths = [
     [0.8, 0.65, -1.14],
     [1.42, 0.05, -0.72],
   ],
+  [
+    [-2.45, 1.58, -0.3],
+    [-1.72, 1.88, 0.12],
+    [-0.88, 1.63, 0.82],
+    [0.12, 1.86, 0.64],
+    [1.08, 1.55, 0.28],
+    [2.28, 1.82, -0.22],
+  ],
+  [
+    [-2.62, -0.82, 0.18],
+    [-1.72, -1.42, 0.68],
+    [-0.68, -1.68, 0.36],
+    [0.42, -1.62, 0.74],
+    [1.42, -1.34, 0.22],
+    [2.36, -0.74, -0.28],
+  ],
+  [
+    [-2.3, 0.62, -1.05],
+    [-1.62, 0.12, -1.42],
+    [-0.52, -0.28, -1.58],
+    [0.48, 0.04, -1.62],
+    [1.48, 0.38, -1.36],
+    [2.42, 0.9, -0.72],
+  ],
 ] as const;
 
 function ExteriorSignals({
@@ -175,10 +199,18 @@ function ExteriorSignals({
         <Line
           key={index}
           points={points.map((point) => new THREE.Vector3(...point))}
-          color={index === 1 ? "#ffcf78" : dark ? "#b8e7ff" : "#1768ca"}
-          lineWidth={dark ? 1.4 : 1.1}
+          color={
+            index === 1 || index === 4
+              ? "#ffcf78"
+              : index === 3
+                ? "#ff8e7e"
+                : dark
+                  ? "#b8e7ff"
+                  : "#1768ca"
+          }
+          lineWidth={index > 2 ? 0.85 : dark ? 1.45 : 1.1}
           transparent
-          opacity={opacity * 0.82}
+          opacity={opacity * (index > 2 ? 0.58 : 0.86)}
         />
       ))}
       <group ref={pulses}>
@@ -187,7 +219,13 @@ function ExteriorSignals({
             <mesh key={`${pathIndex}-${pointIndex}`} position={point}>
               <sphereGeometry args={[0.06, 14, 14]} />
               <meshBasicMaterial
-                color={pathIndex === 1 ? "#ffd67e" : "#d6f5ff"}
+                color={
+                  pathIndex === 1 || pathIndex === 4
+                    ? "#ffd67e"
+                    : pathIndex === 3
+                      ? "#ff9a8d"
+                      : "#d6f5ff"
+                }
                 transparent
                 opacity={opacity}
               />
@@ -214,7 +252,7 @@ function OuterBrain({
   useFrame(({ clock }, delta) => {
     if (!group.current) return;
     const heroShift =
-      size.width >= 980 ? 1.35 * (1 - range(progress, 0.045, 0.16)) : 0;
+      size.width >= 980 ? 1.58 * (1 - range(progress, 0.045, 0.16)) : 0;
     const returnShift =
       size.width >= 980 ? 0.55 * range(progress, 0.965, 1) : 0;
     group.current.position.x = THREE.MathUtils.lerp(
@@ -250,8 +288,8 @@ function OuterBrain({
         motionEnabled={motionEnabled}
       />
       <Sparkles
-        count={96}
-        scale={[5.4, 4.4, 4]}
+        count={120}
+        scale={[6.2, 5, 4.6]}
         size={2}
         speed={motionEnabled ? 0.2 : 0}
         opacity={opacity * (dark ? 0.8 : 0.48)}
@@ -342,7 +380,7 @@ function SignalTravel({
   );
 }
 
-const stationDepths = [-8, -15, -22, -29, -36, -43, -50, -57];
+const sectionDepths = [-8, -15, -22, -29, -36, -43, -50, -57];
 
 function InteriorWorld({
   progress,
@@ -387,7 +425,7 @@ function InteriorWorld({
         </mesh>
       ))}
 
-      {stationDepths.map((depth, index) => (
+      {sectionDepths.map((depth, index) => (
         <group key={depth} position={[0, 0, depth]}>
           <mesh rotation={[0, 0, index * 0.42]}>
             <torusGeometry args={[3.25, 0.018, 8, 96, Math.PI * 1.52]} />
@@ -425,7 +463,7 @@ function InteriorWorld({
   );
 }
 
-function CameraJourney({
+function CameraSequence({
   progress,
   motionEnabled,
 }: {
@@ -468,7 +506,7 @@ function CameraJourney({
 function BrainWorld(props: BrainSceneProps) {
   return (
     <>
-      <CameraJourney
+      <CameraSequence
         progress={props.progress}
         motionEnabled={props.motionEnabled}
       />
@@ -497,7 +535,7 @@ function BrainWorld(props: BrainSceneProps) {
 export default function BrainScene(props: BrainSceneProps) {
   return (
     <Canvas
-      aria-label="A luminous brain opens into an animated EEG pathway with eight research sections"
+      aria-label="A luminous brain and neural signal network illustrate the BCI research sections"
       camera={{ position: [0, 0, 8.1], fov: 36, near: 0.06, far: 130 }}
       dpr={[1, 1.5]}
       gl={{

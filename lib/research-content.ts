@@ -1,5 +1,5 @@
-export type JourneyStatus = "verified" | "process" | "pending";
-export type JourneyStage = "exterior" | "interior" | "return";
+export type ResearchStatus = "verified" | "process" | "pending";
+export type ScenePhase = "exterior" | "interior" | "return";
 export type VisualType =
   | "orientation"
   | "signal"
@@ -28,17 +28,17 @@ export type CameraCue = {
   highlight: "whole" | "left" | "deep" | "network" | "out";
 };
 
-export type JourneyStop = {
+export type ResearchSection = {
   id: string;
   navLabel: string;
-  stationLabel: string;
+  sectionLabel: string;
   question: string;
   simpleAnswer: string;
   technicalDetail: string;
-  status: JourneyStatus;
+  status: ResearchStatus;
   statusLabel: string;
   side: "left" | "right" | "center";
-  stage: JourneyStage;
+  phase: ScenePhase;
   visualType: VisualType;
   accessibilitySummary: string;
   camera: CameraCue;
@@ -57,23 +57,23 @@ export const primarySources = {
   },
 } as const satisfies Record<string, SourceReference>;
 
-export const journeyStops: readonly JourneyStop[] = [
+export const researchSections: readonly ResearchSection[] = [
   {
     id: "start",
     navLabel: "Overview",
-    stationLabel: "Project overview",
+    sectionLabel: "Project overview",
     question: "Predicting Motor Imagery from EEG",
     simpleAnswer:
-      "This project studies whether machine-learning models can distinguish imagined left- and right-hand movements from EEG recordings.",
+      "This project tests whether machine-learning models can distinguish imagined left- and right-hand movement from EEG recordings.",
     technicalDetail:
       "The analysis uses a public motor-imagery dataset and a participant-disjoint evaluation process. It focuses on one defined classification task and does not attempt to recover private thoughts, memories, or inner speech.",
     status: "process",
     statusLabel: "Research in progress",
     side: "left",
-    stage: "exterior",
+    phase: "exterior",
     visualType: "orientation",
     accessibilitySummary:
-      "A complete luminous brain introduces a research walkthrough about classifying motor-imagery EEG signals.",
+      "A complete luminous brain introduces the motor-imagery EEG classification project.",
     camera: {
       position: [0, 0, 8],
       target: [0, 0, 0],
@@ -84,7 +84,7 @@ export const journeyStops: readonly JourneyStop[] = [
   {
     id: "bci",
     navLabel: "BCI basics",
-    stationLabel: "Section 01 · What is a BCI?",
+    sectionLabel: "01 — BCI basics",
     question: "What does a brain–computer interface measure?",
     simpleAnswer:
       "A BCI records signals from the nervous system and uses them to recognize a specific, predefined task.",
@@ -93,7 +93,7 @@ export const journeyStops: readonly JourneyStop[] = [
     status: "verified",
     statusLabel: "Plain-language orientation",
     side: "right",
-    stage: "interior",
+    phase: "interior",
     visualType: "signal",
     accessibilitySummary:
       "The first section explains that this project classifies task-related EEG patterns rather than reading thoughts.",
@@ -107,7 +107,7 @@ export const journeyStops: readonly JourneyStop[] = [
   {
     id: "background",
     navLabel: "Background",
-    stationLabel: "Section 02 · Research background",
+    sectionLabel: "02 — Research background",
     question: "Why study imagined movement?",
     simpleAnswer:
       "Imagining a movement can change measurable EEG rhythms even when the body does not move.",
@@ -116,7 +116,7 @@ export const journeyStops: readonly JourneyStop[] = [
     status: "verified",
     statusLabel: "Source-backed context",
     side: "left",
-    stage: "interior",
+    phase: "interior",
     visualType: "signal",
     accessibilitySummary:
       "Animated signal paths illustrate that EEG measures changing electrical rhythms from the scalp.",
@@ -130,7 +130,7 @@ export const journeyStops: readonly JourneyStop[] = [
   {
     id: "dataset",
     navLabel: "Dataset",
-    stationLabel: "Section 03 · Dataset",
+    sectionLabel: "03 — Dataset",
     question: "What data does this project use?",
     simpleAnswer:
       "The public dataset contains one recorded session from each of 87 participants.",
@@ -139,10 +139,10 @@ export const journeyStops: readonly JourneyStop[] = [
     status: "verified",
     statusLabel: "Verified dataset facts",
     side: "right",
-    stage: "interior",
+    phase: "interior",
     visualType: "dataset",
     accessibilitySummary:
-      "Four ticket-shaped metric cards summarize the verified dataset composition.",
+      "Four metric cards summarize the verified dataset composition.",
     camera: {
       position: [0.9, -0.2, -22],
       target: [-0.4, 0.1, -27],
@@ -175,16 +175,16 @@ export const journeyStops: readonly JourneyStop[] = [
   {
     id: "method",
     navLabel: "Acquisition",
-    stationLabel: "Section 04 · Experiment and acquisition",
+    sectionLabel: "04 — Experiment and acquisition",
     question: "How were the EEG recordings collected?",
     simpleAnswer:
-      "People rested, followed visual cues, imagined hand movements, and then received feedback as the system learned.",
+      "Participants rested, followed visual cues, imagined hand movements, and received feedback during the online runs.",
     technicalDetail:
       "The documented complete structure includes two baseline recordings, acquisition runs R1–R2, and online runs R3–R6. Exceptions—such as missing runs or trigger differences—remain part of the record rather than being silently repaired.",
     status: "verified",
     statusLabel: "Documented protocol",
     side: "left",
-    stage: "interior",
+    phase: "interior",
     visualType: "acquisition",
     accessibilitySummary:
       "A four-step diagram shows baseline, acquisition, imagined movement, and feedback.",
@@ -210,7 +210,7 @@ export const journeyStops: readonly JourneyStop[] = [
   {
     id: "integrity",
     navLabel: "Integrity",
-    stationLabel: "Section 05 · Cleaning and integrity",
+    sectionLabel: "05 — Cleaning and integrity",
     question: "How is the data kept reliable?",
     simpleAnswer:
       "The original files remain unchanged, and every approved cleaning step is documented and checked.",
@@ -219,7 +219,7 @@ export const journeyStops: readonly JourneyStop[] = [
     status: "verified",
     statusLabel: "Post-clean validation passed",
     side: "right",
-    stage: "interior",
+    phase: "interior",
     visualType: "integrity",
     accessibilitySummary:
       "Verified traceability counts are presented with a clear explanation of immutable source data.",
@@ -255,16 +255,16 @@ export const journeyStops: readonly JourneyStop[] = [
   {
     id: "pipeline",
     navLabel: "Pipeline",
-    stationLabel: "Section 06 · Data-science pipeline",
+    sectionLabel: "06 — Data-science pipeline",
     question: "How are the models developed and tested?",
     simpleAnswer:
-      "The pipeline prepares the signals, develops models, and evaluates them on participants excluded from training.",
+      "The pipeline prepares the signals, develops models, and evaluates them on participants excluded from model development.",
     technicalDetail:
       "The analysis policy separates participants across development and evaluation, controls information leakage, and reserves the locked test for a one-time final check. Public claims stay gated until their artifacts are approved and versioned.",
     status: "process",
     statusLabel: "Protocol defined · results gated",
     side: "left",
-    stage: "interior",
+    phase: "interior",
     visualType: "pipeline",
     accessibilitySummary:
       "A nine-step diagram shows the analysis path and its participant-disjoint evaluation gate.",
@@ -278,7 +278,7 @@ export const journeyStops: readonly JourneyStop[] = [
   {
     id: "results",
     navLabel: "Results",
-    stationLabel: "Section 07 · Results status",
+    sectionLabel: "07 — Results status",
     question: "What results are currently available?",
     simpleAnswer:
       "Final model results are not shown because the analysis outputs have not yet been approved and versioned for publication.",
@@ -287,7 +287,7 @@ export const journeyStops: readonly JourneyStop[] = [
     status: "pending",
     statusLabel: "Awaiting verified analysis",
     side: "right",
-    stage: "interior",
+    phase: "interior",
     visualType: "results",
     accessibilitySummary:
       "Three empty visualization frames are explicitly labeled as awaiting verified analysis.",
@@ -301,7 +301,7 @@ export const journeyStops: readonly JourneyStop[] = [
   {
     id: "future",
     navLabel: "Limitations",
-    stationLabel: "Section 08 · Limitations and future work",
+    sectionLabel: "08 — Limitations and future work",
     question: "What are the study’s limitations?",
     simpleAnswer:
       "The dataset covers one session and one motor-imagery task, and EEG patterns can differ substantially between people.",
@@ -310,7 +310,7 @@ export const journeyStops: readonly JourneyStop[] = [
     status: "verified",
     statusLabel: "Scope stated explicitly",
     side: "left",
-    stage: "interior",
+    phase: "interior",
     visualType: "limitations",
     accessibilitySummary:
       "Three limitation notes explain the single-session task, narrow cue set, and differences between people.",
@@ -323,8 +323,8 @@ export const journeyStops: readonly JourneyStop[] = [
   },
   {
     id: "return",
-    navLabel: "Summary",
-    stationLabel: "Project summary",
+    navLabel: "Sources",
+    sectionLabel: "Research sources and scope",
     question: "What is this project designed to test?",
     simpleAnswer:
       "The project tests whether left- and right-hand motor imagery can be classified from EEG recordings across participants.",
@@ -333,7 +333,7 @@ export const journeyStops: readonly JourneyStop[] = [
     status: "verified",
     statusLabel: "Project scope",
     side: "center",
-    stage: "return",
+    phase: "return",
     visualType: "summary",
     accessibilitySummary:
       "The camera returns to the full brain while the project scope and primary sources are presented.",
@@ -353,7 +353,7 @@ export const pipelineSteps = [
   "Define signal windows",
   "Explore features",
   "Split by participant",
-  "Train without leakage",
+  "Fit models without leakage",
   "Run the locked evaluation once",
   "Package reproducibility evidence",
 ] as const;

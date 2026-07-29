@@ -2,8 +2,6 @@
 
 import {
   Activity,
-  ArrowDown,
-  ArrowRight,
   ArrowUpRight,
   Brain,
   Check,
@@ -12,25 +10,31 @@ import {
   FlaskConical,
   Gauge,
   Info,
-  MapPin,
+  List,
   Moon,
   Pause,
   Play,
   Radio,
-  Route,
   ShieldCheck,
   Sparkles,
   Sun,
-  Ticket,
   X,
 } from "lucide-react";
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
-  journeyStops,
+  lazy,
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
+import {
   pipelineSteps,
   primarySources,
+  researchSections,
   resultPanels,
-  type JourneyStatus,
+  type ResearchStatus,
 } from "../lib/research-content";
 
 const BrainScene = lazy(() => import("./brain-scene"));
@@ -39,7 +43,7 @@ const statusIcons = {
   verified: ShieldCheck,
   process: FlaskConical,
   pending: Gauge,
-} satisfies Record<JourneyStatus, typeof ShieldCheck>;
+} satisfies Record<ResearchStatus, typeof ShieldCheck>;
 
 function supportsWebGL() {
   try {
@@ -57,17 +61,18 @@ function clamp(value: number) {
   return Math.min(1, Math.max(0, value));
 }
 
-export function JourneyPage() {
+export function ResearchPage() {
   const [activeId, setActiveId] = useState("start");
   const [progress, setProgress] = useState(0);
-  const [approachProgress, setApproachProgress] = useState(0);
+  const [transitionProgress, setTransitionProgress] = useState(0);
   const [sceneReady, setSceneReady] = useState(false);
   const [webGL, setWebGL] = useState(true);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [motionEnabled, setMotionEnabled] = useState(true);
-  const [routeOpen, setRouteOpen] = useState(false);
-  const mainRef = useRef<HTMLElement>(null);
-  const approachRef = useRef<HTMLElement>(null);
+  const [contentsOpen, setContentsOpen] = useState(false);
+  const transitionRef = useRef<HTMLElement>(null);
+  const contentsButtonRef = useRef<HTMLButtonElement>(null);
+  const contentsPanelRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -94,8 +99,8 @@ export function JourneyPage() {
   }, [motionEnabled]);
 
   useEffect(() => {
-    const sections = journeyStops
-      .map((stop) => document.getElementById(stop.id))
+    const sections = researchSections
+      .map((section) => document.getElementById(section.id))
       .filter(Boolean) as HTMLElement[];
 
     const observer = new IntersectionObserver(
@@ -118,11 +123,11 @@ export function JourneyPage() {
       const pageHeight = document.documentElement.scrollHeight - window.innerHeight;
       setProgress(pageHeight > 0 ? clamp(window.scrollY / pageHeight) : 0);
 
-      const approach = approachRef.current;
-      if (approach) {
-        const rect = approach.getBoundingClientRect();
-        const travel = rect.height - window.innerHeight;
-        setApproachProgress(travel > 0 ? clamp(-rect.top / travel) : 0);
+      const transition = transitionRef.current;
+      if (transition) {
+        const rect = transition.getBoundingClientRect();
+        const distance = rect.height - window.innerHeight;
+        setTransitionProgress(distance > 0 ? clamp(-rect.top / distance) : 0);
       }
     };
     const onScroll = () => {
@@ -140,19 +145,47 @@ export function JourneyPage() {
   }, []);
 
   useEffect(() => {
-    if (!routeOpen) return;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setRouteOpen(false);
+    if (!contentsOpen) return;
+    const panel = contentsPanelRef.current;
+    const contentsButton = contentsButtonRef.current;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const focusable = panel?.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    );
+    focusable?.[0]?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setContentsOpen(false);
+        return;
+      }
+      if (event.key !== "Tab" || !focusable?.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [routeOpen]);
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+      contentsButton?.focus();
+    };
+  }, [contentsOpen]);
 
   const activeIndex = useMemo(
-    () => Math.max(0, journeyStops.findIndex((stop) => stop.id === activeId)),
+    () => Math.max(0, researchSections.findIndex((section) => section.id === activeId)),
     [activeId],
   );
-  const activeStop = journeyStops[activeIndex];
+  const activeSection = researchSections[activeIndex];
 
   return (
     <>
@@ -176,21 +209,22 @@ export function JourneyPage() {
             Research in progress
           </span>
           <button
-            className="route-button"
+            ref={contentsButtonRef}
+            className="contents-button"
             type="button"
-            onClick={() => setRouteOpen((value) => !value)}
-            aria-expanded={routeOpen}
-            aria-controls="route-map"
+            onClick={() => setContentsOpen((value) => !value)}
+            aria-expanded={contentsOpen}
+            aria-controls="contents-panel"
           >
-            <Route size={17} />
-            <span>Sections</span>
+            <List size={17} aria-hidden="true" />
+            <span>Contents</span>
           </button>
           <button
             className="icon-button"
             type="button"
             onClick={() => setMotionEnabled((value) => !value)}
             aria-pressed={!motionEnabled}
-            aria-label={motionEnabled ? "Pause cinematic motion" : "Resume cinematic motion"}
+            aria-label={motionEnabled ? "Pause visual motion" : "Resume visual motion"}
           >
             {motionEnabled ? <Pause size={17} /> : <Play size={17} />}
           </button>
@@ -205,112 +239,103 @@ export function JourneyPage() {
         </div>
       </header>
 
-      <RouteMap
+      {contentsOpen && (
+        <div
+          className="contents-backdrop"
+          aria-hidden="true"
+          onClick={() => setContentsOpen(false)}
+        />
+      )}
+      <ContentsPanel
         activeId={activeId}
         activeIndex={activeIndex}
-        open={routeOpen}
-        onClose={() => setRouteOpen(false)}
+        open={contentsOpen}
+        onClose={() => setContentsOpen(false)}
+        panelRef={contentsPanelRef}
       />
 
-      <div className="journey-progress" aria-hidden="true">
-        <span className="journey-progress-fill" style={{ transform: `scaleX(${progress})` }} />
-        <span className="journey-progress-signal" style={{ left: `${progress * 100}%` }} />
+      <div className="page-progress" aria-hidden="true">
+        <span className="page-progress-fill" style={{ transform: `scaleX(${progress})` }} />
+        <span className="page-progress-node" style={{ left: `${progress * 100}%` }} />
       </div>
 
-      <div className="scene-layer" aria-hidden="true" data-stage={activeStop.stage}>
+      <div className="scene-layer" aria-hidden="true" data-phase={activeSection.phase}>
         <div className="scene-grid" />
         <div className="scene-halo scene-halo-coral" />
         <div className="scene-halo scene-halo-blue" />
         {sceneReady && webGL ? (
-          <Suspense fallback={<BrainFallback label="Preparing the brain…" />}>
+          <Suspense fallback={<BrainFallback label="Preparing the brain visualization" />}>
             <BrainScene progress={progress} motionEnabled={motionEnabled} dark={theme === "dark"} />
           </Suspense>
         ) : (
-          <BrainFallback label={webGL ? "Preparing the brain…" : "Static brain view"} />
+          <BrainFallback
+            label={webGL ? "Preparing the brain visualization" : "Static brain visualization"}
+          />
         )}
       </div>
 
-      <main ref={mainRef} className="journey-main">
-        <HeroStop active={activeId === "start"} />
+      <main className="research-main">
+        <HeroSection active={activeId === "start"} />
 
         <section
-          ref={approachRef}
-          className="approach-stop"
+          ref={transitionRef}
+          className="brain-transition"
           id="approach"
-          aria-labelledby="approach-title"
+          aria-label="Brain and EEG signal visualization"
         >
-          <div className="approach-sticky">
-            <div className="approach-copy">
-              <span className="mono-label">Project walkthrough</span>
-              <h2 id="approach-title">
-                From EEG recording
-                <em> to prediction</em>
-              </h2>
-              <p>
-                Scroll through the brain to review the research question, dataset,
-                acquisition protocol, cleaning process, modeling pipeline, and
-                current results status.
-              </p>
-              <div className="approach-meter" aria-label={`${Math.round(approachProgress * 100)} percent to the first research section`}>
-                <span style={{ transform: `scaleX(${approachProgress})` }} />
-              </div>
-              <small>
-                {approachProgress < 0.88
-                  ? "Opening the research walkthrough…"
-                  : "Next section: What is a BCI?"}
-              </small>
-            </div>
-            <div className="entry-reticle" style={{ opacity: 0.3 + approachProgress * 0.7 }}>
+          <div className="brain-transition-sticky">
+            <div
+              className="brain-focus-ring"
+              aria-hidden="true"
+              style={{
+                opacity: 0.28 + transitionProgress * 0.58,
+                transform: `translate(-50%, -50%) scale(${1.18 - transitionProgress * 0.38})`,
+              }}
+            >
               <span />
-              <strong>EEG signal pathway</strong>
+              <i />
+              <b />
             </div>
           </div>
         </section>
 
-        {journeyStops.slice(1).map((stop, visibleIndex) => {
+        {researchSections.slice(1).map((section, visibleIndex) => {
           const index = visibleIndex + 1;
-          const StatusIcon = statusIcons[stop.status];
-          const isFinal = stop.id === "return";
-          const nextStop = journeyStops[index + 1];
+          const StatusIcon = statusIcons[section.status];
+          const isFinal = section.id === "return";
           return (
             <section
-              className={`story-stop story-stop-${stop.side} ${
-                isFinal ? "final-stop" : ""
-              } ${activeId === stop.id ? "is-active" : ""}`}
-              id={stop.id}
-              key={stop.id}
-              aria-labelledby={`${stop.id}-title`}
-              data-stage={stop.stage}
+              className={`research-section research-section-${section.side} ${
+                isFinal ? "final-section" : ""
+              } ${activeId === section.id ? "is-active" : ""}`}
+              id={section.id}
+              key={section.id}
+              aria-labelledby={`${section.id}-title`}
+              data-phase={section.phase}
             >
-              <div className="arrival-light" aria-hidden="true" />
-              <div className="story-inner">
-                <article className="station-card">
-                  <div className="station-sign">
-                    <span className="station-number">
-                      {isFinal ? "END" : String(index).padStart(2, "0")}
-                    </span>
-                    <span>{stop.stationLabel}</span>
-                    <MapPin size={15} aria-hidden="true" />
-                  </div>
+              <div className="section-pulse" aria-hidden="true" />
+              <div className="section-inner">
+                <article className="section-card">
+                  <div className="section-marker">{section.sectionLabel}</div>
 
                   <div className="eyebrow">
-                    <span className={`status-chip status-${stop.status}`}>
+                    <span className={`status-chip status-${section.status}`}>
                       <StatusIcon size={14} aria-hidden="true" />
-                      {stop.statusLabel}
+                      {section.statusLabel}
                     </span>
-                    <span className="platform-label">
-                      Research stage {String(index).padStart(2, "0")}
+                    <span className="section-index">
+                      {isFinal ? "Primary references" : `Research section ${String(index).padStart(2, "0")}`}
                     </span>
                   </div>
 
-                  <h2 id={`${stop.id}-title`}>{stop.question}</h2>
-                  <p className="simple-answer">{stop.simpleAnswer}</p>
+                  <h2 id={`${section.id}-title`}>{section.question}</h2>
+                  <p className="simple-answer">{section.simpleAnswer}</p>
 
-                  {stop.metrics && <Metrics metrics={stop.metrics} />}
-                  {stop.id === "method" && <MethodDiagram />}
-                  {stop.id === "pipeline" && <Pipeline />}
-                  {stop.id === "results" && <PendingResults />}
-                  {stop.id === "future" && <Limitations />}
+                  {section.metrics && <Metrics metrics={section.metrics} />}
+                  {section.id === "method" && <MethodDiagram />}
+                  {section.id === "pipeline" && <Pipeline />}
+                  {section.id === "results" && <PendingResults />}
+                  {section.id === "future" && <Limitations />}
 
                   <details className="technical-note" open={isFinal}>
                     <summary>
@@ -318,9 +343,9 @@ export function JourneyPage() {
                       <ChevronDown size={17} aria-hidden="true" />
                     </summary>
                     <div className="technical-body">
-                      <p>{stop.technicalDetail}</p>
+                      <p>{section.technicalDetail}</p>
                       <div className="source-links" aria-label="Sources for this section">
-                        {stop.sources.map((source) => (
+                        {section.sources.map((source) => (
                           <a key={source.href} href={source.href} target="_blank" rel="noreferrer">
                             {source.label}
                             <ArrowUpRight size={14} aria-hidden="true" />
@@ -333,16 +358,6 @@ export function JourneyPage() {
                   {isFinal && <FinalSources />}
                 </article>
               </div>
-
-              {!isFinal && nextStop && (
-                <a className="next-stop" href={`#${nextStop.id}`}>
-                  <span>
-                    <small>Next section</small>
-                    <strong>{nextStop.navLabel}</strong>
-                  </span>
-                  <ArrowRight size={19} aria-hidden="true" />
-                </a>
-              )}
             </section>
           );
         })}
@@ -373,121 +388,109 @@ export function JourneyPage() {
   );
 }
 
-function HeroStop({ active }: { active: boolean }) {
-  const stop = journeyStops[0];
+function HeroSection({ active }: { active: boolean }) {
+  const section = researchSections[0];
   return (
     <section
-      className={`story-stop hero-stop ${active ? "is-active" : ""}`}
+      className={`research-section hero-section ${active ? "is-active" : ""}`}
       id="start"
       aria-labelledby="start-title"
     >
-      <div className="hero-orbit hero-orbit-one" aria-hidden="true" />
-      <div className="hero-orbit hero-orbit-two" aria-hidden="true" />
-      <div className="story-inner hero-layout">
+      <div className="hero-network hero-network-one" aria-hidden="true" />
+      <div className="hero-network hero-network-two" aria-hidden="true" />
+      <div className="section-inner hero-layout">
         <article className="hero-copy">
-          <span className="hero-ticket">
-            <Ticket size={15} />
-            Project overview
-          </span>
-          <p className="hero-kicker">Motor imagery BCI research · EEG classification</p>
+          <p className="hero-kicker">Motor imagery BCI · EEG classification</p>
           <h1 id="start-title">
-            Predicting
-            <span>Motor Imagery</span>
+            Predicting Motor Imagery
+            <span>from EEG</span>
           </h1>
-          <p className="hero-intro">{stop.simpleAnswer}</p>
-          <p className="hero-welcome">
-            Review the dataset, recording protocol, cleaning process, modeling
-            pipeline, limitations, and publication status.
-          </p>
-          <div className="hero-actions">
-            <a className="primary-button" href="#approach">
-              Explore the project
-              <ArrowDown size={17} aria-hidden="true" />
-            </a>
-            <span className="hero-note">8 sections · technical details available</span>
-          </div>
+          <p className="hero-summary">{section.simpleAnswer}</p>
+          <span className="hero-status">
+            <FlaskConical size={16} aria-hidden="true" />
+            Research in progress
+          </span>
         </article>
-
-        <div className="route-preview" aria-label="Research sections overview">
-          <span className="route-preview-label">Research sections</span>
-          <ol>
-            {journeyStops.slice(1, -1).map((journeyStop, index) => (
-              <li key={journeyStop.id}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                {journeyStop.navLabel}
-              </li>
-            ))}
-          </ol>
-        </div>
       </div>
-      <a className="scroll-cue" href="#approach">
-        <span>Scroll to continue</span>
-        <ArrowDown size={16} aria-hidden="true" />
-      </a>
+      <div className="hero-continuity" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+        <span />
+      </div>
     </section>
   );
 }
 
-function RouteMap({
+function ContentsPanel({
   activeId,
   activeIndex,
   open,
   onClose,
+  panelRef,
 }: {
   activeId: string;
   activeIndex: number;
   open: boolean;
   onClose: () => void;
+  panelRef: RefObject<HTMLElement | null>;
 }) {
   return (
-    <nav
-      className={`route-map ${open ? "is-open" : ""}`}
-      id="route-map"
-      aria-label="Research sections"
+    <aside
+      ref={panelRef}
+      className={`contents-panel ${open ? "is-open" : ""}`}
+      id="contents-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="contents-title"
       aria-hidden={!open}
     >
-      <div className="route-map-head">
-        <span>
-          <Route size={17} />
-          Project sections
+      <div className="contents-head">
+        <span id="contents-title">
+          <List size={17} aria-hidden="true" />
+          Contents
         </span>
         <button
+          className="contents-close"
           type="button"
           onClick={onClose}
-          aria-label="Close route map"
+          aria-label="Close contents"
           tabIndex={open ? 0 : -1}
         >
           <X size={18} />
         </button>
       </div>
-      <div className="route-current">
+      <div className="contents-current">
         <span>{String(activeIndex + 1).padStart(2, "0")}</span>
         <p>
           Current section
-          <strong>{journeyStops[activeIndex].navLabel}</strong>
+          <strong>{researchSections[activeIndex].navLabel}</strong>
         </p>
       </div>
-      <ol>
-        {journeyStops.map((stop, index) => (
-          <li key={stop.id} className={index < activeIndex ? "is-complete" : ""}>
-            <a
-              href={`#${stop.id}`}
-              aria-current={activeId === stop.id ? "step" : undefined}
-              onClick={onClose}
-              tabIndex={open ? 0 : -1}
-            >
-              <span className="route-dot" aria-hidden="true">
-                {index < activeIndex ? <Check size={11} /> : null}
-              </span>
-              <span>
-                <small>{index === 0 ? "OVR" : index === journeyStops.length - 1 ? "SUM" : `S${String(index).padStart(2, "0")}`}</small>
-                <strong>{stop.navLabel}</strong>
-              </span>
-            </a>
-          </li>
-        ))}
-      </ol>
-    </nav>
+      <nav aria-label="Research contents">
+        <ol>
+          {researchSections.map((section, index) => (
+            <li key={section.id}>
+              <a
+                href={`#${section.id}`}
+                aria-current={activeId === section.id ? "location" : undefined}
+                onClick={onClose}
+                tabIndex={open ? 0 : -1}
+              >
+                <span className="contents-number" aria-hidden="true">
+                  {index === 0
+                    ? "00"
+                    : index === researchSections.length - 1
+                      ? "09"
+                      : String(index).padStart(2, "0")}
+                </span>
+                <strong>{section.navLabel}</strong>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    </aside>
   );
 }
 
@@ -508,8 +511,6 @@ function Metrics({
     <dl className="metrics-grid">
       {metrics.map((metric, index) => (
         <div className="metric-card" key={`${metric.label}-${metric.value}`}>
-          <span className="ticket-notch ticket-notch-left" aria-hidden="true" />
-          <span className="ticket-notch ticket-notch-right" aria-hidden="true" />
           <dt>
             <span>{String(index + 1).padStart(2, "0")}</span>
             {metric.label}
@@ -617,7 +618,12 @@ function FinalSources() {
           <span>Open dataset</span>
           <strong>Zenodo 8089820</strong>
         </div>
-        <a href={primarySources.zenodo.href} target="_blank" rel="noreferrer" aria-label="Open the Zenodo dataset record">
+        <a
+          href={primarySources.zenodo.href}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Open the Zenodo dataset record"
+        >
           <ArrowUpRight size={18} />
         </a>
       </div>
@@ -627,7 +633,12 @@ function FinalSources() {
           <span>Study descriptor</span>
           <strong>Scientific Data</strong>
         </div>
-        <a href={primarySources.paper.href} target="_blank" rel="noreferrer" aria-label="Open the Scientific Data paper">
+        <a
+          href={primarySources.paper.href}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Open the Scientific Data paper"
+        >
           <ArrowUpRight size={18} />
         </a>
       </div>

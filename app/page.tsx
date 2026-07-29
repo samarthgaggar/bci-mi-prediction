@@ -1,5 +1,5 @@
-import { JourneyPage } from "../components/journey-page";
+import { ResearchPage } from "../components/research-page";
 
 export default function Home() {
-  return <JourneyPage />;
+  return <ResearchPage />;
 }

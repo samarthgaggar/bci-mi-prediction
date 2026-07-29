@@ -1,9 +1,9 @@
-# BCI Signal Journey
+# Motor Imagery BCI Research Website
 
-An evidence-first, scroll-driven explanation of motor-imagery
-brain–computer-interface research. The site begins with a simple question,
-travels through the dataset and research process, and returns to an honest
-summary of what BCI systems can and cannot infer.
+An evidence-first explanation of motor-imagery brain–computer-interface
+research. The site presents the project objective, dataset, acquisition
+protocol, data-integrity process, modeling pipeline, limitations, and current
+publication status through an interactive brain visualization.
 
 ## Research boundary
 
