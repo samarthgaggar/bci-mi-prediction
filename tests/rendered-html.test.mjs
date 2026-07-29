@@ -173,6 +173,23 @@ test("uses an editorial interface instead of stock icon and card patterns", asyn
   );
 });
 
+test("provides separate Next.js and Sites deployment builds", async () => {
+  const [packageSource, vercelSource] = await Promise.all([
+    readFile(path.join(projectRoot, "package.json"), "utf8"),
+    readFile(path.join(projectRoot, "vercel.json"), "utf8"),
+  ]);
+  const packageJson = JSON.parse(packageSource);
+  const vercel = JSON.parse(vercelSource);
+
+  assert.equal(packageJson.scripts.build, "next build");
+  assert.equal(packageJson.scripts.start, "next start");
+  assert.match(packageJson.scripts["build:sites"], /vinext build/);
+  assert.equal(packageJson.scripts.test, "npm run build:sites && node --test tests/rendered-html.test.mjs");
+  assert.equal(vercel.framework, "nextjs");
+  assert.equal(vercel.buildCommand, "npm run build");
+  assert.equal("outputDirectory" in vercel, false);
+});
+
 test("implements reversible looping auto scroll", async () => {
   const page = await readFile(
     path.join(projectRoot, "components/research-page.tsx"),
