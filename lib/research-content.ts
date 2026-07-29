@@ -55,6 +55,10 @@ export const primarySources = {
     label: "Scientific Data descriptor",
     href: "https://www.nature.com/articles/s41597-023-02445-z",
   },
+  exploratoryFigures: {
+    label: "Versioned exploratory figures",
+    href: "https://github.com/ucd-cosmos-data/26-the-data-miners-analysis/blob/591d9e4994a1e6ee1edd37d2328e280544df65a9/Figures/FullBCIDatasetFigures.pdf",
+  },
 } as const satisfies Record<string, SourceReference>;
 
 export const researchSections: readonly ResearchSection[] = [
@@ -278,25 +282,29 @@ export const researchSections: readonly ResearchSection[] = [
   {
     id: "results",
     navLabel: "Results",
-    sectionLabel: "07 — Results status",
-    question: "What results are currently available?",
+    sectionLabel: "07 — Exploratory results",
+    question: "What does the recorded performance show?",
     simpleAnswer:
-      "Final model results are not shown because the analysis outputs have not yet been approved and versioned for publication.",
+      "Online BCI performance varies widely between participants, while the average remains similar across Runs 3–6.",
     technicalDetail:
-      "Model comparisons, performance distributions, spectral findings, and subgroup analyses will appear here only after the corresponding outputs are reviewed, versioned, and traceable to the locked protocol.",
-    status: "pending",
-    statusLabel: "Awaiting verified analysis",
+      "These versioned figures describe the published online BCI performance fields and exploratory questionnaire relationships. They do not report the participant-disjoint model evaluation, establish causality, or prove statistical significance. Final model comparisons remain gated until their approved artifacts are published.",
+    status: "verified",
+    statusLabel: "Versioned descriptive figures",
     side: "right",
     phase: "interior",
     visualType: "results",
     accessibilitySummary:
-      "Three empty visualization frames are explicitly labeled as awaiting verified analysis.",
+      "Three source-backed charts show participant performance distributions, run-level means with confidence intervals, and weak exploratory learning-style correlations.",
     camera: {
       position: [0.75, -0.25, -50],
       target: [-0.4, 0.1, -55],
       highlight: "network",
     },
-    sources: [primarySources.zenodo, primarySources.paper],
+    sources: [
+      primarySources.exploratoryFigures,
+      primarySources.zenodo,
+      primarySources.paper,
+    ],
   },
   {
     id: "future",
@@ -358,17 +366,35 @@ export const pipelineSteps = [
   "Package reproducibility evidence",
 ] as const;
 
-export const resultPanels = [
+export const resultFigures = [
   {
-    title: "Model comparison",
-    description: "Relative performance across approved model families.",
+    src: "/results/performance-by-run.png",
+    width: 1484,
+    height: 889,
+    eyebrow: "Participant variation",
+    title: "Performance spans a wide range",
+    description:
+      "Each panel shows the distribution of published online BCI accuracy for one run. Participants occupy a broad range in every panel, so the average alone does not describe how differently people performed.",
+    alt: "Four histograms showing participant performance accuracy distributions for online Runs 3, 4, 5, and 6.",
   },
   {
-    title: "Participant distribution",
-    description: "How performance varies across held-out people.",
+    src: "/results/mean-performance-by-run.png",
+    width: 1333,
+    height: 884,
+    eyebrow: "Run-level average",
+    title: "The four run means are close",
+    description:
+      "Mean successful-run performance ranges from 61.92% in Run 3 to 64.83% in Run 6. The 95% confidence intervals overlap, so this chart alone does not establish a reliable improvement between runs.",
+    alt: "Line chart of mean successful-run performance with 95% confidence intervals: 61.92% for Run 3, 63.62% for Run 4, 63.14% for Run 5, and 64.83% for Run 6.",
   },
   {
-    title: "Spectral evidence",
-    description: "Reviewed sensorimotor rhythm findings and uncertainty.",
+    src: "/results/learning-style-correlations.png",
+    width: 2683,
+    height: 1330,
+    eyebrow: "Exploratory relationship",
+    title: "No strong linear learning-style pattern appears",
+    description:
+      "Across the eight learning-style scores, the displayed correlations with mean online performance range from -0.24 to +0.24. These are weak descriptive relationships and should not be treated as causal or predictive findings.",
+    alt: "Eight scatter plots comparing learning-style scores with mean online BCI performance; displayed correlations range from negative 0.24 to positive 0.24.",
   },
 ] as const;

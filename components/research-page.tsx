@@ -14,7 +14,7 @@ import {
   pipelineSteps,
   primarySources,
   researchSections,
-  resultPanels,
+  resultFigures,
 } from "../lib/research-content";
 
 const BrainScene = lazy(() => import("./brain-scene"));
@@ -429,7 +429,7 @@ export function ResearchPage() {
                   {section.metrics && <Metrics metrics={section.metrics} />}
                   {section.id === "method" && <MethodDiagram />}
                   {section.id === "pipeline" && <Pipeline />}
-                  {section.id === "results" && <PendingResults />}
+                  {section.id === "results" && <ResultsGallery />}
                   {section.id === "future" && <Limitations />}
 
                   <details className="technical-note" open={isFinal}>
@@ -654,21 +654,39 @@ function Pipeline() {
   );
 }
 
-function PendingResults() {
+function ResultsGallery() {
   return (
-    <div className="pending-grid">
-      {resultPanels.map((panel, index) => (
-        <article className="pending-panel" key={panel.title}>
-          <span className="pending-index" aria-hidden="true">
-            {String(index + 1).padStart(2, "0")}
-          </span>
-          <div>
-            <h3>{panel.title}</h3>
-            <p>{panel.description}</p>
-          </div>
-          <span className="pending-badge">Not published</span>
-        </article>
+    <div className="results-gallery">
+      {resultFigures.map((figure, index) => (
+        <figure className="result-figure" key={figure.src}>
+          <a
+            className="result-image-link"
+            href={figure.src}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={`Open full-size chart: ${figure.title}`}
+          >
+            <Image
+              src={figure.src}
+              alt={figure.alt}
+              width={figure.width}
+              height={figure.height}
+              sizes="(max-width: 809px) calc(100vw - 36px), 65vw"
+            />
+          </a>
+          <figcaption>
+            <span className="result-index">
+              {String(index + 1).padStart(2, "0")} / {figure.eyebrow}
+            </span>
+            <h3>{figure.title}</h3>
+            <p>{figure.description}</p>
+          </figcaption>
+        </figure>
       ))}
+      <p className="results-boundary">
+        Model comparison and locked-test results remain separate from these
+        exploratory dataset figures and are not presented here.
+      </p>
     </div>
   );
 }

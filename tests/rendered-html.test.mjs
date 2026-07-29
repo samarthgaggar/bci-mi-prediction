@@ -82,7 +82,10 @@ test("server-renders the complete motor imagery BCI research page", async () => 
   assert.match(html, />32</);
   assert.match(html, />512 Hz</);
   assert.match(html, /27 EEG · 3 EOG · 2 EMG/);
-  assert.match(html, /Awaiting verified analysis/g);
+  assert.match(html, /Versioned descriptive figures/);
+  assert.match(html, /Performance spans a wide range/);
+  assert.match(html, /The four run means are close/);
+  assert.match(html, /No strong linear learning-style pattern appears/);
   assert.match(html, /Zenodo 8089820/);
   assert.match(html, /Scientific Data/);
   assert.match(html, /Analysis in progress/);
@@ -204,7 +207,7 @@ test("implements reversible looping auto scroll", async () => {
   assert.match(page, /prefers-reduced-motion: reduce/);
 });
 
-test("keeps unapproved results gated and nonnumeric", async () => {
+test("publishes versioned descriptive figures while final model claims remain gated", async () => {
   const content = await readFile(
     path.join(projectRoot, "lib/research-content.ts"),
     "utf8",
@@ -214,10 +217,49 @@ test("keeps unapproved results gated and nonnumeric", async () => {
   const resultBlock = content.slice(resultStart, resultEnd);
 
   assert.ok(resultStart > 0 && resultEnd > resultStart);
-  assert.match(resultBlock, /status: "pending"/);
-  assert.match(resultBlock, /Awaiting verified analysis/);
-  assert.doesNotMatch(resultBlock, /accuracy|f1|auc|percent|%/i);
+  assert.match(resultBlock, /status: "verified"/);
+  assert.match(resultBlock, /Versioned descriptive figures/);
+  assert.match(resultBlock, /Final model comparisons remain gated/);
+  assert.match(resultBlock, /do not report the participant-disjoint model evaluation/);
   assert.doesNotMatch(resultBlock, /metrics:\s*\[/);
+});
+
+test("ships byte-verified local copies of the approved exploratory charts", async () => {
+  const expected = new Map([
+    [
+      "performance-by-run.png",
+      {
+        digest: "0f0a3ed5147cab642f663772955301810856966d4cf3e0fba0613dc1a53b0263",
+        width: 1484,
+        height: 889,
+      },
+    ],
+    [
+      "mean-performance-by-run.png",
+      {
+        digest: "fcf9c874422abe217aca316b57f488e42b8170172cd2bcc7b488cdd77a656a7d",
+        width: 1333,
+        height: 884,
+      },
+    ],
+    [
+      "learning-style-correlations.png",
+      {
+        digest: "3085a313459e51a46b38bf8e80c362f636e1fe724051024c7919874e94c4782a",
+        width: 2683,
+        height: 1330,
+      },
+    ],
+  ]);
+
+  for (const [name, metadata] of expected) {
+    const image = await readFile(path.join(projectRoot, "public/results", name));
+    const digest = createHash("sha256").update(image).digest("hex");
+    assert.equal(image.toString("ascii", 1, 4), "PNG");
+    assert.equal(image.readUInt32BE(16), metadata.width);
+    assert.equal(image.readUInt32BE(20), metadata.height);
+    assert.equal(digest, metadata.digest);
+  }
 });
 
 test("does not publish raw research data or hotlinked media", async () => {

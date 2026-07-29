@@ -2748,3 +2748,138 @@ body {
     border-left: 0;
   }
 }
+
+/* Source-backed exploratory results */
+
+#results .section-card {
+  width: min(980px, 78vw);
+}
+
+#results .section-card h2 {
+  max-width: 14ch;
+}
+
+#results .simple-answer {
+  max-width: 58ch;
+}
+
+.results-gallery {
+  margin: 42px 0 14px;
+  border-top: 1px solid var(--line-strong);
+}
+
+.result-figure {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(220px, 0.7fr);
+  gap: clamp(22px, 3.5vw, 46px);
+  align-items: start;
+  margin: 0;
+  padding: 34px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.result-image-link {
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  background: #ffffff;
+  line-height: 0;
+}
+
+.result-image-link img {
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: transform 240ms ease;
+}
+
+.result-image-link:hover img {
+  transform: scale(1.012);
+}
+
+.result-image-link:focus-visible {
+  outline: 2px solid var(--coral);
+  outline-offset: 4px;
+}
+
+.result-figure figcaption {
+  padding-top: 2px;
+}
+
+.result-index {
+  display: block;
+  margin-bottom: 17px;
+  color: var(--coral);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.result-figure h3 {
+  max-width: 13ch;
+  margin: 0 0 13px;
+  color: var(--ink);
+  font-size: clamp(20px, 2vw, 29px);
+  font-weight: 650;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+
+.result-figure figcaption p {
+  max-width: 34ch;
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.results-boundary {
+  margin: 25px 0 0;
+  padding-left: 18px;
+  border-left: 2px solid var(--pending);
+  color: var(--ink-faint);
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+@media (max-width: 1099px) {
+  #results .section-card {
+    width: min(820px, 82vw);
+  }
+
+  .result-figure {
+    grid-template-columns: minmax(0, 1.45fr) minmax(205px, 0.65fr);
+  }
+}
+
+@media (max-width: 809px) {
+  #results .section-card {
+    width: 100%;
+  }
+
+  .results-gallery {
+    margin-top: 34px;
+  }
+
+  .result-figure {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 28px 0;
+  }
+
+  .result-figure h3,
+  .result-figure figcaption p {
+    max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .result-image-link img {
+    transition: none;
+  }
+
+  .result-image-link:hover img {
+    transform: none;
+  }
+}
