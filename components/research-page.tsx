@@ -1,27 +1,5 @@
 "use client";
 
-import {
-  Activity,
-  ArrowUpRight,
-  Brain,
-  Check,
-  ChevronDown,
-  ChevronsDown,
-  CirclePause,
-  Database,
-  FlaskConical,
-  Gauge,
-  Info,
-  List,
-  Moon,
-  Pause,
-  Play,
-  Radio,
-  ShieldCheck,
-  Sparkles,
-  Sun,
-  X,
-} from "lucide-react";
 import Image from "next/image";
 import {
   lazy,
@@ -37,16 +15,9 @@ import {
   primarySources,
   researchSections,
   resultPanels,
-  type ResearchStatus,
 } from "../lib/research-content";
 
 const BrainScene = lazy(() => import("./brain-scene"));
-
-const statusIcons = {
-  verified: ShieldCheck,
-  process: FlaskConical,
-  pending: Gauge,
-} satisfies Record<ResearchStatus, typeof ShieldCheck>;
 
 function supportsWebGL() {
   try {
@@ -262,18 +233,16 @@ export function ResearchPage() {
 
       <header className="site-header">
         <a className="brand" href="#start" aria-label="Motor Imagery BCI project home">
-          <span className="brand-mark" aria-hidden="true">
-            <Brain size={19} strokeWidth={2.2} />
-          </span>
+          <span className="brand-mark" aria-hidden="true">MI</span>
           <span className="brand-copy">
             <strong>Motor Imagery BCI</strong>
-            <small>EEG classification research</small>
+            <small>EEG classification study</small>
           </span>
         </a>
         <div className="header-actions">
           <span className="research-state">
             <span className="state-dot" aria-hidden="true" />
-            Research in progress
+            Analysis in progress
           </span>
           <button
             className={`auto-scroll-button ${
@@ -288,11 +257,6 @@ export function ResearchPage() {
                 : "Turn on automatic scrolling"
             }
           >
-            {autoScrollEnabled ? (
-              <CirclePause size={17} aria-hidden="true" />
-            ) : (
-              <ChevronsDown size={17} aria-hidden="true" />
-            )}
             <span className="auto-scroll-label">Auto scroll</span>
             <span className="auto-scroll-state">
               {autoScrollEnabled ? "On" : "Off"}
@@ -306,25 +270,26 @@ export function ResearchPage() {
             aria-expanded={contentsOpen}
             aria-controls="contents-panel"
           >
-            <List size={17} aria-hidden="true" />
-            <span>Contents</span>
+            <span>Index</span>
           </button>
           <button
-            className="icon-button"
+            className="text-control"
             type="button"
             onClick={() => setMotionEnabled((value) => !value)}
             aria-pressed={!motionEnabled}
             aria-label={motionEnabled ? "Pause visual motion" : "Resume visual motion"}
           >
-            {motionEnabled ? <Pause size={17} /> : <Play size={17} />}
+            <span>Motion</span>
+            <b>{motionEnabled ? "On" : "Off"}</b>
           </button>
           <button
-            className="icon-button"
+            className="text-control"
             type="button"
             onClick={() => setTheme((value) => (value === "light" ? "dark" : "light"))}
             aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
           >
-            {theme === "light" ? <Moon size={17} /> : <Sun size={17} />}
+            <span>Theme</span>
+            <b>{theme === "light" ? "Light" : "Dark"}</b>
           </button>
         </div>
       </header>
@@ -433,7 +398,6 @@ export function ResearchPage() {
 
         {researchSections.slice(1).map((section, visibleIndex) => {
           const index = visibleIndex + 1;
-          const StatusIcon = statusIcons[section.status];
           const isFinal = section.id === "return";
           return (
             <section
@@ -452,11 +416,10 @@ export function ResearchPage() {
 
                   <div className="eyebrow">
                     <span className={`status-chip status-${section.status}`}>
-                      <StatusIcon size={14} aria-hidden="true" />
                       {section.statusLabel}
                     </span>
                     <span className="section-index">
-                      {isFinal ? "Primary references" : `Research section ${String(index).padStart(2, "0")}`}
+                      {isFinal ? "Primary references" : String(index).padStart(2, "0")}
                     </span>
                   </div>
 
@@ -471,8 +434,8 @@ export function ResearchPage() {
 
                   <details className="technical-note" open={isFinal}>
                     <summary>
-                      <span>{isFinal ? "Project scope and interpretation" : "View technical details"}</span>
-                      <ChevronDown size={17} aria-hidden="true" />
+                      <span>{isFinal ? "Scope and interpretation" : "Methods, scope, and sources"}</span>
+                      <span className="details-mark" aria-hidden="true" />
                     </summary>
                     <div className="technical-body">
                       <p>{section.technicalDetail}</p>
@@ -480,7 +443,7 @@ export function ResearchPage() {
                         {section.sources.map((source) => (
                           <a key={source.href} href={source.href} target="_blank" rel="noreferrer">
                             {source.label}
-                            <ArrowUpRight size={14} aria-hidden="true" />
+                            <span aria-hidden="true">↗</span>
                           </a>
                         ))}
                       </div>
@@ -531,32 +494,26 @@ export function ResearchPage() {
 function HeroSection({ active }: { active: boolean }) {
   const section = researchSections[0];
   return (
-    <section
-      className={`research-section hero-section ${active ? "is-active" : ""}`}
-      id="start"
-      aria-labelledby="start-title"
-    >
-      <div className="hero-network hero-network-one" aria-hidden="true" />
-      <div className="hero-network hero-network-two" aria-hidden="true" />
+      <section
+        className={`research-section hero-section ${active ? "is-active" : ""}`}
+        id="start"
+        aria-labelledby="start-title"
+      >
       <div className="section-inner hero-layout">
         <article className="hero-copy">
-          <p className="hero-kicker">Motor imagery BCI · EEG classification</p>
+          <p className="hero-kicker">Motor imagery BCI / EEG classification</p>
           <h1 id="start-title">
             Predicting Motor Imagery
             <span>from EEG</span>
           </h1>
           <p className="hero-summary">{section.simpleAnswer}</p>
-          <span className="hero-status">
-            <FlaskConical size={16} aria-hidden="true" />
-            Research in progress
-          </span>
+          <div className="hero-meta" aria-label="Verified dataset summary">
+            <span><b>87</b> participants</span>
+            <span><b>694</b> recordings</span>
+            <span><b>512 Hz</b> sampling</span>
+          </div>
+          <p className="hero-status">Current stage <span>Analysis in progress</span></p>
         </article>
-      </div>
-      <div className="hero-continuity" aria-hidden="true">
-        <span />
-        <span />
-        <span />
-        <span />
       </div>
     </section>
   );
@@ -586,10 +543,7 @@ function ContentsPanel({
       aria-hidden={!open}
     >
       <div className="contents-head">
-        <span id="contents-title">
-          <List size={17} aria-hidden="true" />
-          Contents
-        </span>
+        <span id="contents-title">Project index</span>
         <button
           className="contents-close"
           type="button"
@@ -597,7 +551,7 @@ function ContentsPanel({
           aria-label="Close contents"
           tabIndex={open ? 0 : -1}
         >
-          <X size={18} />
+          <span aria-hidden="true">×</span>
         </button>
       </div>
       <div className="contents-current">
@@ -665,29 +619,24 @@ function Metrics({
 
 function MethodDiagram() {
   const steps = [
-    { icon: Radio, title: "Baseline", detail: "Resting signals" },
-    { icon: Activity, title: "Acquire", detail: "R1–R2" },
-    { icon: Brain, title: "Imagine", detail: "Left or right" },
-    { icon: Gauge, title: "Feedback", detail: "R3–R6" },
+    { title: "Baseline", detail: "Resting signals" },
+    { title: "Acquire", detail: "R1–R2" },
+    { title: "Imagine", detail: "Left or right" },
+    { title: "Feedback", detail: "R3–R6" },
   ];
 
   return (
     <div className="method-diagram" aria-label="Documented session sequence">
-      {steps.map((step, index) => {
-        const Icon = step.icon;
-        return (
-          <div className="method-step" key={step.title}>
-            <span className="method-icon">
-              <Icon size={18} aria-hidden="true" />
-            </span>
-            <span>
-              <strong>{step.title}</strong>
-              <small>{step.detail}</small>
-            </span>
-            {index < steps.length - 1 && <span className="method-line" aria-hidden="true" />}
-          </div>
-        );
-      })}
+      {steps.map((step, index) => (
+        <div className="method-step" key={step.title}>
+          <span className="method-number">{String(index + 1).padStart(2, "0")}</span>
+          <span>
+            <strong>{step.title}</strong>
+            <small>{step.detail}</small>
+          </span>
+          {index < steps.length - 1 && <span className="method-line" aria-hidden="true" />}
+        </div>
+      ))}
     </div>
   );
 }
@@ -699,7 +648,6 @@ function Pipeline() {
         <li key={step}>
           <span>{String(index + 1).padStart(2, "0")}</span>
           <p>{step}</p>
-          <Check size={15} aria-label="Protocol step defined" />
         </li>
       ))}
     </ol>
@@ -709,20 +657,16 @@ function Pipeline() {
 function PendingResults() {
   return (
     <div className="pending-grid">
-      {resultPanels.map((panel) => (
+      {resultPanels.map((panel, index) => (
         <article className="pending-panel" key={panel.title}>
-          <div className="pending-visual" aria-hidden="true">
-            <Gauge size={22} />
-            <span />
-          </div>
+          <span className="pending-index" aria-hidden="true">
+            {String(index + 1).padStart(2, "0")}
+          </span>
           <div>
             <h3>{panel.title}</h3>
             <p>{panel.description}</p>
           </div>
-          <span className="pending-badge">
-            <Info size={13} aria-hidden="true" />
-            Awaiting verified analysis
-          </span>
+          <span className="pending-badge">Not published</span>
         </article>
       ))}
     </div>
@@ -736,9 +680,9 @@ function Limitations() {
         ["One session", "This dataset does not measure long-term stability."],
         ["One task", "The cues cover left- and right-hand motor imagery."],
         ["People differ", "A group average can hide important variation."],
-      ].map(([title, detail]) => (
+      ].map(([title, detail], index) => (
         <div key={title}>
-          <Sparkles size={17} aria-hidden="true" />
+          <span className="limitation-number">{String(index + 1).padStart(2, "0")}</span>
           <span>
             <strong>{title}</strong>
             <small>{detail}</small>
@@ -752,36 +696,30 @@ function Limitations() {
 function FinalSources() {
   return (
     <div className="final-sources">
-      <div className="source-card">
-        <Database size={21} aria-hidden="true" />
+      <a
+        className="source-card"
+        href={primarySources.zenodo.href}
+        target="_blank"
+        rel="noreferrer"
+      >
         <div>
           <span>Open dataset</span>
           <strong>Zenodo 8089820</strong>
         </div>
-        <a
-          href={primarySources.zenodo.href}
-          target="_blank"
-          rel="noreferrer"
-          aria-label="Open the Zenodo dataset record"
-        >
-          <ArrowUpRight size={18} />
-        </a>
-      </div>
-      <div className="source-card">
-        <FlaskConical size={21} aria-hidden="true" />
+        <b aria-hidden="true">↗</b>
+      </a>
+      <a
+        className="source-card"
+        href={primarySources.paper.href}
+        target="_blank"
+        rel="noreferrer"
+      >
         <div>
           <span>Study descriptor</span>
           <strong>Scientific Data</strong>
         </div>
-        <a
-          href={primarySources.paper.href}
-          target="_blank"
-          rel="noreferrer"
-          aria-label="Open the Scientific Data paper"
-        >
-          <ArrowUpRight size={18} />
-        </a>
-      </div>
+        <b aria-hidden="true">↗</b>
+      </a>
     </div>
   );
 }

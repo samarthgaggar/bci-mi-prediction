@@ -72,7 +72,8 @@ test("server-renders the complete motor imagery BCI research page", async () => 
     html,
     /This project tests whether machine-learning models can distinguish imagined left- and right-hand movement from EEG recordings/i,
   );
-  assert.match(html, />Contents</i);
+  assert.match(html, />Index</i);
+  assert.match(html, /Project index/i);
   assert.match(html, /01 — BCI basics/i);
   assert.match(html, /What does a brain–computer interface measure\?/i);
   assert.match(html, /classifier receives sensor measurements/i);
@@ -84,7 +85,7 @@ test("server-renders the complete motor imagery BCI research page", async () => 
   assert.match(html, /Awaiting verified analysis/g);
   assert.match(html, /Zenodo 8089820/);
   assert.match(html, /Scientific Data/);
-  assert.match(html, /Research in progress/);
+  assert.match(html, /Analysis in progress/);
   assert.match(html, /CC0 lateral-view illustration via Wikimedia Commons/);
   assert.match(html, /Skip to the project overview/);
   assert.doesNotMatch(
@@ -140,12 +141,35 @@ test("uses restrained research typography and removes visible travel instruction
     .replace(/&(?:nbsp|amp|quot|#x27);/gi, " ")
     .replace(/\s+/g, " ");
 
-  assert.match(layout, /Nunito_Sans/);
+  assert.match(layout, /Manrope/);
+  assert.doesNotMatch(layout, /Nunito_Sans/);
   assert.doesNotMatch(layout, /Bricolage_Grotesque/);
   assert.doesNotMatch(css, /\.hero-copy h1[\s\S]{0,700}-webkit-text-stroke/);
   assert.doesNotMatch(
     visibleText,
     /\b(?:story|journey|adventure|train|station|route|stop|depart|walkthrough)\b|explore the project/i,
+  );
+});
+
+test("uses an editorial interface instead of stock icon and card patterns", async () => {
+  const [page, css] = await Promise.all([
+    readFile(path.join(projectRoot, "components/research-page.tsx"), "utf8"),
+    readFile(path.join(projectRoot, "app/globals.css"), "utf8"),
+  ]);
+
+  assert.doesNotMatch(page, /lucide-react/);
+  assert.doesNotMatch(page, /View technical details|Research section/);
+  assert.doesNotMatch(page, /hero-network|hero-continuity/);
+  assert.match(page, /Methods, scope, and sources/);
+  assert.match(css, /--display:\s*var\(--font-body\)/);
+  assert.match(
+    css,
+    /\.section-card,[\s\S]*?background:\s*transparent;[\s\S]*?box-shadow:\s*none;/,
+  );
+  assert.match(css, /\.scene-grid,[\s\S]*?display:\s*none;/);
+  assert.match(
+    css,
+    /\.metric-card\s*\{[\s\S]*?border-radius:\s*0;[\s\S]*?background:\s*transparent;/,
   );
 });
 

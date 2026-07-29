@@ -2,15 +2,8 @@ import type { Metadata } from "next";
 import {
   IBM_Plex_Mono,
   Manrope,
-  Nunito_Sans,
 } from "next/font/google";
 import "./globals.css";
-
-const display = Nunito_Sans({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["700", "800", "900"],
-});
 
 const body = Manrope({
   variable: "--font-body",
@@ -63,7 +56,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${display.variable} ${body.variable} ${mono.variable} antialiased`}
+        className={`${body.variable} ${mono.variable} antialiased`}
       >
         {children}
       </body>
