@@ -173,9 +173,19 @@ test("meets core light and dark theme contrast requirements", () => {
 
 test("ships a correctly sized, project-local social preview", async () => {
   const ogPath = path.join(projectRoot, "public/og.png");
-  const [image, details] = await Promise.all([readFile(ogPath), stat(ogPath)]);
+  const fallbackPath = path.join(projectRoot, "public/brain-fallback.png");
+  const [image, details, fallback, fallbackDetails] = await Promise.all([
+    readFile(ogPath),
+    stat(ogPath),
+    readFile(fallbackPath),
+    stat(fallbackPath),
+  ]);
   assert.equal(image.toString("ascii", 1, 4), "PNG");
   assert.equal(image.readUInt32BE(16), 1200);
   assert.equal(image.readUInt32BE(20), 630);
   assert.ok(details.size < 2_500_000);
+  assert.equal(fallback.toString("ascii", 1, 4), "PNG");
+  assert.equal(fallback.readUInt32BE(16), 630);
+  assert.equal(fallback.readUInt32BE(20), 630);
+  assert.ok(fallbackDetails.size < 1_000_000);
 });

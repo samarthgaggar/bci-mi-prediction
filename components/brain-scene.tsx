@@ -30,12 +30,13 @@ function makeBrainGeometry(side: -1 | 1) {
 
   for (let index = 0; index < position.count; index += 1) {
     vector.fromBufferAttribute(position, index);
+    const radius = vector.length();
     const wave =
       Math.sin(vector.y * 10.4 + side * 0.8) *
       Math.cos(vector.z * 11.7) *
       Math.sin(vector.x * 14.2);
-    const ripple = Math.sin((vector.y + vector.z) * 17) * 0.025;
-    vector.normalize().multiplyScalar(vector.length() * (1 + wave * 0.055 + ripple));
+    const ripple = Math.sin((vector.y + vector.z) * 17) * 0.032;
+    vector.normalize().multiplyScalar(radius * (1 + wave * 0.075 + ripple));
     vector.x *= 0.66;
     vector.y *= 1.05;
     vector.z *= 0.88;
@@ -181,10 +182,18 @@ function Brain({
   dark,
 }: BrainSceneProps) {
   const brain = useRef<THREE.Group>(null);
+  const { size } = useThree();
 
   useFrame(({ clock }, delta) => {
     if (!brain.current) return;
     const direction = progress < 0.5 ? 1 : -1;
+    const heroOffset =
+      size.width >= 768 ? Math.max(0, 1.35 * (1 - progress / 0.11)) : 0;
+    brain.current.position.x = THREE.MathUtils.lerp(
+      brain.current.position.x,
+      heroOffset,
+      0.08,
+    );
     if (motionEnabled) {
       brain.current.rotation.y += delta * 0.075 * direction;
       brain.current.rotation.z = Math.sin(clock.elapsedTime * 0.22) * 0.025;

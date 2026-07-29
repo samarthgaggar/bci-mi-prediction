@@ -332,11 +332,7 @@ export function JourneyPage() {
 function BrainFallback({ label }: { label: string }) {
   return (
     <div className="brain-fallback" role="img" aria-label={label}>
-      <span className="fallback-lobe fallback-lobe-left" />
-      <span className="fallback-lobe fallback-lobe-right" />
-      <span className="fallback-signal signal-one" />
-      <span className="fallback-signal signal-two" />
-      <span className="fallback-signal signal-three" />
+      <span>{label}</span>
     </div>
   );
 }
