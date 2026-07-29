@@ -314,16 +314,42 @@ export function ResearchPage() {
         >
           <div className="brain-transition-sticky">
             <div
-              className="brain-focus-ring"
+              className="brain-focus-neuron"
               aria-hidden="true"
               style={{
                 opacity: 0.28 + transitionProgress * 0.58,
                 transform: `translate(-50%, -50%) scale(${1.18 - transitionProgress * 0.38})`,
               }}
             >
-              <span />
-              <i />
-              <b />
+              <svg viewBox="0 0 240 240" role="presentation">
+                <g className="neuron-dendrites">
+                  <path d="M120 112 94 91 68 88 51 70 31 72" />
+                  <path d="M96 92 82 67 86 45 73 27" />
+                  <path d="M112 91 111 64 126 44 124 22" />
+                  <path d="M130 94 151 69 176 65 190 45" />
+                  <path d="M145 105 172 93 197 99 216 86" />
+                  <path d="M144 123 172 132 194 126 215 143" />
+                  <path d="M101 129 76 145 52 142 33 158" />
+                  <path d="M92 116 66 111 45 121 23 113" />
+                </g>
+                <path
+                  className="neuron-axon"
+                  d="M124 129 C132 149 122 165 139 178 S171 194 178 219"
+                />
+                <g className="neuron-terminals">
+                  <circle cx="31" cy="72" r="4" />
+                  <circle cx="73" cy="27" r="4" />
+                  <circle cx="124" cy="22" r="4" />
+                  <circle cx="190" cy="45" r="4" />
+                  <circle cx="216" cy="86" r="4" />
+                  <circle cx="215" cy="143" r="4" />
+                  <circle cx="33" cy="158" r="4" />
+                  <circle cx="23" cy="113" r="4" />
+                </g>
+                <circle className="neuron-soma" cx="120" cy="112" r="25" />
+                <circle className="neuron-nucleus" cx="114" cy="107" r="8" />
+                <circle className="neuron-signal" cx="178" cy="219" r="6" />
+              </svg>
             </div>
           </div>
         </section>

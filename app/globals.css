@@ -716,68 +716,56 @@ p {
   height: calc(100svh - var(--header-height));
 }
 
-.brain-focus-ring {
+.brain-focus-neuron {
   position: absolute;
   top: 50%;
   left: 50%;
-  display: grid;
-  width: clamp(110px, 13vw, 186px);
+  width: clamp(160px, 18vw, 250px);
   aspect-ratio: 1;
-  place-items: center;
-  border: 1px solid color-mix(in srgb, var(--cyan) 74%, transparent);
-  border-radius: 50%;
-  box-shadow:
-    inset 0 0 34px color-mix(in srgb, var(--cyan) 22%, transparent),
-    0 0 52px color-mix(in srgb, var(--cyan) 30%, transparent);
+  filter: drop-shadow(0 0 28px color-mix(in srgb, var(--coral) 34%, transparent));
   transition: opacity 120ms linear;
 }
 
-.brain-focus-ring::before,
-.brain-focus-ring::after {
-  position: absolute;
-  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-  content: "";
+.brain-focus-neuron svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
 }
 
-.brain-focus-ring::before {
-  width: 145%;
-  height: 1px;
+.neuron-dendrites,
+.neuron-axon {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.brain-focus-ring::after {
-  width: 1px;
-  height: 145%;
+.neuron-dendrites {
+  stroke: var(--coral);
+  stroke-width: 4;
 }
 
-.brain-focus-ring span {
-  width: 18px;
-  height: 18px;
-  background: var(--gold);
-  border: 4px solid var(--page-deep);
-  border-radius: 50%;
-  box-shadow: 0 0 28px var(--gold);
+.neuron-axon {
+  stroke: var(--cyan);
+  stroke-width: 5;
 }
 
-.brain-focus-ring i,
-.brain-focus-ring b {
-  position: absolute;
-  width: 9px;
-  height: 9px;
-  background: var(--cyan);
-  border-radius: 50%;
-  box-shadow: 0 0 16px var(--cyan);
+.neuron-terminals {
+  fill: var(--coral);
 }
 
-.brain-focus-ring i {
-  top: 7%;
-  right: 18%;
+.neuron-soma {
+  fill: #ef8ea2;
+  stroke: color-mix(in srgb, var(--page-deep) 74%, #762146);
+  stroke-width: 5;
 }
 
-.brain-focus-ring b {
-  bottom: 11%;
-  left: 15%;
-  background: var(--coral);
-  box-shadow: 0 0 16px var(--coral);
+.neuron-nucleus {
+  fill: #7d2047;
+}
+
+.neuron-signal {
+  fill: var(--gold);
+  filter: drop-shadow(0 0 10px var(--gold));
 }
 
 .section-card {
@@ -1515,7 +1503,7 @@ p {
     height: 210vh;
   }
 
-  .brain-focus-ring {
+  .brain-focus-neuron {
     top: 34%;
   }
 
