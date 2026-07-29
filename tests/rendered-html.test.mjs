@@ -1,19 +1,50 @@
 import assert from "node:assert/strict";
-import { readFile, readdir, stat } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-const siteTitle =
-  "Quantifying and Forecasting Performance Variability in Motor Imagery Brain-Computer Interfaces";
-const routes = ["/", "/methodology", "/results"];
-const primarySections = [
-  ["background", "Background"],
-  ["methodology", "Methodology"],
-  ["data-science-pipeline", "Data Science Pipeline"],
-  ["results", "Results"],
-  ["future-directions", "Future Directions"],
+const siteTitle = "BCI Performance Variability · The Data Miners";
+const sectionIds = [
+  "overview",
+  "dataset",
+  "pipeline",
+  "integrity",
+  "project-areas",
+  "evidence",
+  "faq",
 ];
+
+const expectedMediaHashes = new Map([
+  [
+    "images/hero-backdrops/brain-interface-patel.jpg",
+    "b6b46524b9b1cca81e08d26379354d8f56aba17d2f3d58fb1293572f40c8a918",
+  ],
+  [
+    "images/hero-backdrops/digital-brain-deepmind.jpg",
+    "0404b69abce5730fe0bca9ba7a10b13cf36c443388f8c612433eb25c9709c6cc",
+  ],
+  [
+    "images/hero-backdrops/neural-connections-virus.jpg",
+    "f235f3f05cacbbe8dd087e8a83e781bb86bc626f59cecfc16584e1ed09a9dd71",
+  ],
+  [
+    "images/research-portals/bci-research-background.jpg",
+    "80f3d2ecc8138e3de9f891ad5848370d5b61e4141fdda90e5b6d0c613b7f6dce",
+  ],
+  [
+    "images/research-portals/brain-signal-results-portal.jpg",
+    "e53ce422175f3c654512b9f34a938d8ec517237114ba5a1d0de17bfc3aa78a0f",
+  ],
+  [
+    "images/research-portals/eeg-methodology-portal.jpg",
+    "c1ccc400be67cf5f7f6365706158640ee7034611bee5251126ebd3319f181720",
+  ],
+  [
+    "og.png",
+    "6f28757aebf0065ca353a8ebc4a1ae38bb11e4627b522c53907e4b7a3ea23df9",
+  ],
+]);
 
 async function render(pathname = "/") {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
@@ -42,9 +73,13 @@ async function render(pathname = "/") {
   );
 }
 
-async function htmlFor(pathname) {
+async function htmlFor(pathname, expectedStatus = 200) {
   const response = await render(pathname);
-  assert.equal(response.status, 200, `${pathname} should render successfully`);
+  assert.equal(
+    response.status,
+    expectedStatus,
+    `${pathname} should return ${expectedStatus}`,
+  );
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
   return response.text();
 }
@@ -67,198 +102,61 @@ async function listFiles(directory) {
   return files;
 }
 
-function plainText(fragment) {
-  return fragment
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&#x27;|&#39;/g, "'")
-    .replace(/&quot;/g, '"')
-    .replace(/\s+/g, " ")
-    .trim();
+async function sha256(filePath) {
+  const { createHash } = await import("node:crypto");
+  const contents = await readFile(filePath);
+  return createHash("sha256").update(contents).digest("hex");
 }
 
-function navigationLinks(fragment) {
-  return [...fragment.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)]
-    .map((match) => {
-      const href = match[1].match(/\bhref="([^"]+)"/)?.[1];
-      return href ? { href, label: plainText(match[2]) } : null;
-    })
-    .filter(Boolean);
-}
-
-test("renders all research routes", async () => {
-  await Promise.all(routes.map((route) => htmlFor(route)));
-});
-
-test("uses the exact five-section editorial navigation and home structure", async () => {
+test("renders the homepage and retires the former research routes", async () => {
   const home = await htmlFor("/");
-  const expectedIds = primarySections.map(([id]) => id);
-  const expectedLabels = primarySections.map(([, label]) => label);
-  const navigationBlocks = [...home.matchAll(/<nav\b[^>]*>[\s\S]*?<\/nav>/g)];
-
-  const qualifyingNavigation = navigationBlocks
-    .map((match) => navigationLinks(match[0]))
-    .find((links) => {
-      const ids = new Set(
-        links
-          .map(({ href }) => new URL(href, "http://localhost").hash.slice(1))
-          .filter((id) => expectedIds.includes(id)),
-      );
-      return ids.size === expectedIds.length;
-    });
-
-  assert.ok(
-    qualifyingNavigation,
-    "a navigation landmark must link to all five editorial sections",
-  );
-
-  const labelsBySection = new Map();
-  for (const { href, label } of qualifyingNavigation) {
-    const url = new URL(href, "http://localhost");
-    const id = url.hash.slice(1);
-    if (url.pathname === "/" && expectedIds.includes(id)) {
-      if (!labelsBySection.has(id)) labelsBySection.set(id, new Set());
-      labelsBySection.get(id).add(label);
-    }
-  }
-
-  assert.deepEqual([...labelsBySection.keys()], expectedIds);
-  assert.deepEqual(
-    expectedIds.map((id) => [...labelsBySection.get(id)]),
-    expectedLabels.map((label) => [label]),
-  );
-
-  for (const [id, label] of primarySections) {
-    assert.match(
-      home,
-      new RegExp(`<section\\b[^>]*\\bid="${id}"[^>]*>`),
-      `home must contain the ${id} section`,
-    );
-    assert.match(
-      home,
-      new RegExp(`<h[12]\\b[^>]*>\\s*${label}\\s*</h[12]>`),
-      `${label} must be an explicit page heading`,
-    );
-  }
+  assert.match(home, new RegExp(`<title>${siteTitle}</title>`));
+  await htmlFor("/methodology", 404);
+  await htmlFor("/results", 404);
 });
 
-test("states cleaning and every downstream phase honestly", async () => {
-  const rendered = await Promise.all(routes.map((route) => htmlFor(route)));
-  const allHtml = rendered.join("\n");
+test("renders the seven anchored sections in reference order", async () => {
+  const home = await htmlFor("/");
+  let previousIndex = -1;
 
-  assert.match(allHtml, /Cleaning in progress/i);
-  assert.match(allHtml, /Validation pending/i);
-  assert.match(allHtml, /Analysis pending/i);
-  assert.match(allHtml, /Results pending|Awaiting verified analysis/i);
-  assert.doesNotMatch(
-    allHtml,
-    /cleaning (?:is )?(?:complete|completed)|validation (?:is )?(?:complete|completed)|analysis (?:is )?(?:complete|completed)|verified results are available/i,
-  );
-});
-
-test("publishes restrained route metadata with a site-specific social image", async () => {
-  const [home, methodology, results] = await Promise.all([
-    htmlFor("/"),
-    htmlFor("/methodology"),
-    htmlFor("/results"),
-  ]);
-
-  assert.ok(home.includes(`<title>${siteTitle}</title>`));
-  assert.ok(methodology.includes(`<title>Methodology · ${siteTitle}</title>`));
-  assert.ok(results.includes(`<title>Results · ${siteTitle}</title>`));
-  assert.match(home, /name="author" content="The Data Miners"/);
-  assert.match(home, /name="creator" content="The Data Miners"/);
-
-  for (const html of [home, methodology, results]) {
-    assert.match(
-      html,
-      /property="og:image" content="http:\/\/localhost\/og\.png"/i,
-    );
-    assert.match(
-      html,
-      /name="twitter:image" content="http:\/\/localhost\/og\.png"/i,
-    );
+  for (const id of sectionIds) {
+    const marker = `id="${id}"`;
+    const index = home.indexOf(marker);
+    assert.ok(index > previousIndex, `${id} must follow the prior section`);
+    previousIndex = index;
   }
+
+  assert.match(home, /Building BCI systems that work for/);
+  assert.match(home, /Explore the study/);
+  assert.match(home, /View the pipeline/);
 });
 
-test("uses typed, source-bound research content contracts", async () => {
+test("uses typed, source-bound content and keeps results gated", async () => {
   const source = await readFile(
-    new URL("../lib/research-content.ts", import.meta.url),
+    new URL("../lib/site-content.ts", import.meta.url),
     "utf8",
   );
-  const statusContract = source.match(
-    /export type ResearchStatus\s*=([\s\S]*?);/,
-  )?.[1];
-
-  assert.ok(statusContract, "ResearchStatus must remain an exported type");
-  for (const status of [
-    "draft",
-    "cleaning-in-progress",
-    "analysis-pending",
-    "results-pending",
-    "verified",
-  ]) {
-    assert.match(statusContract, new RegExp(`"${status}"`));
-  }
-
-  assert.match(source, /export interface ResearchSection/);
-  assert.match(source, /export interface ResultPlaceholder/);
+  assert.match(source, /export interface SiteSection/);
   assert.match(source, /status:\s*ResearchStatus/);
-  assert.match(source, /sourceRefs:\s*SourceReference\["id"\]\[\]/);
-  assert.match(source, /accessibilitySummary:\s*string/);
-  assert.match(source, /intendedVisualizationType:/);
-});
+  assert.match(source, /sourceRefs:\s*SourceId\[\]/);
+  assert.match(source, /publication-gated/);
+  assert.match(source, /under review until they are versioned/i);
 
-test("keeps four digit-free result fixtures explicitly pending", async () => {
-  const [source, resultsPage, resultFigure] = await Promise.all([
-    readFile(new URL("../lib/research-content.ts", import.meta.url), "utf8"),
-    readFile(new URL("../app/results/page.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../components/result-figure.tsx", import.meta.url), "utf8"),
-  ]);
-  const resultFixtures = source.match(
-    /export const resultPlaceholders[\s\S]*?=\s*\[([\s\S]*?)\n\];/,
-  )?.[1];
-
-  assert.ok(resultFixtures, "resultPlaceholders must remain an exported array");
-
-  const ids = [...resultFixtures.matchAll(/\bid:\s*"([^"]+)"/g)].map(
-    (match) => match[1],
-  );
-  const statuses = [
-    ...resultFixtures.matchAll(/\bstatus:\s*"([^"]+)"/g),
-  ].map((match) => match[1]);
-
-  assert.equal(ids.length, 4);
-  assert.equal(new Set(ids).size, 4);
-  assert.deepEqual(statuses, Array(4).fill("results-pending"));
-  assert.doesNotMatch(resultFixtures, /\d/);
-  assert.doesNotMatch(
-    resultFixtures,
-    /\bp[- ]?value\b|\baccuracy\b|\beffect[- ]?size\b|%/i,
-  );
-
-  const renderedResultSources = `${resultsPage}\n${resultFigure}`;
-  assert.doesNotMatch(
-    renderedResultSources,
-    /\b(?:accuracy|score|effect[- ]?size|p[- ]?value|mean|median)\b[^\n]{0,48}\d/i,
-  );
-  assert.match(resultFigure, /Awaiting verified analysis/);
-  assert.match(resultFigure, /data-kind=\{figure\.intendedVisualizationType\}/);
-  for (const visualization of [
-    "distribution",
-    "comparison",
-    "signal",
-    "spectrum",
-  ]) {
-    assert.match(resultFigure, new RegExp(`${visualization}:\\s*\\d`));
+  for (const verifiedFact of ["87", "694", "32", "512"]) {
+    assert.match(source, new RegExp(`\\b${verifiedFact}\\b`));
   }
+
+  assert.doesNotMatch(
+    source,
+    /60\.20|62\.61|56\.25|47\.81|8\.44|locked-test comparison/i,
+  );
 });
 
-test("does not retain starter, authentication, or database scaffolding", async () => {
+test("does not copy stale studio content or reference media", async () => {
   const root = fileURLToPath(new URL("../", import.meta.url));
   const sourceFiles = (
     await Promise.all(
-      ["app", "components", "lib", "worker"].map((directory) =>
+      ["app", "components", "lib"].map((directory) =>
         listFiles(path.join(root, directory)),
       ),
     )
@@ -266,181 +164,82 @@ test("does not retain starter, authentication, or database scaffolding", async (
   const source = (
     await Promise.all(sourceFiles.map((file) => readFile(file, "utf8")))
   ).join("\n");
-  const packageJson = await readFile(
-    new URL("../package.json", import.meta.url),
-    "utf8",
-  );
-  const combined = `${source}\n${packageJson}`;
 
-  assert.doesNotMatch(combined, /codex-preview/i);
-  assert.doesNotMatch(combined, /Your site is taking shape/i);
-  assert.doesNotMatch(combined, /react-loading-skeleton/i);
+  assert.doesNotMatch(source, /MVN Studio|We don'?t make apps/i);
   assert.doesNotMatch(
-    combined,
-    /chatgpt-auth|better-auth|next-auth|drizzle-orm|drizzle-kit|@prisma|D1Database|wrangler\s+d1/i,
+    source,
+    /framerusercontent|abundant-group-865399|\.mp4\b|<img\b|next\/image/i,
   );
+  assert.doesNotMatch(source, /\/images\/|\/og\.png/);
+  assert.match(source, /Visual reserved/);
+  assert.match(source, /Subscriptions are not connected/);
+});
 
-  for (const relativePath of [
-    "app/_sites-preview",
-    "examples",
-    "drizzle",
-    "prisma",
-  ]) {
-    await assert.rejects(stat(path.join(root, relativePath)));
+test("preserves the existing media library byte-for-byte", async () => {
+  const publicPath = fileURLToPath(new URL("../public/", import.meta.url));
+  const files = await listFiles(publicPath);
+  const relativeFiles = files
+    .map((file) => path.relative(publicPath, file).split(path.sep).join("/"))
+    .sort();
+
+  assert.deepEqual(relativeFiles, [...expectedMediaHashes.keys()].sort());
+
+  for (const [relativePath, expectedHash] of expectedMediaHashes) {
+    assert.equal(
+      await sha256(path.join(publicPath, relativePath)),
+      expectedHash,
+      `${relativePath} must remain byte-identical`,
+    );
   }
 });
 
-test("publishes only approved web imagery and excludes scientific data formats", async () => {
+test("keeps raw scientific formats outside the public tree", async () => {
   const publicPath = fileURLToPath(new URL("../public/", import.meta.url));
   const files = await listFiles(publicPath);
   const scientificFilePattern =
     /\.(?:gdf|edf|bdf|set|fdt|mat|csv|tsv|xlsx?|xml|vhdr|vmrk|eeg)$/i;
-  const relativeFiles = files.map((file) =>
-    path.relative(publicPath, file).split(path.sep).join("/"),
-  );
 
   assert.equal(
     files.some((file) => scientificFilePattern.test(file)),
     false,
   );
-  for (const requiredImage of [
-    "images/research-portals/eeg-methodology-portal.jpg",
-    "images/research-portals/brain-signal-results-portal.jpg",
-    "images/research-portals/bci-research-background.jpg",
-    "images/hero-backdrops/digital-brain-deepmind.jpg",
-    "images/hero-backdrops/neural-connections-virus.jpg",
-    "images/hero-backdrops/brain-interface-patel.jpg",
-  ]) {
-    assert.ok(
-      relativeFiles.includes(requiredImage),
-      `approved representative image must be published: ${requiredImage}`,
-    );
-  }
-  assert.equal(
-    relativeFiles.every((file) => /\.(?:jpe?g|png|webp)$/i.test(file)),
-    true,
-    "public assets must remain limited to approved web image formats",
-  );
 });
 
-test("replays section reveals and rotates credited stock brain imagery", async () => {
-  const [home, layoutSource, backdropSource, backdropData, revealSource] =
-    await Promise.all([
-      htmlFor("/"),
-      readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
-      readFile(
-        new URL(
-          "../components/rotating-brain-backdrop.tsx",
-          import.meta.url,
-        ),
-        "utf8",
-      ),
-      readFile(new URL("../lib/hero-backdrops.ts", import.meta.url), "utf8"),
-      readFile(
-        new URL(
-          "../components/scroll-reveal-controller.tsx",
-          import.meta.url,
-        ),
-        "utf8",
-      ),
-    ]);
-
-  assert.match(home, /data-stock-backgrounds/i);
-  assert.match(home, /data-rotation-interval="6000"/i);
-  assert.match(home, /Representative stock visualization/i);
-  assert.equal(
-    [...backdropData.matchAll(/https:\/\/unsplash\.com\/photos\//g)].length,
-    3,
+test("exposes honest and accessible interaction states", async () => {
+  const home = await htmlFor("/");
+  const interactionSource = await readFile(
+    new URL("../components/site-experience.tsx", import.meta.url),
+    "utf8",
   );
-  assert.match(backdropSource, /ROTATION_INTERVAL_MS = 6000/);
-  assert.match(backdropSource, /window\.setInterval/);
-  assert.match(backdropSource, /useReducedMotion/);
-  assert.match(backdropSource, /onError=/);
 
-  assert.match(layoutSource, /<ScrollRevealController \/>/);
-  assert.match(revealSource, /IntersectionObserver/);
-  assert.match(revealSource, /entry\.isIntersecting/);
-  assert.match(revealSource, /"visible"\s*:\s*"idle"/);
-  assert.match(revealSource, /useReducedMotion/);
-  assert.match(revealSource, /\.method-section/);
-  assert.match(revealSource, /\.publication-gate/);
+  assert.match(home, /aria-controls="mobile-menu"/);
+  assert.match(home, /aria-label="Pause decorative motion"/);
+  assert.match(home, /aria-label="Research pipeline stages"/);
+  assert.match(home, /aria-label="Documented dataset exceptions"/);
+  assert.match(home, /aria-expanded="false"/);
+  assert.match(home, /disabled=""/);
+  assert.match(home, /No address is collected or transmitted/);
+  assert.match(interactionSource, /event\.key === "Escape"/);
+  assert.match(interactionSource, /event\.key !== "Tab"/);
+  assert.match(interactionSource, /prefers-reduced-motion: reduce/);
 });
 
-test("renders accessible, source-credited research portals", async () => {
-  const [home, portalSource, portalComponent] = await Promise.all([
-    htmlFor("/"),
-    readFile(new URL("../lib/research-portals.ts", import.meta.url), "utf8"),
-    readFile(
-      new URL("../components/ui/bci-page-reveal.tsx", import.meta.url),
-      "utf8",
-    ),
-  ]);
+test("omits an obsolete social image while imagery is out of scope", async () => {
+  const home = await htmlFor("/");
 
-  assert.match(home, /Research portals/i);
-  assert.match(home, /Enter the study through its evidence/i);
-  assert.match(home, /data-representative-stock="true"/i);
-  assert.match(
-    home,
-    /Representative EEG setup shown for visual context/i,
-  );
-
-  for (const destination of ["/methodology", "/results", "/#background"]) {
-    assert.match(portalSource, new RegExp(`href:\\s*"${destination}"`));
-  }
-  assert.equal(
-    [...portalSource.matchAll(/https:\/\/www\.pexels\.com\/photo\//g)].length,
-    3,
-  );
-  assert.match(portalComponent, /useReducedMotion/);
-  assert.match(portalComponent, /onError=/);
-  assert.match(portalComponent, /event\.key === " "/);
-  assert.match(portalComponent, /router\.prefetch/);
-  assert.match(portalComponent, /aria-busy=/);
+  assert.doesNotMatch(home, /property="og:image"/i);
+  assert.doesNotMatch(home, /name="twitter:image"/i);
+  assert.match(home, /name="twitter:card" content="summary"/i);
 });
 
-test("rejects authored AI-template motifs and old dramatic copy", async () => {
-  const root = fileURLToPath(new URL("../", import.meta.url));
-  const authoredFiles = (
-    await Promise.all(
-      ["app", "components", "lib"].map((directory) =>
-        listFiles(path.join(root, directory)),
-      ),
-    )
-  ).flat();
-  const authoredSource = (
-    await Promise.all(authoredFiles.map((file) => readFile(file, "utf8")))
-  ).join("\n");
-  const oldDramaticPhrases = [
-    "earn the right to analyze",
-    "a deliberate sequence, not a rush to findings",
-    "the structure is ready. the evidence is not",
-    "limitations belong in the foreground",
-    "every claim should lead back to evidence",
-    "research made legible before it is made final",
-    "questions first. visuals second",
-    "document exceptions. never smooth them away",
-    "built for evidence. intentionally empty",
-  ];
+test("locks the reference geometry, palette, and responsive boundaries", async () => {
+  const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
 
-  assert.doesNotMatch(authoredSource, /\bSignalField\b/);
-  assert.doesNotMatch(authoredSource, /\bSparkles\b/);
-  assert.doesNotMatch(
-    authoredSource,
-    /\b(?:linear|radial|conic)-gradient\s*\(|\bbg-gradient-|gradient-to-/i,
-  );
-  assert.doesNotMatch(authoredSource, /backdrop-filter|backdrop-blur/i);
-  assert.doesNotMatch(authoredSource, /\bshadow-2xl\b/i);
-
-  const normalizedSource = authoredSource.toLowerCase();
-  for (const phrase of oldDramaticPhrases) {
-    assert.equal(
-      normalizedSource.includes(phrase),
-      false,
-      `authored source must not retain the old phrase: "${phrase}"`,
-    );
-  }
-
-  await assert.rejects(
-    stat(path.join(root, "components", "signal-field.tsx")),
-  );
+  assert.match(css, /--container:\s*1100px/);
+  assert.match(css, /--accent:\s*#ff4d00/);
+  assert.match(css, /--paper:\s*#f5f5f5/);
+  assert.match(css, /--surface:\s*#131415/);
+  assert.match(css, /@media \(max-width:\s*1199\.98px\)/);
+  assert.match(css, /@media \(max-width:\s*809\.98px\)/);
+  assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)/);
 });

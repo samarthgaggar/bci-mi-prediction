@@ -1,8 +1,12 @@
 # BCI Performance Variability Research
 
-A local, design-first research interface for **Quantifying and Forecasting Performance Variability in Motor Imagery Brain-Computer Interfaces**.
+A single-page, source-traced research website for the Dreyer motor-imagery BCI
+dataset. Its layout follows the supplied Framer reference while all copy is
+adapted to the BCI project.
 
-The site presents documented dataset structure, the original study protocol, the current cleaning plan, and honest placeholders for analysis that has not happened yet. It does not publish findings or copy research data.
+The current phase deliberately uses CSS placeholders instead of images or
+videos. Existing public media remains preserved and unreferenced. Local,
+unversioned modeling outputs are not presented as public results.
 
 ## Run locally
 
@@ -16,37 +20,35 @@ Open the local URL printed by the development server.
 ## Validate
 
 ```bash
+npx tsc --noEmit --incremental false
 npm run lint
 npm run build
 npm test
 ```
 
-The test suite checks all routes, research-status language, internal navigation, removal of starter content, and the absence of raw scientific files from public assets.
+The tests check the one-page route contract, retired route responses, anchored
+content order, research-status language, approved sources, absence of copied
+reference media, preservation of the public-media library, and the raw-data
+boundary.
 
 ## Structure
 
 ```text
-app/             # routes, metadata, and global design system
-components/      # research sections and reusable UI primitives
-lib/             # typed research content and shared utilities
-public/          # approved web-only assets
-tests/           # rendered HTML and data-boundary checks
-outputs/         # local visual-QA screenshots
+app/             # homepage, metadata, not-found route, and design system
+components/      # the interactive single-page experience
+lib/             # typed, source-bound research content
+public/          # preserved web media, intentionally unused in this phase
+tests/           # rendered HTML, content, and data-boundary checks
 ```
 
-## Design references
+## Publication boundary
 
-- **21st.dev:** editorial navigation and minimal-footer composition.
-- **Skiper UI:** Side Scroll Navigation, Scroll Progress, and restrained link motion.
-- **Cult UI:** Feature Sticky Section and Direction Aware Tabs.
-- **Watermelon UI:** Journal Navigation, Step Indicator, Navigation 5, and Footer 2.
-
-No code or visual patterns were drawn from other component catalogs.
-
-## Replacing placeholders
-
-Update `lib/research-content.ts` only when a versioned research artifact supports the new claim. Change a status to `verified` only after the relevant analysis and caveats are documented. Result components should not be redesigned when real evidence arrives; replace the centralized placeholder record with an evidence-backed data contract.
+Update `lib/site-content.ts` only when a reviewed source artifact supports the
+new claim. The locally generated Stage 1–9 analysis files are not public website
+evidence until they are reviewed and versioned.
 
 ## Data boundary
 
-`../26-the-data-miners-analysis/BCI Database/` is immutable. Never edit it or copy GDF recordings, questionnaires, workbooks, processed participant files, or other raw scientific material into this site.
+`../26-the-data-miners-analysis/BCI Database/` is immutable. Never edit it or
+copy GDF recordings, questionnaires, workbooks, processed participant files,
+or other raw scientific material into this site.
