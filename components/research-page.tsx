@@ -134,29 +134,29 @@ export function ResearchPage() {
   }, [autoScrollEnabled, contentsOpen]);
 
   useEffect(() => {
+    let frame = 0;
     const sections = researchSections
       .map((section) => document.getElementById(section.id))
       .filter(Boolean) as HTMLElement[];
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible) setActiveId(visible.target.id);
-      },
-      { rootMargin: "-26% 0px -48% 0px", threshold: [0.08, 0.3, 0.6] },
-    );
-
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    let frame = 0;
     const update = () => {
       const pageHeight = document.documentElement.scrollHeight - window.innerHeight;
       setProgress(pageHeight > 0 ? clamp(window.scrollY / pageHeight) : 0);
+
+      const readingLine = window.innerHeight * 0.42;
+      let nextActiveSection = sections[0];
+      for (const section of sections) {
+        if (section.getBoundingClientRect().top <= readingLine) {
+          nextActiveSection = section;
+        } else {
+          break;
+        }
+      }
+      if (nextActiveSection) {
+        setActiveId((current) =>
+          current === nextActiveSection.id ? current : nextActiveSection.id,
+        );
+      }
 
       const transition = transitionRef.current;
       if (transition) {

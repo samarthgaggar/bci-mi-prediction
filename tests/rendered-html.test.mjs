@@ -203,10 +203,10 @@ test("provides separate Next.js and Sites deployment builds", async () => {
 });
 
 test("implements reversible looping auto scroll", async () => {
-  const page = await readFile(
-    path.join(projectRoot, "components/research-page.tsx"),
-    "utf8",
-  );
+  const [page, css] = await Promise.all([
+    readFile(path.join(projectRoot, "components/research-page.tsx"), "utf8"),
+    readFile(path.join(projectRoot, "app/globals.css"), "utf8"),
+  ]);
 
   assert.match(page, /setAutoScrollEnabled\(\(value\) => !value\)/);
   assert.match(page, /window\.requestAnimationFrame\(advance\)/);
@@ -214,6 +214,13 @@ test("implements reversible looping auto scroll", async () => {
   assert.match(page, /window\.scrollTo\(0, 0\)/);
   assert.match(page, /window\.cancelAnimationFrame/);
   assert.match(page, /prefers-reduced-motion: reduce/);
+  assert.match(page, /const readingLine = window\.innerHeight \* 0\.42/);
+  assert.match(page, /getBoundingClientRect\(\)\.top <= readingLine/);
+  assert.doesNotMatch(page, /threshold:\s*\[0\.08,\s*0\.3,\s*0\.6\]/);
+  assert.match(
+    css,
+    /:root\[data-motion="reduced"\] \.section-card\s*\{[\s\S]*?opacity:\s*1;[\s\S]*?transform:\s*none;/,
+  );
 });
 
 test("publishes the verified CSP-MLP metrics with evaluation boundaries", async () => {
