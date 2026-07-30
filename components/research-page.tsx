@@ -11,10 +11,17 @@ import {
   type RefObject,
 } from "react";
 import {
+  developmentModelMetrics,
+  finalTestMetrics,
+  featuredResultFigures,
+  lockedModelMetrics,
   pipelineSteps,
   primarySources,
   researchSections,
-  resultFigures,
+  resultFigureGroups,
+  resultTables,
+  selectionMetrics,
+  type ResultFigure,
 } from "../lib/research-content";
 
 const BrainScene = lazy(() => import("./brain-scene"));
@@ -242,7 +249,7 @@ export function ResearchPage() {
         <div className="header-actions">
           <span className="research-state">
             <span className="state-dot" aria-hidden="true" />
-            Analysis in progress
+            Analysis complete
           </span>
           <button
             className={`auto-scroll-button ${
@@ -429,7 +436,9 @@ export function ResearchPage() {
                   {section.metrics && <Metrics metrics={section.metrics} />}
                   {section.id === "method" && <MethodDiagram />}
                   {section.id === "pipeline" && <Pipeline />}
-                  {section.id === "results" && <ResultsGallery />}
+                  {section.id === "models" && <DevelopmentModels />}
+                  {section.id === "results" && <LockedResults />}
+                  {section.id === "figures" && <FigureLibrary />}
                   {section.id === "future" && <Limitations />}
 
                   <details className="technical-note" open={isFinal}>
@@ -461,7 +470,7 @@ export function ResearchPage() {
       <footer className="site-footer">
         <div>
           <span className="footer-kicker">Motor imagery BCI research</span>
-          <p>Methods, evidence, and limitations.</p>
+          <p>69.6% all-participant mean BA · 68.25% held-out test accuracy.</p>
         </div>
         <div className="footer-links">
           <a href={primarySources.zenodo.href} target="_blank" rel="noreferrer">
@@ -469,6 +478,13 @@ export function ResearchPage() {
           </a>
           <a href={primarySources.paper.href} target="_blank" rel="noreferrer">
             Paper
+          </a>
+          <a
+            href={primarySources.analysisRepository.href}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Analysis
           </a>
           <a href="#integrity">Integrity</a>
           <a href="#start">Back to overview</a>
@@ -507,12 +523,12 @@ function HeroSection({ active }: { active: boolean }) {
             <span>from EEG</span>
           </h1>
           <p className="hero-summary">{section.simpleAnswer}</p>
-          <div className="hero-meta" aria-label="Verified dataset summary">
-            <span><b>87</b> participants</span>
-            <span><b>694</b> recordings</span>
-            <span><b>512 Hz</b> sampling</span>
+          <div className="hero-meta" aria-label="Verified CSP–MLP summary">
+            <span><b>69.6%</b> all-participant mean BA</span>
+            <span><b>68.25%</b> held-out test accuracy</span>
+            <span><b>79</b> evaluated participants</span>
           </div>
-          <p className="hero-status">Current stage <span>Analysis in progress</span></p>
+          <p className="hero-status">Research status <span>Versioned notebook results</span></p>
         </article>
       </div>
     </section>
@@ -572,11 +588,7 @@ function ContentsPanel({
                 tabIndex={open ? 0 : -1}
               >
                 <span className="contents-number" aria-hidden="true">
-                  {index === 0
-                    ? "00"
-                    : index === researchSections.length - 1
-                      ? "09"
-                      : String(index).padStart(2, "0")}
+                  {String(index).padStart(2, "0")}
                 </span>
                 <strong>{section.navLabel}</strong>
               </a>
@@ -654,40 +666,260 @@ function Pipeline() {
   );
 }
 
-function ResultsGallery() {
+function DevelopmentModels() {
   return (
-    <div className="results-gallery">
-      {resultFigures.map((figure, index) => (
-        <figure className="result-figure" key={figure.src}>
-          <a
-            className="result-image-link"
-            href={figure.src}
-            target="_blank"
-            rel="noreferrer"
-            aria-label={`Open full-size chart: ${figure.title}`}
-          >
-            <Image
-              src={figure.src}
-              alt={figure.alt}
-              width={figure.width}
-              height={figure.height}
-              sizes="(max-width: 809px) calc(100vw - 36px), 65vw"
-            />
-          </a>
-          <figcaption>
-            <span className="result-index">
-              {String(index + 1).padStart(2, "0")} / {figure.eyebrow}
-            </span>
-            <h3>{figure.title}</h3>
-            <p>{figure.description}</p>
-          </figcaption>
-        </figure>
-      ))}
-      <p className="results-boundary">
-        Model comparison and locked-test results remain separate from these
-        exploratory dataset figures and are not presented here.
-      </p>
+    <div className="development-results">
+      <div className="model-comparison" aria-label="Development model comparison">
+        {developmentModelMetrics.map((model, index) => (
+          <article className="model-row" key={model.model}>
+            <span className="model-rank">{String(index + 1).padStart(2, "0")}</span>
+            <div className="model-name">
+              <strong>{model.model}</strong>
+              <small>{model.role}</small>
+            </div>
+            <div className="model-score">
+              <strong>{model.value}</strong>
+              <small>{model.metric}</small>
+            </div>
+            <p>{model.detail}</p>
+          </article>
+        ))}
+      </div>
+
+      <section className="training-readout" aria-labelledby="training-readout-title">
+        <div>
+          <span>CSP–MLP / final checkpoint</span>
+          <h3 id="training-readout-title">What “training accuracy” means here</h3>
+          <p>
+            The <strong>70.45% training accuracy is in-sample</strong>. The
+            participant-separated training estimate is 69.10% out-of-fold,
+            followed by 66.43% on held-out validation participants.
+          </p>
+        </div>
+        <dl>
+          <div>
+            <dt>Architecture</dt>
+            <dd>12 → 16 → 8 → 2</dd>
+          </div>
+          <div>
+            <dt>Best epoch</dt>
+            <dd>48</dd>
+          </div>
+          <div>
+            <dt>Early stop</dt>
+            <dd>60</dd>
+          </div>
+          <div>
+            <dt>CSP features</dt>
+            <dd>12</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section className="xgboost-readout" aria-labelledby="selection-title">
+        <div className="xgboost-copy">
+          <span>Training-only feature selection</span>
+          <h3 id="selection-title">What the folds selected</h3>
+          <p>
+            The 0.5–3.0 second cue window led cross-validation. A slightly
+            different mu band improved balanced accuracy by only 0.016
+            percentage points, below the required 0.20-point threshold.
+          </p>
+        </div>
+        <Metrics metrics={selectionMetrics} />
+        <p className="model-caveat">
+          The final model therefore retained the original 8–13 Hz mu and
+          13–30 Hz beta bands. No validation or test result was used to change
+          that decision.
+        </p>
+      </section>
     </div>
+  );
+}
+
+function LockedResults() {
+  return (
+    <div className="locked-results">
+      <div className="locked-scoreboard" aria-label="CSP–MLP accuracy summary">
+        <div className="scoreboard-head">
+          <span>Evaluation</span>
+          <span>Reported value</span>
+        </div>
+        {lockedModelMetrics.map((model) => (
+          <article
+            className={`scoreboard-row ${model.recommended ? "is-best" : ""}`}
+            key={model.model}
+          >
+            <div className="scoreboard-label">
+              <strong>{model.model}</strong>
+              <small>{model.note}</small>
+            </div>
+            <div className="scoreboard-value">
+              <strong>{model.accuracy}</strong>
+              <span aria-hidden="true">
+                <i style={{ width: `${model.rawAccuracy}%` }} />
+              </span>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div className="result-callouts">
+        <article>
+          <span>Descriptive all-participant mean</span>
+          <strong>69.6%</strong>
+          <p>
+            Mean participant balanced accuracy across all 79 participants.
+            Training participants are in-sample, so this is not a fully
+            held-out score.
+          </p>
+        </article>
+        <article>
+          <span>Defensible generalization result</span>
+          <strong>68.25%</strong>
+          <p>
+            Held-out test accuracy on 12 unseen participants; balanced accuracy
+            was 68.30%.
+          </p>
+        </article>
+      </div>
+
+      <Metrics metrics={finalTestMetrics} />
+
+      <div className="featured-results" aria-label="Featured results figures">
+        {featuredResultFigures.map((figure, index) => (
+          <ResultFigureCard
+            figure={figure}
+            index={index}
+            key={figure.src}
+            sizes="(max-width: 809px) calc(100vw - 36px), 72vw"
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FigureLibrary() {
+  return (
+    <div className="figure-library">
+      <div className="figure-library-summary">
+        <span><strong>{resultTables.length}</strong> metric tables</span>
+        <span><strong>15</strong> verified figures</span>
+        <span><strong>0</strong> wrong-model charts</span>
+      </div>
+      <div className="result-ledger" aria-label="Complete verified results">
+        {resultTables.map((table, tableIndex) => (
+          <details
+            className="result-table-group"
+            key={table.id}
+            open={table.open}
+          >
+            <summary>
+              <span className="figure-group-index">
+                Table {String(tableIndex + 1).padStart(2, "0")}
+              </span>
+              <span>
+                <strong>{table.title}</strong>
+                <small>{table.description}</small>
+              </span>
+              <b>{table.rows.length} rows</b>
+              <span className="details-mark" aria-hidden="true" />
+            </summary>
+            <div className="result-table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    {table.columns.map((column) => (
+                      <th key={column} scope="col">{column}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {table.rows.map((row, rowIndex) => (
+                    <tr key={`${table.id}-${rowIndex}`}>
+                      {row.map((value, columnIndex) => (
+                        columnIndex === 0 ? (
+                          <th key={`${value}-${columnIndex}`} scope="row">{value}</th>
+                        ) : (
+                          <td key={`${value}-${columnIndex}`}>{value}</td>
+                        )
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </details>
+        ))}
+      </div>
+      {resultFigureGroups.map((group, groupIndex) => (
+        <details className="figure-group" key={group.id} open={group.open}>
+          <summary>
+            <span className="figure-group-index">{group.label}</span>
+            <span>
+              <strong>{group.title}</strong>
+              <small>{group.description}</small>
+            </span>
+            <b>{group.figures.length} figures</b>
+            <span className="details-mark" aria-hidden="true" />
+          </summary>
+          <div className="figure-grid">
+            {group.figures.map((figure, index) => (
+              <ResultFigureCard
+                compact
+                figure={figure}
+                index={index}
+                key={`${group.id}-${figure.src}`}
+                sizes="(max-width: 809px) calc(100vw - 36px), (max-width: 1199px) 42vw, 32vw"
+              />
+            ))}
+          </div>
+          <a className="group-top-link" href={`#figures`}>
+            End of group {String(groupIndex + 1).padStart(2, "0")}
+          </a>
+        </details>
+      ))}
+    </div>
+  );
+}
+
+function ResultFigureCard({
+  figure,
+  index,
+  sizes,
+  compact = false,
+}: {
+  figure: ResultFigure;
+  index: number;
+  sizes: string;
+  compact?: boolean;
+}) {
+  return (
+    <figure className={`result-figure ${compact ? "is-compact" : ""}`}>
+      <a
+        className="result-image-link"
+        href={figure.src}
+        target="_blank"
+        rel="noreferrer"
+        aria-label={`Open full-size chart: ${figure.title}`}
+      >
+        <Image
+          src={figure.src}
+          alt={figure.alt}
+          width={figure.width}
+          height={figure.height}
+          sizes={sizes}
+        />
+      </a>
+      <figcaption>
+        <span className="result-index">
+          {String(index + 1).padStart(2, "0")} / {figure.eyebrow}
+        </span>
+        <h3>{figure.title}</h3>
+        <p>{figure.description}</p>
+      </figcaption>
+    </figure>
   );
 }
 
@@ -695,9 +927,10 @@ function Limitations() {
   return (
     <div className="limitations">
       {[
-        ["One session", "This dataset does not measure long-term stability."],
-        ["One task", "The cues cover left- and right-hand motor imagery."],
-        ["People differ", "A group average can hide important variation."],
+        ["One session", "The data do not measure long-term stability."],
+        ["One binary task", "Only left- and right-hand imagery were modeled."],
+        ["12-person test", "The held-out result needs confirmation on new data."],
+        ["Mixed headline", "The 69.6% mean includes in-sample training participants."],
       ].map(([title, detail], index) => (
         <div key={title}>
           <span className="limitation-number">{String(index + 1).padStart(2, "0")}</span>
@@ -714,6 +947,18 @@ function Limitations() {
 function FinalSources() {
   return (
     <div className="final-sources">
+      <a
+        className="source-card"
+        href={primarySources.analysisRepository.href}
+        target="_blank"
+        rel="noreferrer"
+      >
+        <div>
+          <span>Analysis source</span>
+          <strong>Data Miners repository</strong>
+        </div>
+        <b aria-hidden="true">↗</b>
+      </a>
       <a
         className="source-card"
         href={primarySources.zenodo.href}

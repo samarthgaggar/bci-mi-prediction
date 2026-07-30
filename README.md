@@ -1,16 +1,16 @@
 # Motor Imagery BCI Research Website
 
-An evidence-first explanation of motor-imagery brain–computer-interface
-research. The site presents the project objective, dataset, acquisition
-protocol, data-integrity process, modeling pipeline, limitations, and current
-publication status through an interactive brain visualization.
+An evidence-first explanation of a CSP–MLP motor-imagery
+brain–computer-interface study. The site separates the 69.6% descriptive
+all-participant mean balanced accuracy from the 68.25% held-out test accuracy,
+then provides the complete metric ledger behind those results.
 
 ## Research boundary
 
 The website may publish only reviewed, source-backed facts. The immutable BCI
 corpus remains in the separate analysis repository and must never be copied
-into `public/`. Unversioned modeling artifacts remain represented by explicit
-“Awaiting verified analysis” states.
+into `public/`. Model results link to the commit-pinned CSP, performance, and
+comparison notebooks; unversioned modeling artifacts remain unpublished.
 
 Primary public sources:
 

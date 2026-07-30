@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://bci-performance-variability.ucd-cosmos-a-8231.chatgpt.site"),
   title: "Predicting Motor Imagery from EEG · BCI Research Project",
   description:
-    "A research project testing whether machine-learning models can distinguish imagined left- and right-hand movement from EEG recordings.",
+    "A CSP–MLP motor-imagery EEG study with a 69.6% all-participant mean balanced accuracy and 68.25% held-out test accuracy.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Predicting Motor Imagery from EEG",
     description:
-      "Dataset, acquisition, cleaning, modeling, and evaluation for a motor-imagery BCI classification project.",
+      "69.6% all-participant mean balanced accuracy, 68.25% held-out test accuracy, and a complete source-linked results ledger.",
     type: "website",
     images: [
       {
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Predicting Motor Imagery from EEG",
     description:
-      "A motor-imagery BCI research project using EEG recordings.",
+      "A motor-imagery EEG study with a 69.6% all-participant mean BA and 68.25% held-out test accuracy.",
     images: ["/og.png"],
   },
 };

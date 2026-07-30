@@ -70,7 +70,7 @@ test("server-renders the complete motor imagery BCI research page", async () => 
   assert.match(html, /Predicting Motor Imagery from EEG/i);
   assert.match(
     html,
-    /This project tests whether machine-learning models can distinguish imagined left- and right-hand movement from EEG recordings/i,
+    /CSP–MLP reached a 69\.6% mean participant balanced accuracy/i,
   );
   assert.match(html, />Index</i);
   assert.match(html, /Project index/i);
@@ -82,13 +82,20 @@ test("server-renders the complete motor imagery BCI research page", async () => 
   assert.match(html, />32</);
   assert.match(html, />512 Hz</);
   assert.match(html, /27 EEG · 3 EOG · 2 EMG/);
-  assert.match(html, /Versioned descriptive figures/);
-  assert.match(html, /Performance spans a wide range/);
-  assert.match(html, /The four run means are close/);
-  assert.match(html, /No strong linear learning-style pattern appears/);
+  assert.match(html, /Versioned notebook results/);
+  assert.match(html, /69\.6%/);
+  assert.match(html, /68\.25%/);
+  assert.match(html, /68\.30%/);
+  assert.match(html, /Five-fold training OOF/);
+  assert.match(html, /Held-out validation/);
+  assert.match(html, /12 → 16 → 8 → 2/);
+  assert.match(html, /metric tables/);
+  assert.match(html, /verified figures/i);
+  assert.match(html, /Complete results ledger/);
+  assert.match(html, /Verified exploratory dataset figures/);
   assert.match(html, /Zenodo 8089820/);
   assert.match(html, /Scientific Data/);
-  assert.match(html, /Analysis in progress/);
+  assert.match(html, /Analysis complete/);
   assert.match(html, /CC0 lateral-view illustration via Wikimedia Commons/);
   assert.match(html, /Skip to the project overview/);
   assert.doesNotMatch(
@@ -108,7 +115,9 @@ test("renders every stable section anchor and accessibility control", async () =
     "method",
     "integrity",
     "pipeline",
+    "models",
     "results",
+    "figures",
     "future",
     "return",
   ];
@@ -150,7 +159,7 @@ test("uses restrained research typography and removes visible travel instruction
   assert.doesNotMatch(css, /\.hero-copy h1[\s\S]{0,700}-webkit-text-stroke/);
   assert.doesNotMatch(
     visibleText,
-    /\b(?:story|journey|adventure|train|station|route|stop|depart|walkthrough)\b|explore the project/i,
+    /\b(?:story|journey|adventure|station|route|depart|walkthrough)\b|explore the project/i,
   );
 });
 
@@ -207,24 +216,36 @@ test("implements reversible looping auto scroll", async () => {
   assert.match(page, /prefers-reduced-motion: reduce/);
 });
 
-test("publishes versioned descriptive figures while final model claims remain gated", async () => {
+test("publishes the verified CSP-MLP metrics with evaluation boundaries", async () => {
   const content = await readFile(
     path.join(projectRoot, "lib/research-content.ts"),
     "utf8",
   );
+  const modelStart = content.indexOf('id: "models"');
   const resultStart = content.indexOf('id: "results"');
-  const resultEnd = content.indexOf('id: "future"');
+  const resultEnd = content.indexOf('id: "figures"');
+  const modelBlock = content.slice(modelStart, resultStart);
   const resultBlock = content.slice(resultStart, resultEnd);
 
-  assert.ok(resultStart > 0 && resultEnd > resultStart);
+  assert.ok(modelStart > 0 && resultStart > modelStart && resultEnd > resultStart);
+  assert.match(modelBlock, /70\.45%/);
+  assert.match(modelBlock, /69\.10%/);
+  assert.match(modelBlock, /66\.43%/);
+  assert.match(modelBlock, /in-sample diagnostic/i);
   assert.match(resultBlock, /status: "verified"/);
-  assert.match(resultBlock, /Versioned descriptive figures/);
-  assert.match(resultBlock, /Final model comparisons remain gated/);
-  assert.match(resultBlock, /do not report the participant-disjoint model evaluation/);
-  assert.doesNotMatch(resultBlock, /metrics:\s*\[/);
+  assert.match(resultBlock, /68\.25%/);
+  assert.match(resultBlock, /68\.30%/);
+  assert.match(resultBlock, /68\.19%/);
+  assert.match(resultBlock, /76\.16%/);
+  assert.match(resultBlock, /held-out participant test/i);
+  assert.doesNotMatch(resultBlock, /Awaiting verified analysis|results gated/i);
+  assert.match(content, /window CV BA/);
+  assert.match(content, /best band gain/);
+  assert.match(content, /0\.5–3\.0 second cue window/i);
+  assert.doesNotMatch(content, /60\.20% locked|62\.61%|XGBoost EEG baseline/i);
 });
 
-test("ships byte-verified local copies of the approved exploratory charts", async () => {
+test("ships only the 15 verified exploratory figures with byte checks", async () => {
   const expected = new Map([
     [
       "performance-by-run.png",
@@ -259,6 +280,19 @@ test("ships byte-verified local copies of the approved exploratory charts", asyn
     assert.equal(image.readUInt32BE(16), metadata.width);
     assert.equal(image.readUInt32BE(20), metadata.height);
     assert.equal(digest, metadata.digest);
+  }
+
+  const resultFiles = (await walk(path.join(projectRoot, "public/results"))).filter(
+    (file) => file.endsWith(".png"),
+  );
+  assert.equal(resultFiles.length, 15);
+  assert.ok(resultFiles.every((file) => !file.includes(`${path.sep}model${path.sep}`)));
+
+  for (const file of resultFiles) {
+    const image = await readFile(file);
+    assert.equal(image.toString("ascii", 1, 4), "PNG");
+    assert.ok(image.readUInt32BE(16) > 800);
+    assert.ok(image.readUInt32BE(20) > 600);
   }
 });
 
