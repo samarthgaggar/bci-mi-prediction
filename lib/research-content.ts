@@ -66,7 +66,7 @@ export const pipelineSteps: readonly PipelineStep[] = [
     navLabel: "Problem",
     title: "Problem Formulation",
     statement:
-      "Can EEG distinguish imagined left-hand movement from imagined right-hand movement?",
+      "How can we improve the prediction of imagined motor movements while achieving consistent performance across participants with diverse demographic, psychological, and behavioral profiles?",
     takeaway: "One clear task. Two classes. Unseen participants.",
     visual: "question",
     side: "left",

@@ -82,12 +82,20 @@ test("server-renders the nine-stop visual data-science pipeline", async () => {
   }
 
   assert.match(html, /From signal to evidence\./);
+  assert.match(
+    html,
+    /How can we improve the prediction of imagined motor movements while achieving consistent performance across participants with diverse demographic, psychological, and behavioral profiles\?/,
+  );
   assert.match(html, /One clear task\. Two classes\. Unseen participants\./);
   assert.match(html, /The spread tells the real story\./);
   assert.match(html, /Reported with limitations/);
   assert.doesNotMatch(
     html,
     /Signals in Motion|Admit one curious mind|Ride again|Explore the project|Complete results ledger|verified figures|Deployment \/ Presentation|Ready to present/i,
+  );
+  assert.doesNotMatch(
+    html,
+    /Can EEG distinguish imagined left-hand movement from imagined right-hand movement\?/,
   );
 });
 
