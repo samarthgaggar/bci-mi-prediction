@@ -49,7 +49,7 @@ function smooth(value: number) {
 }
 
 export function ResearchPage() {
-  const [activeId, setActiveId] = useState(pipelineSteps[0].id);
+  const [activeId, setActiveId] = useState("intro");
   const [progress, setProgress] = useState(0);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [motionEnabled, setMotionEnabled] = useState(true);
@@ -87,8 +87,8 @@ export function ResearchPage() {
   }, [motionEnabled]);
 
   useEffect(() => {
-    const sections = pipelineSteps
-      .map((step) => document.getElementById(step.id))
+    const sections = ["intro", ...pipelineSteps.map((step) => step.id)]
+      .map((id) => document.getElementById(id))
       .filter(Boolean) as HTMLElement[];
     const observer = new IntersectionObserver(
       (entries) => {
@@ -170,6 +170,7 @@ export function ResearchPage() {
     ),
     [activeId],
   );
+  const introActive = activeId === "intro";
   const journeyProgress = motionEnabled
     ? progress
     : activeIndex / (pipelineSteps.length - 1);
@@ -189,7 +190,7 @@ export function ResearchPage() {
       </a>
 
       <header className="site-header">
-        <a className="brand" href="#problem" aria-label="Motor Imagery BCI home">
+        <a className="brand" href="#intro" aria-label="Motor Imagery BCI home">
           <span className="brand-mark" aria-hidden="true">
             BCI
           </span>
@@ -248,23 +249,27 @@ export function ResearchPage() {
         <span style={{ transform: `scaleX(${progress})` }} />
       </div>
 
-      <div
-        className="pipeline-position"
-        aria-live="polite"
-        aria-label={`Step ${activeIndex + 1} of ${pipelineSteps.length}: ${
-          pipelineSteps[activeIndex].title
-        }`}
-      >
-        <span>{String(activeIndex + 1).padStart(2, "0")}</span>
-        <i />
-        <span>{String(pipelineSteps.length).padStart(2, "0")}</span>
-      </div>
+      {!introActive && (
+        <div
+          className="pipeline-position"
+          aria-live="polite"
+          aria-label={`Step ${activeIndex + 1} of ${pipelineSteps.length}: ${
+            pipelineSteps[activeIndex].title
+          }`}
+        >
+          <span>{String(activeIndex + 1).padStart(2, "0")}</span>
+          <i />
+          <span>{String(pipelineSteps.length).padStart(2, "0")}</span>
+        </div>
+      )}
 
       <div
         className="visual-backdrop"
         aria-hidden="true"
         data-phase={
-          activeIndex === 0 || activeIndex === pipelineSteps.length - 1
+          introActive ||
+          activeIndex === 0 ||
+          activeIndex === pipelineSteps.length - 1
             ? "surface"
             : "interior"
         }
@@ -302,6 +307,7 @@ export function ResearchPage() {
       </div>
 
       <main>
+        <IntroSection active={introActive} />
         {pipelineSteps.map((step, index) => (
           <PipelineSection
             active={step.id === activeId}
@@ -330,6 +336,57 @@ export function ResearchPage() {
         </nav>
       </footer>
     </>
+  );
+}
+
+function IntroSection({ active }: { active: boolean }) {
+  return (
+    <section
+      className={`intro-section ${active ? "is-active" : ""}`}
+      id="intro"
+      aria-labelledby="intro-title"
+    >
+      <div className="intro-layout">
+        <div className="intro-copy">
+          <p className="intro-kicker">
+            Motor imagery <span>·</span> EEG <span>·</span> Machine learning
+          </p>
+          <h1 id="intro-title">
+            Can computers <span>read minds?</span>
+          </h1>
+          <p className="intro-answer">
+            Not in the science-fiction sense. EEG can, however, capture changes
+            in brain activity while someone imagines moving a hand.
+          </p>
+          <p className="intro-project">
+            We tested whether machine-learning models can recognize those
+            patterns consistently across different people.
+          </p>
+          <dl className="intro-facts">
+            <div>
+              <dd>87</dd>
+              <dt>participants</dt>
+            </div>
+            <div>
+              <dd>694</dd>
+              <dt>recordings</dt>
+            </div>
+            <div>
+              <dd>2</dd>
+              <dt>imagined movements</dt>
+            </div>
+          </dl>
+          <a className="intro-action" href="#problem">
+            <span>See how we tested it</span>
+            <b aria-hidden="true">↓</b>
+          </a>
+        </div>
+        <div className="intro-visual-note" aria-hidden="true">
+          <span>EEG measures activity</span>
+          <strong>Patterns, not private thoughts.</strong>
+        </div>
+      </div>
+    </section>
   );
 }
 

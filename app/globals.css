@@ -394,6 +394,200 @@ main {
   z-index: 5;
 }
 
+.intro-section {
+  position: relative;
+  display: grid;
+  min-height: 100svh;
+  align-items: center;
+  padding: calc(var(--header-height) + clamp(48px, 8vh, 92px))
+    clamp(24px, 6vw, 100px) clamp(56px, 8vh, 96px);
+  overflow: hidden;
+  scroll-margin-top: var(--header-height);
+}
+
+.intro-section::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--page-deep) 94%, transparent) 0%,
+    color-mix(in srgb, var(--page-deep) 72%, transparent) 40%,
+    transparent 68%
+  );
+  content: "";
+}
+
+.intro-layout {
+  display: grid;
+  width: min(1280px, 100%);
+  grid-template-columns: minmax(0, 0.94fr) minmax(360px, 1.06fr);
+  gap: clamp(42px, 7vw, 110px);
+  align-items: center;
+  margin: 0 auto;
+}
+
+.intro-copy {
+  position: relative;
+  z-index: 3;
+  max-width: 760px;
+  opacity: 0.45;
+  transform: translateY(18px);
+  transition:
+    opacity 520ms ease,
+    transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.intro-section.is-active .intro-copy {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.intro-kicker {
+  margin: 0 0 26px;
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.intro-kicker span {
+  margin-inline: 8px;
+  color: var(--coral);
+}
+
+.intro-copy h1 {
+  max-width: 8.5ch;
+  margin: 0 0 30px;
+  font-size: clamp(68px, 7.2vw, 112px);
+  font-weight: 650;
+  letter-spacing: -0.068em;
+  line-height: 0.9;
+  text-wrap: balance;
+}
+
+.intro-copy h1 span {
+  display: block;
+  color: var(--cyan);
+}
+
+.intro-answer {
+  max-width: 43ch;
+  margin: 0 0 16px;
+  color: var(--ink);
+  font-size: clamp(19px, 1.55vw, 23px);
+  font-weight: 560;
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+
+.intro-project {
+  max-width: 52ch;
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+
+.intro-facts {
+  display: grid;
+  max-width: 580px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 34px 0 28px;
+  border-top: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line);
+}
+
+.intro-facts > div {
+  min-width: 0;
+  padding: 18px 18px 18px 0;
+}
+
+.intro-facts > div + div {
+  padding-left: 18px;
+  border-left: 1px solid var(--line);
+}
+
+.intro-facts dd {
+  margin: 0 0 7px;
+  color: var(--gold);
+  font-size: clamp(25px, 2.5vw, 36px);
+  font-weight: 650;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.intro-facts dt {
+  color: var(--ink-faint);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.intro-action {
+  display: inline-flex;
+  min-height: 52px;
+  align-items: center;
+  gap: 28px;
+  padding: 0 18px 0 22px;
+  border: 1px solid var(--line-strong);
+  color: var(--page-deep);
+  background: linear-gradient(100deg, var(--gold), var(--cyan));
+  text-decoration: none;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.intro-action:hover {
+  box-shadow: 0 14px 36px color-mix(in srgb, var(--cyan) 18%, transparent);
+  transform: translateY(-2px);
+}
+
+.intro-action span {
+  font-size: 12px;
+  font-weight: 720;
+}
+
+.intro-action b {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.intro-visual-note {
+  align-self: end;
+  justify-self: end;
+  width: min(290px, 100%);
+  margin: 0 2vw 4vh 0;
+  padding: 18px 0 0 18px;
+  border-top: 1px solid var(--line-strong);
+  border-left: 2px solid var(--coral);
+  text-align: right;
+}
+
+.intro-visual-note span,
+.intro-visual-note strong {
+  display: block;
+}
+
+.intro-visual-note span {
+  margin-bottom: 7px;
+  color: var(--ink-faint);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.intro-visual-note strong {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 650;
+}
+
 .pipeline-section {
   display: grid;
   min-height: max(660px, calc(92svh - var(--header-height)));
@@ -402,6 +596,7 @@ main {
   scroll-margin-top: var(--header-height);
 }
 
+.intro-section + .pipeline-section,
 .pipeline-section + .pipeline-section {
   border-top: 1px solid var(--line);
 }
@@ -1393,6 +1588,15 @@ main {
     font-size: clamp(42px, 5vw, 62px);
   }
 
+  .intro-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 0.72fr);
+    gap: 42px;
+  }
+
+  .intro-copy h1 {
+    font-size: clamp(64px, 7.5vw, 88px);
+  }
+
   .problem-visual,
   .acquisition-visual,
   .cleaning-visual,
@@ -1461,6 +1665,43 @@ main {
   .pipeline-position {
     right: 10px;
     bottom: 10px;
+  }
+
+  .intro-section {
+    min-height: 100svh;
+    padding: calc(var(--header-height) + 42px) 20px 58px;
+  }
+
+  .intro-section::before {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--page-deep) 38%, transparent),
+        color-mix(in srgb, var(--page-deep) 92%, transparent) 48%,
+        var(--page-deep) 100%
+      );
+  }
+
+  .intro-layout {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+
+  .intro-copy {
+    max-width: 660px;
+  }
+
+  .intro-copy h1 {
+    max-width: 8ch;
+    font-size: clamp(56px, 13vw, 82px);
+  }
+
+  .intro-answer {
+    font-size: 18px;
+  }
+
+  .intro-visual-note {
+    display: none;
   }
 
   .backdrop-brain {
@@ -1551,6 +1792,57 @@ main {
 }
 
 @media (max-width: 520px) {
+  .intro-section {
+    padding-inline: 16px;
+  }
+
+  .intro-kicker {
+    margin-bottom: 20px;
+    font-size: 8px;
+  }
+
+  .intro-kicker span {
+    margin-inline: 4px;
+  }
+
+  .intro-copy h1 {
+    margin-bottom: 24px;
+    font-size: clamp(50px, 15vw, 66px);
+  }
+
+  .intro-answer {
+    font-size: 16px;
+  }
+
+  .intro-project {
+    font-size: 12px;
+  }
+
+  .intro-facts {
+    margin-block: 28px 24px;
+  }
+
+  .intro-facts > div {
+    padding: 15px 10px;
+  }
+
+  .intro-facts > div:first-child {
+    padding-left: 0;
+  }
+
+  .intro-facts dd {
+    font-size: 25px;
+  }
+
+  .intro-facts dt {
+    font-size: 7px;
+  }
+
+  .intro-action {
+    width: 100%;
+    justify-content: space-between;
+  }
+
   .metric-strip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

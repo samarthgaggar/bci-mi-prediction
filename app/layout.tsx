@@ -18,17 +18,17 @@ const mono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://bci-performance-variability.ucd-cosmos-a-8231.chatgpt.site"),
-  title: "Predicting Motor Imagery from EEG · BCI Research Project",
+  title: "Can Computers Read Minds? · Motor Imagery BCI",
   description:
-    "A visual journey through nine data-science stages, from EEG acquisition to a 60.20% locked motor-imagery result.",
+    "See how EEG and machine learning can distinguish imagined hand movements across different participants.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
   },
   openGraph: {
-    title: "Predicting Motor Imagery from EEG",
+    title: "Can Computers Read Minds?",
     description:
-      "Travel through a graph-led EEG pipeline from problem formulation to a 60.20% locked result.",
+      "A visual, graph-led study of imagined hand movements, participant variability, and honest locked evaluation.",
     type: "website",
     images: [
       {
@@ -41,9 +41,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Predicting Motor Imagery from EEG",
+    title: "Can Computers Read Minds?",
     description:
-      "Nine visual stages from EEG acquisition to honest locked evaluation.",
+      "How EEG and machine learning can recognize imagined movement patterns across different people.",
     images: ["/og.png"],
   },
 };

@@ -65,8 +65,16 @@ test("server-renders the nine-stop visual data-science pipeline", async () => {
   const html = await response.text();
   assert.match(
     html,
-    /<title>Predicting Motor Imagery from EEG · BCI Research Project<\/title>/i,
+    /<title>Can Computers Read Minds\? · Motor Imagery BCI<\/title>/i,
   );
+  assert.match(html, /Can computers <span>read minds\?<\/span>/i);
+  assert.match(html, /Not in the science-fiction sense\./i);
+  assert.match(
+    html,
+    /We tested whether machine-learning models can recognize those patterns consistently across different people\./i,
+  );
+  assert.match(html, /Patterns, not private thoughts\./i);
+  assert.match(html, /See how we tested it/i);
   for (const heading of [
     /Problem Formulation/i,
     /Data Acquisition/i,
@@ -118,6 +126,10 @@ test("renders exactly nine stable anchors with compact controls", async () => {
     assert.match(html, new RegExp(`href="#${anchor}"`));
   }
 
+  assert.match(html, /id="intro"/);
+  assert.match(html, /href="#intro"/);
+  assert.match(html, /href="#problem"/);
+
   for (const retired of [
     "bci",
     "background",
@@ -141,8 +153,25 @@ test("renders exactly nine stable anchors with compact controls", async () => {
   assert.match(html, />Auto <b>Off<\/b>/);
   assert.match(html, /aria-pressed="false"/);
   assert.match(html, /Motion <b>On<\/b>/);
-  assert.match(html, /aria-live="polite"/);
   assert.doesNotMatch(html, /<details\b|role="dialog"/);
+});
+
+test("keeps the landing page unnumbered and visually separate from the pipeline", async () => {
+  const [page, css, content] = await Promise.all([
+    readFile(path.join(projectRoot, "components/research-page.tsx"), "utf8"),
+    readFile(path.join(projectRoot, "app/globals.css"), "utf8"),
+    readFile(path.join(projectRoot, "lib/research-content.ts"), "utf8"),
+  ]);
+
+  assert.match(page, /<IntroSection active=\{introActive\} \/>/);
+  assert.match(page, /function IntroSection/);
+  assert.match(page, /useState\("intro"\)/);
+  assert.match(page, /\["intro", \.\.\.pipelineSteps\.map/);
+  assert.match(css, /\.intro-section\s*\{[\s\S]*?min-height:\s*100svh/);
+  assert.match(css, /\.intro-layout\s*\{[\s\S]*?width:\s*min\(1280px,\s*100%\)/);
+  assert.match(css, /\.intro-copy h1\s*\{[\s\S]*?font-size:\s*clamp\(68px,\s*7\.2vw,\s*112px\)/);
+  assert.match(css, /\.intro-facts\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
+  assert.doesNotMatch(content, /id: "intro"|number: "00"/);
 });
 
 test("publishes only verified, clearly labeled research metrics", async () => {
