@@ -8,20 +8,21 @@ import {
   useMemo,
   useRef,
   useState,
-  type RefObject,
+  type CSSProperties,
+  type ReactNode,
 } from "react";
 import {
-  developmentModelMetrics,
-  finalTestMetrics,
-  featuredResultFigures,
-  lockedModelMetrics,
+  developmentModels,
+  edaFigures,
+  evaluationFigures,
+  lockedModels,
+  modelingFigures,
   pipelineSteps,
+  predictionFigures,
   primarySources,
-  researchSections,
-  resultFigureGroups,
-  resultTables,
-  selectionMetrics,
-  type ResultFigure,
+  validationFigures,
+  type FigureChoice,
+  type PipelineStep,
 } from "../lib/research-content";
 
 const BrainScene = lazy(() => import("./brain-scene"));
@@ -48,28 +49,25 @@ function smooth(value: number) {
 }
 
 export function ResearchPage() {
-  const [activeId, setActiveId] = useState("start");
+  const [activeId, setActiveId] = useState(pipelineSteps[0].id);
   const [progress, setProgress] = useState(0);
-  const [transitionProgress, setTransitionProgress] = useState(0);
-  const [sceneReady, setSceneReady] = useState(false);
-  const [webGL, setWebGL] = useState(true);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [motionEnabled, setMotionEnabled] = useState(true);
   const [autoScrollEnabled, setAutoScrollEnabled] = useState(false);
-  const [contentsOpen, setContentsOpen] = useState(false);
-  const transitionRef = useRef<HTMLElement>(null);
-  const contentsButtonRef = useRef<HTMLButtonElement>(null);
-  const contentsPanelRef = useRef<HTMLElement>(null);
+  const [sceneReady, setSceneReady] = useState(false);
+  const [webGL, setWebGL] = useState(true);
   const autoScrollFrameRef = useRef(0);
   const autoScrollTimeRef = useRef(0);
-  const autoScrollLoopPauseRef = useRef(0);
+  const autoScrollPauseRef = useRef(0);
 
   useEffect(() => {
-    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const savedTheme = window.localStorage.getItem("bci-theme");
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     const setup = window.requestAnimationFrame(() => {
       setTheme(savedTheme === "light" || savedTheme === "dark" ? savedTheme : "dark");
-      setMotionEnabled(!prefersReduced);
+      setMotionEnabled(!reducedMotion);
       setWebGL(supportsWebGL());
     });
     const idle = window.setTimeout(() => setSceneReady(true), 180);
@@ -89,81 +87,28 @@ export function ResearchPage() {
   }, [motionEnabled]);
 
   useEffect(() => {
-    if (!autoScrollEnabled) {
-      window.cancelAnimationFrame(autoScrollFrameRef.current);
-      autoScrollTimeRef.current = 0;
-      autoScrollLoopPauseRef.current = 0;
-      return;
-    }
-
-    const reducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    const pixelsPerSecond = reducedMotion ? 36 : 64;
-    const previousScrollBehavior =
-      document.documentElement.style.scrollBehavior;
-    document.documentElement.style.scrollBehavior = "auto";
-
-    const advance = (time: number) => {
-      if (!autoScrollTimeRef.current) autoScrollTimeRef.current = time;
-      const elapsed = Math.min(time - autoScrollTimeRef.current, 64);
-      autoScrollTimeRef.current = time;
-
-      if (!contentsOpen && time >= autoScrollLoopPauseRef.current) {
-        const maximum =
-          document.documentElement.scrollHeight - window.innerHeight;
-
-        if (window.scrollY >= maximum - 2) {
-          window.scrollTo(0, 0);
-          autoScrollLoopPauseRef.current = time + 1100;
-        } else {
-          window.scrollBy(0, (pixelsPerSecond * elapsed) / 1000);
-        }
-      }
-
-      autoScrollFrameRef.current = window.requestAnimationFrame(advance);
-    };
-
-    autoScrollFrameRef.current = window.requestAnimationFrame(advance);
-    return () => {
-      window.cancelAnimationFrame(autoScrollFrameRef.current);
-      autoScrollTimeRef.current = 0;
-      autoScrollLoopPauseRef.current = 0;
-      document.documentElement.style.scrollBehavior = previousScrollBehavior;
-    };
-  }, [autoScrollEnabled, contentsOpen]);
+    const sections = pipelineSteps
+      .map((step) => document.getElementById(step.id))
+      .filter(Boolean) as HTMLElement[];
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible) setActiveId(visible.target.id);
+      },
+      { rootMargin: "-24% 0px -42% 0px", threshold: [0.12, 0.35, 0.65] },
+    );
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     let frame = 0;
-    const sections = researchSections
-      .map((section) => document.getElementById(section.id))
-      .filter(Boolean) as HTMLElement[];
-
     const update = () => {
-      const pageHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const pageHeight =
+        document.documentElement.scrollHeight - window.innerHeight;
       setProgress(pageHeight > 0 ? clamp(window.scrollY / pageHeight) : 0);
-
-      const readingLine = window.innerHeight * 0.42;
-      let nextActiveSection = sections[0];
-      for (const section of sections) {
-        if (section.getBoundingClientRect().top <= readingLine) {
-          nextActiveSection = section;
-        } else {
-          break;
-        }
-      }
-      if (nextActiveSection) {
-        setActiveId((current) =>
-          current === nextActiveSection.id ? current : nextActiveSection.id,
-        );
-      }
-
-      const transition = transitionRef.current;
-      if (transition) {
-        const rect = transition.getBoundingClientRect();
-        const distance = rect.height - window.innerHeight;
-        setTransitionProgress(distance > 0 ? clamp(-rect.top / distance) : 0);
-      }
     };
     const onScroll = () => {
       window.cancelAnimationFrame(frame);
@@ -180,77 +125,95 @@ export function ResearchPage() {
   }, []);
 
   useEffect(() => {
-    if (!contentsOpen) return;
-    const panel = contentsPanelRef.current;
-    const contentsButton = contentsButtonRef.current;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    if (!autoScrollEnabled) {
+      window.cancelAnimationFrame(autoScrollFrameRef.current);
+      autoScrollTimeRef.current = 0;
+      autoScrollPauseRef.current = 0;
+      return;
+    }
 
-    const focusable = panel?.querySelectorAll<HTMLElement>(
-      'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
-    );
-    focusable?.[0]?.focus();
+    const previousScrollBehavior =
+      document.documentElement.style.scrollBehavior;
+    document.documentElement.style.scrollBehavior = "auto";
+    const pixelsPerSecond = motionEnabled ? 82 : 44;
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setContentsOpen(false);
-        return;
+    const advance = (time: number) => {
+      if (!autoScrollTimeRef.current) autoScrollTimeRef.current = time;
+      const elapsed = Math.min(time - autoScrollTimeRef.current, 64);
+      autoScrollTimeRef.current = time;
+      const maximum =
+        document.documentElement.scrollHeight - window.innerHeight;
+
+      if (time >= autoScrollPauseRef.current) {
+        if (window.scrollY >= maximum - 2) {
+          window.scrollTo(0, 0);
+          autoScrollPauseRef.current = time + 1200;
+        } else {
+          window.scrollBy(0, (pixelsPerSecond * elapsed) / 1000);
+        }
       }
-      if (event.key !== "Tab" || !focusable?.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
+      autoScrollFrameRef.current = window.requestAnimationFrame(advance);
     };
 
-    window.addEventListener("keydown", handleKeyDown);
+    autoScrollFrameRef.current = window.requestAnimationFrame(advance);
     return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", handleKeyDown);
-      contentsButton?.focus();
+      window.cancelAnimationFrame(autoScrollFrameRef.current);
+      document.documentElement.style.scrollBehavior = previousScrollBehavior;
     };
-  }, [contentsOpen]);
+  }, [autoScrollEnabled, motionEnabled]);
 
   const activeIndex = useMemo(
-    () => Math.max(0, researchSections.findIndex((section) => section.id === activeId)),
+    () =>
+      Math.max(
+        0,
+        pipelineSteps.findIndex((step) => step.id === activeId),
+    ),
     [activeId],
   );
-  const activeSection = researchSections[activeIndex];
-  const approachZoom = smooth(transitionProgress);
-  const returnZoom = smooth(clamp((progress - 0.955) / 0.045));
+  const journeyProgress = motionEnabled
+    ? progress
+    : activeIndex / (pipelineSteps.length - 1);
+  const enterZoom = smooth(journeyProgress / 0.15);
+  const exitZoom = smooth((journeyProgress - 0.88) / 0.12);
   const brainOpacity = Math.max(
-    1 - smooth(clamp((transitionProgress - 0.68) / 0.28)),
-    returnZoom,
+    1 - smooth((journeyProgress - 0.075) / 0.11),
+    exitZoom,
   );
   const brainScale =
-    returnZoom > 0
-      ? 6.25 - returnZoom * 5.25
-      : 1 + approachZoom * 5.25;
+    exitZoom > 0 ? 5.8 - exitZoom * 4.8 : 1 + enterZoom * 4.8;
 
   return (
     <>
-      <a className="skip-link" href="#start">
-        Skip to the project overview
+      <a className="skip-link" href="#problem">
+        Skip to the pipeline
       </a>
 
       <header className="site-header">
-        <a className="brand" href="#start" aria-label="Motor Imagery BCI project home">
-          <span className="brand-mark" aria-hidden="true">MI</span>
-          <span className="brand-copy">
-            <strong>Motor Imagery BCI</strong>
-            <small>EEG classification study</small>
+        <a className="brand" href="#problem" aria-label="Motor Imagery BCI home">
+          <span className="brand-mark" aria-hidden="true">
+            BCI
+          </span>
+          <span>
+            <strong>EEG → Prediction</strong>
+            <small>Data science pipeline</small>
           </span>
         </a>
+
+        <nav className="pipeline-nav" aria-label="Data science pipeline">
+          {pipelineSteps.map((step) => (
+            <a
+              href={`#${step.id}`}
+              key={step.id}
+              aria-current={step.id === activeId ? "step" : undefined}
+              title={step.title}
+            >
+              <span>{step.number}</span>
+              <b>{step.navLabel}</b>
+            </a>
+          ))}
+        </nav>
+
         <div className="header-actions">
-          <span className="research-state">
-            <span className="state-dot" aria-hidden="true" />
-            Analysis complete
-          </span>
           <button
             className={`auto-scroll-button ${
               autoScrollEnabled ? "is-active" : ""
@@ -258,78 +221,57 @@ export function ResearchPage() {
             type="button"
             onClick={() => setAutoScrollEnabled((value) => !value)}
             aria-pressed={autoScrollEnabled}
-            aria-label={
-              autoScrollEnabled
-                ? "Turn off automatic scrolling"
-                : "Turn on automatic scrolling"
-            }
           >
-            <span className="auto-scroll-label">Auto scroll</span>
-            <span className="auto-scroll-state">
-              {autoScrollEnabled ? "On" : "Off"}
-            </span>
+            Auto <b>{autoScrollEnabled ? "On" : "Off"}</b>
           </button>
           <button
-            ref={contentsButtonRef}
-            className="contents-button"
-            type="button"
-            onClick={() => setContentsOpen((value) => !value)}
-            aria-expanded={contentsOpen}
-            aria-controls="contents-panel"
-          >
-            <span>Index</span>
-          </button>
-          <button
-            className="text-control"
+            className="text-button"
             type="button"
             onClick={() => setMotionEnabled((value) => !value)}
             aria-pressed={!motionEnabled}
-            aria-label={motionEnabled ? "Pause visual motion" : "Resume visual motion"}
           >
-            <span>Motion</span>
-            <b>{motionEnabled ? "On" : "Off"}</b>
+            Motion <b>{motionEnabled ? "On" : "Off"}</b>
           </button>
           <button
-            className="text-control"
+            className="text-button"
             type="button"
-            onClick={() => setTheme((value) => (value === "light" ? "dark" : "light"))}
-            aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
+            onClick={() =>
+              setTheme((value) => (value === "light" ? "dark" : "light"))
+            }
           >
-            <span>Theme</span>
-            <b>{theme === "light" ? "Light" : "Dark"}</b>
+            {theme === "light" ? "Dark" : "Light"}
           </button>
         </div>
       </header>
-      <span className="auto-scroll-announcement" aria-live="polite">
-        Automatic scrolling is {autoScrollEnabled ? "on" : "off"}.
-      </span>
-
-      {contentsOpen && (
-        <div
-          className="contents-backdrop"
-          aria-hidden="true"
-          onClick={() => setContentsOpen(false)}
-        />
-      )}
-      <ContentsPanel
-        activeId={activeId}
-        activeIndex={activeIndex}
-        open={contentsOpen}
-        onClose={() => setContentsOpen(false)}
-        panelRef={contentsPanelRef}
-      />
 
       <div className="page-progress" aria-hidden="true">
-        <span className="page-progress-fill" style={{ transform: `scaleX(${progress})` }} />
-        <span className="page-progress-node" style={{ left: `${progress * 100}%` }} />
+        <span style={{ transform: `scaleX(${progress})` }} />
       </div>
 
-      <div className="scene-layer" aria-hidden="true" data-phase={activeSection.phase}>
-        <div className="scene-grid" />
-        <div className="scene-halo scene-halo-coral" />
-        <div className="scene-halo scene-halo-blue" />
+      <div
+        className="pipeline-position"
+        aria-live="polite"
+        aria-label={`Step ${activeIndex + 1} of ${pipelineSteps.length}: ${
+          pipelineSteps[activeIndex].title
+        }`}
+      >
+        <span>{String(activeIndex + 1).padStart(2, "0")}</span>
+        <i />
+        <span>{String(pipelineSteps.length).padStart(2, "0")}</span>
+      </div>
+
+      <div
+        className="visual-backdrop"
+        aria-hidden="true"
+        data-phase={
+          activeIndex === 0 || activeIndex === pipelineSteps.length - 1
+            ? "surface"
+            : "interior"
+        }
+      >
+        <div className="ambient-grid" />
         <Image
-          className="anatomical-brain"
+          className="backdrop-brain"
           src="/brain-anatomy.svg"
           alt=""
           width={1200}
@@ -338,651 +280,468 @@ export function ResearchPage() {
           unoptimized
           style={{
             opacity: brainOpacity,
-            transform: `translate(-50%, -50%) rotate(${(-1.5 + approachZoom * 3) * (motionEnabled ? 1 : 0)}deg) scale(${brainScale})`,
+            transform: `translate3d(-50%, -50%, 0) rotate(${
+              motionEnabled ? -2 + enterZoom * 4 - exitZoom * 2 : 0
+            }deg) scale(${brainScale})`,
           }}
         />
         {sceneReady && webGL ? (
-          <Suspense fallback={<BrainFallback label="Preparing the brain visualization" />}>
-            <BrainScene progress={progress} motionEnabled={motionEnabled} dark={theme === "dark"} />
+          <Suspense fallback={null}>
+            <BrainScene
+              progress={journeyProgress}
+              motionEnabled={motionEnabled}
+              dark={theme === "dark"}
+            />
           </Suspense>
-        ) : (
-          <BrainFallback
-            label={webGL ? "Preparing the brain visualization" : "Static brain visualization"}
-          />
-        )}
+        ) : null}
+        <div className="neural-field">
+          {Array.from({ length: 18 }, (_, index) => (
+            <span key={index} />
+          ))}
+        </div>
       </div>
 
-      <main className="research-main">
-        <HeroSection active={activeId === "start"} />
-
-        <section
-          ref={transitionRef}
-          className="brain-transition"
-          id="approach"
-          aria-label="Brain and EEG signal visualization"
-        >
-          <div className="brain-transition-sticky">
-            <div
-              className="brain-focus-neuron"
-              aria-hidden="true"
-              style={{
-                opacity: 0.28 + transitionProgress * 0.58,
-                transform: `translate(-50%, -50%) scale(${1.18 - transitionProgress * 0.38})`,
-              }}
-            >
-              <svg viewBox="0 0 240 240" role="presentation">
-                <g className="neuron-dendrites">
-                  <path d="M120 112 94 91 68 88 51 70 31 72" />
-                  <path d="M96 92 82 67 86 45 73 27" />
-                  <path d="M112 91 111 64 126 44 124 22" />
-                  <path d="M130 94 151 69 176 65 190 45" />
-                  <path d="M145 105 172 93 197 99 216 86" />
-                  <path d="M144 123 172 132 194 126 215 143" />
-                  <path d="M101 129 76 145 52 142 33 158" />
-                  <path d="M92 116 66 111 45 121 23 113" />
-                </g>
-                <path
-                  className="neuron-axon"
-                  d="M124 129 C132 149 122 165 139 178 S171 194 178 219"
-                />
-                <g className="neuron-terminals">
-                  <circle cx="31" cy="72" r="4" />
-                  <circle cx="73" cy="27" r="4" />
-                  <circle cx="124" cy="22" r="4" />
-                  <circle cx="190" cy="45" r="4" />
-                  <circle cx="216" cy="86" r="4" />
-                  <circle cx="215" cy="143" r="4" />
-                  <circle cx="33" cy="158" r="4" />
-                  <circle cx="23" cy="113" r="4" />
-                </g>
-                <circle className="neuron-soma" cx="120" cy="112" r="25" />
-                <circle className="neuron-nucleus" cx="114" cy="107" r="8" />
-                <circle className="neuron-signal" cx="178" cy="219" r="6" />
-              </svg>
-            </div>
-          </div>
-        </section>
-
-        {researchSections.slice(1).map((section, visibleIndex) => {
-          const index = visibleIndex + 1;
-          const isFinal = section.id === "return";
-          return (
-            <section
-              className={`research-section research-section-${section.side} ${
-                isFinal ? "final-section" : ""
-              } ${activeId === section.id ? "is-active" : ""}`}
-              id={section.id}
-              key={section.id}
-              aria-labelledby={`${section.id}-title`}
-              data-phase={section.phase}
-            >
-              <div className="section-pulse" aria-hidden="true" />
-              <div className="section-inner">
-                <article className="section-card">
-                  <div className="section-marker">{section.sectionLabel}</div>
-
-                  <div className="eyebrow">
-                    <span className={`status-chip status-${section.status}`}>
-                      {section.statusLabel}
-                    </span>
-                    <span className="section-index">
-                      {isFinal ? "Primary references" : String(index).padStart(2, "0")}
-                    </span>
-                  </div>
-
-                  <h2 id={`${section.id}-title`}>{section.question}</h2>
-                  <p className="simple-answer">{section.simpleAnswer}</p>
-
-                  {section.metrics && <Metrics metrics={section.metrics} />}
-                  {section.id === "method" && <MethodDiagram />}
-                  {section.id === "pipeline" && <Pipeline />}
-                  {section.id === "models" && <DevelopmentModels />}
-                  {section.id === "results" && <LockedResults />}
-                  {section.id === "figures" && <FigureLibrary />}
-                  {section.id === "future" && <Limitations />}
-
-                  <details className="technical-note" open={isFinal}>
-                    <summary>
-                      <span>{isFinal ? "Scope and interpretation" : "Methods, scope, and sources"}</span>
-                      <span className="details-mark" aria-hidden="true" />
-                    </summary>
-                    <div className="technical-body">
-                      <p>{section.technicalDetail}</p>
-                      <div className="source-links" aria-label="Sources for this section">
-                        {section.sources.map((source) => (
-                          <a key={source.href} href={source.href} target="_blank" rel="noreferrer">
-                            {source.label}
-                            <span aria-hidden="true">↗</span>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  </details>
-
-                  {isFinal && <FinalSources />}
-                </article>
-              </div>
-            </section>
-          );
-        })}
+      <main>
+        {pipelineSteps.map((step, index) => (
+          <PipelineSection
+            active={step.id === activeId}
+            first={index === 0}
+            key={step.id}
+            step={step}
+          />
+        ))}
       </main>
 
       <footer className="site-footer">
         <div>
-          <span className="footer-kicker">Motor imagery BCI research</span>
-          <p>69.6% all-participant mean BA · 68.25% held-out test accuracy.</p>
+          <span>Motor Imagery BCI</span>
+          <strong>From signal to evidence.</strong>
         </div>
-        <div className="footer-links">
+        <nav aria-label="Research sources">
           <a href={primarySources.zenodo.href} target="_blank" rel="noreferrer">
-            Dataset
+            Dataset ↗
           </a>
           <a href={primarySources.paper.href} target="_blank" rel="noreferrer">
-            Paper
+            Paper ↗
           </a>
-          <a
-            href={primarySources.analysisRepository.href}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Analysis
+          <a href={primarySources.analysis.href} target="_blank" rel="noreferrer">
+            Analysis ↗
           </a>
-          <a href="#integrity">Integrity</a>
-          <a href="#start">Back to overview</a>
-        </div>
-        <p className="asset-credit">
-          Anatomical brain graphic:{" "}
-          <a
-            href="https://commons.wikimedia.org/wiki/File:Brain-diagram-pink-6289600.svg"
-            target="_blank"
-            rel="noreferrer"
-          >
-            CC0 lateral-view illustration via Wikimedia Commons
-          </a>
-          . The neuron animation is an educational visualization, not a diagnostic
-          model. Research facts link to the public Zenodo record and Scientific Data
-          descriptor.
-        </p>
+        </nav>
       </footer>
     </>
   );
 }
 
-function HeroSection({ active }: { active: boolean }) {
-  const section = researchSections[0];
+function PipelineSection({
+  step,
+  active,
+  first,
+}: {
+  step: PipelineStep;
+  active: boolean;
+  first: boolean;
+}) {
   return (
-      <section
-        className={`research-section hero-section ${active ? "is-active" : ""}`}
-        id="start"
-        aria-labelledby="start-title"
-      >
-      <div className="section-inner hero-layout">
-        <article className="hero-copy">
-          <p className="hero-kicker">Motor imagery BCI / EEG classification</p>
-          <h1 id="start-title">
-            Predicting Motor Imagery
-            <span>from EEG</span>
-          </h1>
-          <p className="hero-summary">{section.simpleAnswer}</p>
-          <div className="hero-meta" aria-label="Verified CSP–MLP summary">
-            <span><b>69.6%</b> all-participant mean BA</span>
-            <span><b>68.25%</b> held-out test accuracy</span>
-            <span><b>79</b> evaluated participants</span>
+    <section
+      className={`pipeline-section is-${step.side} has-${step.visual} ${
+        active ? "is-active" : ""
+      } ${first ? "is-first" : ""}`}
+      id={step.id}
+      aria-labelledby={`${step.id}-title`}
+    >
+      <div className="pipeline-layout">
+        <div className="stage-copy">
+          <div className="stage-label">
+            <span>{step.number}</span>
+            <b>Data science pipeline</b>
           </div>
-          <p className="hero-status">Research status <span>Versioned notebook results</span></p>
-        </article>
+          <h1 id={`${step.id}-title`}>{step.title}</h1>
+          <p className="stage-statement">{step.statement}</p>
+          <p className="stage-takeaway">{step.takeaway}</p>
+          <MetricStrip metrics={step.metrics} />
+          <div className="stage-sources" aria-label="Sources">
+            {step.sources.map((source) => (
+              <a
+                href={source.href}
+                key={source.href}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {source.label} ↗
+              </a>
+            ))}
+          </div>
+        </div>
+        <div className="stage-visual">
+          <StepVisual visual={step.visual} />
+        </div>
       </div>
     </section>
   );
 }
 
-function ContentsPanel({
-  activeId,
-  activeIndex,
-  open,
-  onClose,
-  panelRef,
-}: {
-  activeId: string;
-  activeIndex: number;
-  open: boolean;
-  onClose: () => void;
-  panelRef: RefObject<HTMLElement | null>;
-}) {
-  return (
-    <aside
-      ref={panelRef}
-      className={`contents-panel ${open ? "is-open" : ""}`}
-      id="contents-panel"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="contents-title"
-      aria-hidden={!open}
-    >
-      <div className="contents-head">
-        <span id="contents-title">Project index</span>
-        <button
-          className="contents-close"
-          type="button"
-          onClick={onClose}
-          aria-label="Close contents"
-          tabIndex={open ? 0 : -1}
-        >
-          <span aria-hidden="true">×</span>
-        </button>
-      </div>
-      <div className="contents-current">
-        <span>{String(activeIndex + 1).padStart(2, "0")}</span>
-        <p>
-          Current section
-          <strong>{researchSections[activeIndex].navLabel}</strong>
-        </p>
-      </div>
-      <nav aria-label="Research contents">
-        <ol>
-          {researchSections.map((section, index) => (
-            <li key={section.id}>
-              <a
-                href={`#${section.id}`}
-                aria-current={activeId === section.id ? "location" : undefined}
-                onClick={onClose}
-                tabIndex={open ? 0 : -1}
-              >
-                <span className="contents-number" aria-hidden="true">
-                  {String(index).padStart(2, "0")}
-                </span>
-                <strong>{section.navLabel}</strong>
-              </a>
-            </li>
-          ))}
-        </ol>
-      </nav>
-    </aside>
-  );
-}
-
-function BrainFallback({ label }: { label: string }) {
-  return (
-    <div className="brain-fallback" role="img" aria-label={label}>
-      <span>{label}</span>
-    </div>
-  );
-}
-
-function Metrics({
+function MetricStrip({
   metrics,
 }: {
-  metrics: readonly { value: string; label: string; detail: string }[];
+  metrics: readonly { value: string; label: string; note: string }[];
 }) {
   return (
-    <dl className="metrics-grid">
-      {metrics.map((metric, index) => (
-        <div className="metric-card" key={`${metric.label}-${metric.value}`}>
-          <dt>
-            <span>{String(index + 1).padStart(2, "0")}</span>
-            {metric.label}
-          </dt>
+    <dl className="metric-strip">
+      {metrics.map((metric) => (
+        <div key={`${metric.label}-${metric.value}`}>
           <dd>{metric.value}</dd>
-          <p>{metric.detail}</p>
+          <dt>{metric.label}</dt>
+          <small>{metric.note}</small>
         </div>
       ))}
     </dl>
   );
 }
 
-function MethodDiagram() {
-  const steps = [
-    { title: "Baseline", detail: "Resting signals" },
-    { title: "Acquire", detail: "R1–R2" },
-    { title: "Imagine", detail: "Left or right" },
-    { title: "Feedback", detail: "R3–R6" },
-  ];
-
-  return (
-    <div className="method-diagram" aria-label="Documented session sequence">
-      {steps.map((step, index) => (
-        <div className="method-step" key={step.title}>
-          <span className="method-number">{String(index + 1).padStart(2, "0")}</span>
-          <span>
-            <strong>{step.title}</strong>
-            <small>{step.detail}</small>
-          </span>
-          {index < steps.length - 1 && <span className="method-line" aria-hidden="true" />}
-        </div>
-      ))}
-    </div>
-  );
+function StepVisual({ visual }: { visual: PipelineStep["visual"] }) {
+  if (visual === "question") return <ProblemVisual />;
+  if (visual === "acquisition") return <AcquisitionVisual />;
+  if (visual === "cleaning") return <CleaningVisual />;
+  if (visual === "eda") return <FigureSwitcher choices={edaFigures} />;
+  if (visual === "modeling") {
+    return (
+      <FigureSwitcher
+        choices={modelingFigures}
+        renderCustom={(id) =>
+          id === "comparison" ? (
+            <BarComparison
+              ariaLabel="Development accuracy by model"
+              data={developmentModels}
+              max={65}
+              min={50}
+              scaleLabel="Scale: 50–65% participant-run accuracy"
+            />
+          ) : null
+        }
+      />
+    );
+  }
+  if (visual === "prediction") {
+    return (
+      <FigureSwitcher
+        choices={predictionFigures}
+        renderCustom={(id) =>
+          id === "classifier" ? <PredictionFlow /> : null
+        }
+      />
+    );
+  }
+  if (visual === "evaluation") {
+    return (
+      <FigureSwitcher
+        choices={evaluationFigures}
+        renderCustom={(id) =>
+          id === "locked" ? (
+            <BarComparison
+              ariaLabel="Locked accuracy by system"
+              data={lockedModels}
+              max={70}
+              min={50}
+              scaleLabel="Scale: 50–70% · research goal at 70%"
+              showGoal
+            />
+          ) : null
+        }
+      />
+    );
+  }
+  if (visual === "validation") {
+    return (
+      <FigureSwitcher
+        choices={validationFigures}
+        renderCustom={(id) =>
+          id === "split" ? <ValidationSplit /> : null
+        }
+      />
+    );
+  }
+  return <CommunicationVisual />;
 }
 
-function Pipeline() {
+function ProblemVisual() {
   return (
-    <ol className="pipeline-list">
-      {pipelineSteps.map((step, index) => (
-        <li key={step}>
-          <span>{String(index + 1).padStart(2, "0")}</span>
-          <p>{step}</p>
-        </li>
-      ))}
-    </ol>
-  );
-}
-
-function DevelopmentModels() {
-  return (
-    <div className="development-results">
-      <div className="model-comparison" aria-label="Development model comparison">
-        {developmentModelMetrics.map((model, index) => (
-          <article className="model-row" key={model.model}>
-            <span className="model-rank">{String(index + 1).padStart(2, "0")}</span>
-            <div className="model-name">
-              <strong>{model.model}</strong>
-              <small>{model.role}</small>
-            </div>
-            <div className="model-score">
-              <strong>{model.value}</strong>
-              <small>{model.metric}</small>
-            </div>
-            <p>{model.detail}</p>
-          </article>
+    <div className="problem-visual" role="img" aria-label="Binary EEG classification task">
+      <span className="visual-kicker">Input / EEG signal</span>
+      <div className="signal-line">
+        {Array.from({ length: 22 }, (_, index) => (
+          <i key={index} />
         ))}
       </div>
-
-      <section className="training-readout" aria-labelledby="training-readout-title">
+      <div className="binary-choice">
         <div>
-          <span>CSP–MLP / final checkpoint</span>
-          <h3 id="training-readout-title">What “training accuracy” means here</h3>
-          <p>
-            The <strong>70.45% training accuracy is in-sample</strong>. The
-            participant-separated training estimate is 69.10% out-of-fold,
-            followed by 66.43% on held-out validation participants.
-          </p>
+          <span>769</span>
+          <strong>Imagine left</strong>
         </div>
-        <dl>
-          <div>
-            <dt>Architecture</dt>
-            <dd>12 → 16 → 8 → 2</dd>
-          </div>
-          <div>
-            <dt>Best epoch</dt>
-            <dd>48</dd>
-          </div>
-          <div>
-            <dt>Early stop</dt>
-            <dd>60</dd>
-          </div>
-          <div>
-            <dt>CSP features</dt>
-            <dd>12</dd>
-          </div>
-        </dl>
-      </section>
-
-      <section className="xgboost-readout" aria-labelledby="selection-title">
-        <div className="xgboost-copy">
-          <span>Training-only feature selection</span>
-          <h3 id="selection-title">What the folds selected</h3>
-          <p>
-            The 0.5–3.0 second cue window led cross-validation. A slightly
-            different mu band improved balanced accuracy by only 0.016
-            percentage points, below the required 0.20-point threshold.
-          </p>
+        <b>or</b>
+        <div>
+          <span>770</span>
+          <strong>Imagine right</strong>
         </div>
-        <Metrics metrics={selectionMetrics} />
-        <p className="model-caveat">
-          The final model therefore retained the original 8–13 Hz mu and
-          13–30 Hz beta bands. No validation or test result was used to change
-          that decision.
-        </p>
-      </section>
+      </div>
+      <div className="visual-answer">
+        <span>Output</span>
+        <strong>One predicted class</strong>
+      </div>
     </div>
   );
 }
 
-function LockedResults() {
+function AcquisitionVisual() {
   return (
-    <div className="locked-results">
-      <div className="locked-scoreboard" aria-label="CSP–MLP accuracy summary">
-        <div className="scoreboard-head">
-          <span>Evaluation</span>
-          <span>Reported value</span>
-        </div>
-        {lockedModelMetrics.map((model) => (
-          <article
-            className={`scoreboard-row ${model.recommended ? "is-best" : ""}`}
-            key={model.model}
-          >
-            <div className="scoreboard-label">
-              <strong>{model.model}</strong>
-              <small>{model.note}</small>
-            </div>
-            <div className="scoreboard-value">
-              <strong>{model.accuracy}</strong>
-              <span aria-hidden="true">
-                <i style={{ width: `${model.rawAccuracy}%` }} />
-              </span>
-            </div>
-          </article>
+    <div className="acquisition-visual" role="img" aria-label="BCI recording sequence">
+      <div className="electrode-map">
+        {Array.from({ length: 27 }, (_, index) => (
+          <span key={index} />
         ))}
+        <strong>27 EEG</strong>
       </div>
-
-      <div className="result-callouts">
-        <article>
-          <span>Descriptive all-participant mean</span>
-          <strong>69.6%</strong>
-          <p>
-            Mean participant balanced accuracy across all 79 participants.
-            Training participants are in-sample, so this is not a fully
-            held-out score.
-          </p>
-        </article>
-        <article>
-          <span>Defensible generalization result</span>
-          <strong>68.25%</strong>
-          <p>
-            Held-out test accuracy on 12 unseen participants; balanced accuracy
-            was 68.30%.
-          </p>
-        </article>
-      </div>
-
-      <Metrics metrics={finalTestMetrics} />
-
-      <div className="featured-results" aria-label="Featured results figures">
-        {featuredResultFigures.map((figure, index) => (
-          <ResultFigureCard
-            figure={figure}
-            index={index}
-            key={figure.src}
-            sizes="(max-width: 809px) calc(100vw - 36px), 72vw"
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function FigureLibrary() {
-  return (
-    <div className="figure-library">
-      <div className="figure-library-summary">
-        <span><strong>{resultTables.length}</strong> metric tables</span>
-        <span><strong>15</strong> verified figures</span>
-        <span><strong>0</strong> wrong-model charts</span>
-      </div>
-      <div className="result-ledger" aria-label="Complete verified results">
-        {resultTables.map((table, tableIndex) => (
-          <details
-            className="result-table-group"
-            key={table.id}
-            open={table.open}
-          >
-            <summary>
-              <span className="figure-group-index">
-                Table {String(tableIndex + 1).padStart(2, "0")}
-              </span>
-              <span>
-                <strong>{table.title}</strong>
-                <small>{table.description}</small>
-              </span>
-              <b>{table.rows.length} rows</b>
-              <span className="details-mark" aria-hidden="true" />
-            </summary>
-            <div className="result-table-scroll">
-              <table>
-                <thead>
-                  <tr>
-                    {table.columns.map((column) => (
-                      <th key={column} scope="col">{column}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {table.rows.map((row, rowIndex) => (
-                    <tr key={`${table.id}-${rowIndex}`}>
-                      {row.map((value, columnIndex) => (
-                        columnIndex === 0 ? (
-                          <th key={`${value}-${columnIndex}`} scope="row">{value}</th>
-                        ) : (
-                          <td key={`${value}-${columnIndex}`}>{value}</td>
-                        )
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </details>
-        ))}
-      </div>
-      {resultFigureGroups.map((group, groupIndex) => (
-        <details className="figure-group" key={group.id} open={group.open}>
-          <summary>
-            <span className="figure-group-index">{group.label}</span>
-            <span>
-              <strong>{group.title}</strong>
-              <small>{group.description}</small>
-            </span>
-            <b>{group.figures.length} figures</b>
-            <span className="details-mark" aria-hidden="true" />
-          </summary>
-          <div className="figure-grid">
-            {group.figures.map((figure, index) => (
-              <ResultFigureCard
-                compact
-                figure={figure}
-                index={index}
-                key={`${group.id}-${figure.src}`}
-                sizes="(max-width: 809px) calc(100vw - 36px), (max-width: 1199px) 42vw, 32vw"
-              />
-            ))}
+      <div className="run-sequence">
+        {[
+          ["Baseline", "Rest"],
+          ["R1–R2", "Acquire"],
+          ["R3–R6", "Online"],
+          ["40 trials", "per run"],
+        ].map(([value, label]) => (
+          <div key={value}>
+            <strong>{value}</strong>
+            <span>{label}</span>
           </div>
-          <a className="group-top-link" href={`#figures`}>
-            End of group {String(groupIndex + 1).padStart(2, "0")}
-          </a>
-        </details>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
 
-function ResultFigureCard({
-  figure,
-  index,
-  sizes,
-  compact = false,
+function CleaningVisual() {
+  const steps = [
+    ["Raw GDF", "immutable"],
+    ["SHA-256", "verify"],
+    ["Cue window", "0.5–4.5 s"],
+    ["Mu + beta", "8–30 Hz"],
+    ["135 features", "model input"],
+  ];
+  return (
+    <div className="cleaning-visual" aria-label="Preprocessing flow">
+      <ol>
+        {steps.map(([title, label], index) => (
+          <li key={title}>
+            <span>{String(index + 1).padStart(2, "0")}</span>
+            <strong>{title}</strong>
+            <small>{label}</small>
+          </li>
+        ))}
+      </ol>
+      <div className="quality-stamp">
+        <strong>PASS</strong>
+        <span>participant separation preserved</span>
+      </div>
+    </div>
+  );
+}
+
+function FigureSwitcher({
+  choices,
+  renderCustom,
 }: {
-  figure: ResultFigure;
-  index: number;
-  sizes: string;
-  compact?: boolean;
+  choices: readonly FigureChoice[];
+  renderCustom?: (id: string) => ReactNode;
+}) {
+  const [activeId, setActiveId] = useState(choices[0].id);
+  const active = choices.find((choice) => choice.id === activeId) ?? choices[0];
+  const custom = renderCustom?.(active.id);
+
+  return (
+    <div className="figure-switcher">
+      <div className="figure-tabs" role="group" aria-label="Choose a figure">
+        {choices.map((choice) => (
+          <button
+            className={choice.id === active.id ? "is-active" : ""}
+            key={choice.id}
+            type="button"
+            onClick={() => setActiveId(choice.id)}
+            aria-pressed={choice.id === active.id}
+          >
+            {choice.label}
+          </button>
+        ))}
+      </div>
+      <div className="figure-stage">
+        {custom ??
+          (active.src ? (
+            <a
+              href={active.src}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`Open full-size chart: ${active.title}`}
+            >
+              <Image
+                src={active.src}
+                alt={active.alt}
+                width={active.width}
+                height={active.height}
+                sizes="(max-width: 809px) calc(100vw - 32px), 54vw"
+              />
+            </a>
+          ) : null)}
+      </div>
+      <div className="figure-caption">
+        <strong>{active.title}</strong>
+        <p>{active.note}</p>
+      </div>
+    </div>
+  );
+}
+
+function BarComparison({
+  data,
+  min,
+  max,
+  ariaLabel,
+  scaleLabel,
+  showGoal = false,
+}: {
+  data: readonly {
+    name: string;
+    value: number;
+    label: string;
+    selected: boolean;
+  }[];
+  min: number;
+  max: number;
+  ariaLabel: string;
+  scaleLabel: string;
+  showGoal?: boolean;
 }) {
   return (
-    <figure className={`result-figure ${compact ? "is-compact" : ""}`}>
-      <a
-        className="result-image-link"
-        href={figure.src}
-        target="_blank"
-        rel="noreferrer"
-        aria-label={`Open full-size chart: ${figure.title}`}
-      >
-        <Image
-          src={figure.src}
-          alt={figure.alt}
-          width={figure.width}
-          height={figure.height}
-          sizes={sizes}
-        />
-      </a>
-      <figcaption>
-        <span className="result-index">
-          {String(index + 1).padStart(2, "0")} / {figure.eyebrow}
-        </span>
-        <h3>{figure.title}</h3>
-        <p>{figure.description}</p>
-      </figcaption>
-    </figure>
-  );
-}
-
-function Limitations() {
-  return (
-    <div className="limitations">
-      {[
-        ["One session", "The data do not measure long-term stability."],
-        ["One binary task", "Only left- and right-hand imagery were modeled."],
-        ["12-person test", "The held-out result needs confirmation on new data."],
-        ["Mixed headline", "The 69.6% mean includes in-sample training participants."],
-      ].map(([title, detail], index) => (
-        <div key={title}>
-          <span className="limitation-number">{String(index + 1).padStart(2, "0")}</span>
-          <span>
-            <strong>{title}</strong>
-            <small>{detail}</small>
-          </span>
-        </div>
-      ))}
+    <div className="bar-comparison" role="img" aria-label={ariaLabel}>
+      <ul>
+        {data.map((item) => {
+          const width = ((item.value - min) / (max - min)) * 100;
+          return (
+            <li className={item.selected ? "is-selected" : ""} key={item.name}>
+              <div>
+                <span>{item.name}</span>
+                <strong>{item.label}</strong>
+              </div>
+              <i
+                style={{ "--bar-width": `${width}%` } as CSSProperties}
+                aria-hidden="true"
+              />
+            </li>
+          );
+        })}
+      </ul>
+      <div className="bar-scale">
+        <span>{min}%</span>
+        <span>{scaleLabel}</span>
+        <span>{max}%</span>
+      </div>
+      {showGoal && <span className="goal-marker">70% goal</span>}
     </div>
   );
 }
 
-function FinalSources() {
+function PredictionFlow() {
   return (
-    <div className="final-sources">
-      <a
-        className="source-card"
-        href={primarySources.analysisRepository.href}
-        target="_blank"
-        rel="noreferrer"
-      >
+    <div
+      className="prediction-flow"
+      role="img"
+      aria-label="Cue-locked EEG features enter a frozen classifier and produce one left or right prediction"
+    >
+      <div className="prediction-input">
+        <span>Input</span>
+        <strong>135 EEG features</strong>
+        <small>8–30 Hz spectral power</small>
+      </div>
+      <div className="prediction-model">
+        <span>Frozen model</span>
+        <i aria-hidden="true" />
+        <strong>Classify</strong>
+      </div>
+      <div className="prediction-output">
+        <span>Output</span>
         <div>
-          <span>Analysis source</span>
-          <strong>Data Miners repository</strong>
+          <strong>Left</strong>
+          <b>or</b>
+          <strong>Right</strong>
         </div>
-        <b aria-hidden="true">↗</b>
-      </a>
-      <a
-        className="source-card"
-        href={primarySources.zenodo.href}
-        target="_blank"
-        rel="noreferrer"
-      >
+        <small>one class per trial</small>
+      </div>
+    </div>
+  );
+}
+
+function ValidationSplit() {
+  return (
+    <div
+      className="validation-split"
+      role="img"
+      aria-label="Sixty-five development participants and twenty-two locked-test participants remain in separate partitions"
+    >
+      <div className="split-heading">
+        <span>Participant-disjoint validation</span>
+        <strong>One person. One side.</strong>
+      </div>
+      <div className="split-groups">
         <div>
-          <span>Open dataset</span>
-          <strong>Zenodo 8089820</strong>
+          <span>Development</span>
+          <strong>65</strong>
+          <small>fit · compare · select</small>
+          <i style={{ "--split-width": "74.7%" } as CSSProperties} />
         </div>
-        <b aria-hidden="true">↗</b>
-      </a>
-      <a
-        className="source-card"
-        href={primarySources.paper.href}
-        target="_blank"
-        rel="noreferrer"
-      >
         <div>
-          <span>Study descriptor</span>
-          <strong>Scientific Data</strong>
+          <span>Locked test</span>
+          <strong>22</strong>
+          <small>evaluate once</small>
+          <i style={{ "--split-width": "25.3%" } as CSSProperties} />
         </div>
-        <b aria-hidden="true">↗</b>
-      </a>
+      </div>
+      <p>
+        <span aria-hidden="true">✓</span>
+        No participant appears in both groups
+      </p>
+    </div>
+  );
+}
+
+function CommunicationVisual() {
+  return (
+    <div className="communication-visual">
+      <div className="final-score">
+        <span>Locked result</span>
+        <strong>60.20%</strong>
+        <p>General MLP · 22 unseen participants</p>
+      </div>
+      <div className="result-context">
+        <span>Result in context</span>
+        <dl>
+          <div>
+            <dt>Our MLP</dt>
+            <dd>60.20%</dd>
+            <i style={{ "--result-width": "60.2%" } as CSSProperties} />
+          </div>
+          <div>
+            <dt>Original BCI</dt>
+            <dd>62.61%</dd>
+            <i style={{ "--result-width": "62.61%" } as CSSProperties} />
+          </div>
+          <div>
+            <dt>Research goal</dt>
+            <dd>70.00%</dd>
+            <i style={{ "--result-width": "70%" } as CSSProperties} />
+          </div>
+        </dl>
+      </div>
+      <p className="communication-status">
+        <span aria-hidden="true">✓</span>
+        Reported with limitations
+      </p>
     </div>
   );
 }

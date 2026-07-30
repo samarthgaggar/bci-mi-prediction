@@ -57,7 +57,7 @@ function contrast(foreground, background) {
   return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 }
 
-test("server-renders the complete motor imagery BCI research page", async () => {
+test("server-renders the nine-stop visual data-science pipeline", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
@@ -67,48 +67,50 @@ test("server-renders the complete motor imagery BCI research page", async () => 
     html,
     /<title>Predicting Motor Imagery from EEG · BCI Research Project<\/title>/i,
   );
-  assert.match(html, /Predicting Motor Imagery from EEG/i);
-  assert.match(
-    html,
-    /CSP–MLP reached a 69\.6% mean participant balanced accuracy/i,
-  );
-  assert.match(html, />Index</i);
-  assert.match(html, /Project index/i);
-  assert.match(html, /01 — BCI basics/i);
-  assert.match(html, /What does a brain–computer interface measure\?/i);
-  assert.match(html, /classifier receives sensor measurements/i);
-  assert.match(html, />87</);
-  assert.match(html, />694</);
-  assert.match(html, />32</);
-  assert.match(html, />512 Hz</);
-  assert.match(html, /27 EEG · 3 EOG · 2 EMG/);
-  assert.match(html, /Versioned notebook results/);
-  assert.match(html, /69\.6%/);
-  assert.match(html, /68\.25%/);
-  assert.match(html, /68\.30%/);
-  assert.match(html, /Five-fold training OOF/);
-  assert.match(html, /Held-out validation/);
-  assert.match(html, /12 → 16 → 8 → 2/);
-  assert.match(html, /metric tables/);
-  assert.match(html, /verified figures/i);
-  assert.match(html, /Complete results ledger/);
-  assert.match(html, /Verified exploratory dataset figures/);
-  assert.match(html, /Zenodo 8089820/);
-  assert.match(html, /Scientific Data/);
-  assert.match(html, /Analysis complete/);
-  assert.match(html, /CC0 lateral-view illustration via Wikimedia Commons/);
-  assert.match(html, /Skip to the project overview/);
+  for (const heading of [
+    /Problem Formulation/i,
+    /Data Acquisition/i,
+    /Preprocessing \/ Data Cleaning/i,
+    /Exploratory Data Analysis/i,
+    />Modeling</i,
+    /Inference (?:&amp;|&) Prediction/i,
+    />Evaluation</i,
+    />Validation</i,
+    /Communicate the Result/i,
+  ]) {
+    assert.match(html, heading);
+  }
+
+  assert.match(html, /From signal to evidence\./);
+  assert.match(html, /One clear task\. Two classes\. Unseen participants\./);
+  assert.match(html, /The spread tells the real story\./);
+  assert.match(html, /Reported with limitations/);
   assert.doesNotMatch(
     html,
-    /Signals in Motion|Admit one curious mind|Evidence first\. Curiosity always|Ride again|Neural line|Explore the project/i,
+    /Signals in Motion|Admit one curious mind|Ride again|Explore the project|Complete results ledger|verified figures|Deployment \/ Presentation|Ready to present/i,
   );
-  assert.doesNotMatch(html, /codex-preview|react-loading-skeleton|Starter Project/);
 });
 
-test("renders every stable section anchor and accessibility control", async () => {
+test("renders exactly nine stable anchors with compact controls", async () => {
   const html = await (await render()).text();
-  const linkedAnchors = [
-    "start",
+  const anchors = [
+    "problem",
+    "acquisition",
+    "cleaning",
+    "eda",
+    "modeling",
+    "prediction",
+    "evaluation",
+    "validation",
+    "communication",
+  ];
+
+  for (const anchor of anchors) {
+    assert.match(html, new RegExp(`id="${anchor}"`));
+    assert.match(html, new RegExp(`href="#${anchor}"`));
+  }
+
+  for (const retired of [
     "bci",
     "background",
     "dataset",
@@ -120,89 +122,126 @@ test("renders every stable section anchor and accessibility control", async () =
     "figures",
     "future",
     "return",
-  ];
-
-  for (const anchor of linkedAnchors) {
-    assert.match(html, new RegExp(`id="${anchor}"`));
-    assert.match(html, new RegExp(`href="#${anchor}"`));
+    "approach",
+    "presentation",
+  ]) {
+    assert.doesNotMatch(html, new RegExp(`id="${retired}"`));
   }
 
-  assert.match(html, /id="approach"/);
-  assert.match(html, /aria-label="Research contents"/);
-  assert.match(html, /role="dialog"/);
-  assert.match(html, />Auto scroll</);
+  assert.match(html, /Skip to the pipeline/);
+  assert.match(html, /aria-label="Data science pipeline"/);
+  assert.match(html, />Auto <b>Off<\/b>/);
   assert.match(html, /aria-pressed="false"/);
-  assert.match(html, /Turn on automatic scrolling/);
+  assert.match(html, /Motion <b>On<\/b>/);
   assert.match(html, /aria-live="polite"/);
-  assert.match(html, /Pause visual motion/);
-  assert.match(html, /Switch to (?:light|dark) theme/);
-  assert.match(html, /<details class="technical-note"/);
-  assert.match(html, /aria-label="Sources for this section"/);
+  assert.doesNotMatch(html, /<details\b|role="dialog"/);
 });
 
-test("uses restrained research typography and removes visible travel instructions", async () => {
-  const [html, layout, css] = await Promise.all([
-    (await render()).text(),
-    readFile(path.join(projectRoot, "app/layout.tsx"), "utf8"),
+test("publishes only verified, clearly labeled research metrics", async () => {
+  const html = await (await render()).text();
+
+  for (const value of [
+    "87",
+    "694",
+    "512 Hz",
+    "32",
+    "694 / 694",
+    "135",
+    "61.92%",
+    "64.83%",
+    "60.40%",
+    "60.07%",
+    "58.58%",
+    "60.20%",
+    "62.61%",
+    "−2.41 pp",
+    "5,280",
+    "112",
+  ]) {
+    assert.match(html, new RegExp(value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+
+  assert.match(html, /development accuracy/i);
+  assert.match(html, /locked accuracy/i);
+  assert.match(html, /research goal/i);
+  assert.match(html, /not a clinical system/i);
+  assert.match(html, /22 unseen participants/i);
+  assert.doesNotMatch(html, /69\.6%|68\.25%|68\.30%/);
+});
+
+test("provides graph switchers across exploration, modeling, prediction, evaluation, and validation", async () => {
+  const html = await (await render()).text();
+  for (const label of [
+    "Participant spread",
+    "Run means",
+    "Learning style",
+    "Model scores",
+    "MLP training",
+    "Classifier path",
+    "XGBoost signal",
+    "Locked scores",
+    "Final summary",
+    "Split design",
+    "Who improved?",
+  ]) {
+    assert.match(html, new RegExp(label));
+  }
+
+  assert.match(html, /Choose a figure/);
+  assert.match(html, /Development accuracy by model/);
+  assert.match(html, /Scale: 50–65% participant-run accuracy/);
+  assert.match(html, /Open full-size chart: Performance varies widely/);
+  assert.match(html, /135 EEG features/);
+  assert.match(html, /Participant-disjoint validation/);
+});
+
+test("restores the brain journey without restoring the old scroll tunnel", async () => {
+  const [page, brainScene, css, content] = await Promise.all([
+    readFile(path.join(projectRoot, "components/research-page.tsx"), "utf8"),
+    readFile(path.join(projectRoot, "components/brain-scene.tsx"), "utf8"),
     readFile(path.join(projectRoot, "app/globals.css"), "utf8"),
+    readFile(path.join(projectRoot, "lib/research-content.ts"), "utf8"),
   ]);
-  const visibleText = html
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&(?:nbsp|amp|quot|#x27);/gi, " ")
-    .replace(/\s+/g, " ");
 
-  assert.match(layout, /Manrope/);
-  assert.doesNotMatch(layout, /Nunito_Sans/);
-  assert.doesNotMatch(layout, /Bricolage_Grotesque/);
-  assert.doesNotMatch(css, /\.hero-copy h1[\s\S]{0,700}-webkit-text-stroke/);
-  assert.doesNotMatch(
-    visibleText,
-    /\b(?:story|journey|adventure|station|route|depart|walkthrough)\b|explore the project/i,
-  );
+  assert.match(css, /\.pipeline-section\s*\{[\s\S]*?min-height:\s*max\(660px,\s*calc\(92svh - var\(--header-height\)\)\)/);
+  assert.doesNotMatch(css, /[2-9]\d{2}vh|350vh|650vh/);
+  assert.match(page, /lazy\(\(\) => import\("\.\/brain-scene"\)\)/);
+  assert.match(page, /<BrainScene[\s\S]*?progress=\{journeyProgress\}/);
+  assert.match(page, /const journeyProgress = motionEnabled/);
+  assert.match(page, /const enterZoom = smooth\(journeyProgress \/ 0\.15\)/);
+  assert.match(page, /const exitZoom = smooth\(\(journeyProgress - 0\.88\) \/ 0\.12\)/);
+  assert.match(brainScene, /const cameraFrames/);
+  assert.match(brainScene, /function InteriorWorld/);
+  assert.match(brainScene, /function CameraSequence/);
+  assert.match(brainScene, /branching neuron networks/);
+  assert.equal((content.match(/\n\s+id: "(?:problem|acquisition|cleaning|eda|modeling|prediction|evaluation|validation|communication)"/g) ?? []).length, 9);
+  assert.doesNotMatch(content, /id: "presentation"|Deployment \/ Presentation/);
 });
 
-test("uses an editorial interface instead of stock icon and card patterns", async () => {
+test("keeps every visual and the final result within bounded responsive compositions", async () => {
   const [page, css] = await Promise.all([
     readFile(path.join(projectRoot, "components/research-page.tsx"), "utf8"),
     readFile(path.join(projectRoot, "app/globals.css"), "utf8"),
   ]);
 
-  assert.doesNotMatch(page, /lucide-react/);
-  assert.doesNotMatch(page, /View technical details|Research section/);
-  assert.doesNotMatch(page, /hero-network|hero-continuity/);
-  assert.match(page, /Methods, scope, and sources/);
-  assert.match(css, /--display:\s*var\(--font-body\)/);
-  assert.match(
-    css,
-    /\.section-card,[\s\S]*?background:\s*transparent;[\s\S]*?box-shadow:\s*none;/,
-  );
-  assert.match(css, /\.scene-grid,[\s\S]*?display:\s*none;/);
-  assert.match(
-    css,
-    /\.metric-card\s*\{[\s\S]*?border-radius:\s*0;[\s\S]*?background:\s*transparent;/,
-  );
+  assert.match(page, /has-\$\{step\.visual\}/);
+  assert.match(page, /className="communication-visual"/);
+  assert.match(page, /className="result-context"/);
+  assert.match(css, /\.pipeline-layout\s*\{[\s\S]*?width:\s*min\(1280px,\s*100%\)[\s\S]*?grid-template-columns:\s*minmax\(320px,\s*0\.82fr\)\s*minmax\(560px,\s*1\.18fr\)/);
+  assert.match(css, /\.metric-strip\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(css, /\.metric-strip:has\(> div:nth-child\(4\)\)\s*\{[\s\S]*?repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(css, /\.communication-visual\s*\{[\s\S]*?grid-template-columns:\s*1fr/);
+  assert.match(css, /\.final-score\s*\{[\s\S]*?grid-template:[\s\S]*?"label score"[\s\S]*?"meta score"/);
+  assert.match(css, /\.final-score > strong\s*\{[\s\S]*?font-size:\s*clamp\(66px,\s*7vw,\s*104px\)/);
+  assert.match(css, /min-height:\s*clamp\(520px,\s*62vh,\s*640px\)/);
+  assert.match(css, /\.figure-stage img\s*\{[\s\S]*?height:\s*clamp\(330px,\s*43vh,\s*450px\)/);
+  assert.match(css, /white-space:\s*nowrap/);
+  assert.match(css, /overflow:\s*hidden/);
+  assert.doesNotMatch(page, /presentation-visual|presentation-status|Ready to present/);
+  assert.doesNotMatch(css, /grid-template-columns:\s*minmax\(0,\s*0\.9fr\)\s*minmax\(260px,\s*1\.1fr\)/);
 });
 
-test("provides separate Next.js and Sites deployment builds", async () => {
-  const [packageSource, vercelSource] = await Promise.all([
-    readFile(path.join(projectRoot, "package.json"), "utf8"),
-    readFile(path.join(projectRoot, "vercel.json"), "utf8"),
-  ]);
-  const packageJson = JSON.parse(packageSource);
-  const vercel = JSON.parse(vercelSource);
-
-  assert.equal(packageJson.scripts.build, "next build");
-  assert.equal(packageJson.scripts.start, "next start");
-  assert.match(packageJson.scripts["build:sites"], /vinext build/);
-  assert.equal(packageJson.scripts.test, "npm run build:sites && node --test tests/rendered-html.test.mjs");
-  assert.equal(vercel.framework, "nextjs");
-  assert.equal(vercel.buildCommand, "npm run build");
-  assert.equal("outputDirectory" in vercel, false);
-});
-
-test("implements reversible looping auto scroll", async () => {
+test("implements reversible looping auto scroll and reduced motion", async () => {
   const [page, css] = await Promise.all([
     readFile(path.join(projectRoot, "components/research-page.tsx"), "utf8"),
     readFile(path.join(projectRoot, "app/globals.css"), "utf8"),
@@ -213,93 +252,28 @@ test("implements reversible looping auto scroll", async () => {
   assert.match(page, /window\.scrollBy/);
   assert.match(page, /window\.scrollTo\(0, 0\)/);
   assert.match(page, /window\.cancelAnimationFrame/);
-  assert.match(page, /prefers-reduced-motion: reduce/);
-  assert.match(page, /const readingLine = window\.innerHeight \* 0\.42/);
-  assert.match(page, /getBoundingClientRect\(\)\.top <= readingLine/);
-  assert.doesNotMatch(page, /threshold:\s*\[0\.08,\s*0\.3,\s*0\.6\]/);
-  assert.match(
-    css,
-    /:root\[data-motion="reduced"\] \.section-card\s*\{[\s\S]*?opacity:\s*1;[\s\S]*?transform:\s*none;/,
-  );
+  assert.match(page, /const pixelsPerSecond = motionEnabled \? 82 : 44/);
+  assert.match(css, /prefers-reduced-motion:\s*reduce/);
+  assert.match(css, /:root\[data-motion="reduced"\]/);
 });
 
-test("publishes the verified CSP-MLP metrics with evaluation boundaries", async () => {
-  const content = await readFile(
-    path.join(projectRoot, "lib/research-content.ts"),
-    "utf8",
-  );
-  const modelStart = content.indexOf('id: "models"');
-  const resultStart = content.indexOf('id: "results"');
-  const resultEnd = content.indexOf('id: "figures"');
-  const modelBlock = content.slice(modelStart, resultStart);
-  const resultBlock = content.slice(resultStart, resultEnd);
-
-  assert.ok(modelStart > 0 && resultStart > modelStart && resultEnd > resultStart);
-  assert.match(modelBlock, /70\.45%/);
-  assert.match(modelBlock, /69\.10%/);
-  assert.match(modelBlock, /66\.43%/);
-  assert.match(modelBlock, /in-sample diagnostic/i);
-  assert.match(resultBlock, /status: "verified"/);
-  assert.match(resultBlock, /68\.25%/);
-  assert.match(resultBlock, /68\.30%/);
-  assert.match(resultBlock, /68\.19%/);
-  assert.match(resultBlock, /76\.16%/);
-  assert.match(resultBlock, /held-out participant test/i);
-  assert.doesNotMatch(resultBlock, /Awaiting verified analysis|results gated/i);
-  assert.match(content, /window CV BA/);
-  assert.match(content, /best band gain/);
-  assert.match(content, /0\.5–3\.0 second cue window/i);
-  assert.doesNotMatch(content, /60\.20% locked|62\.61%|XGBoost EEG baseline/i);
-});
-
-test("ships only the 15 verified exploratory figures with byte checks", async () => {
+test("ships the seven selected research figures with byte checks", async () => {
   const expected = new Map([
-    [
-      "performance-by-run.png",
-      {
-        digest: "0f0a3ed5147cab642f663772955301810856966d4cf3e0fba0613dc1a53b0263",
-        width: 1484,
-        height: 889,
-      },
-    ],
-    [
-      "mean-performance-by-run.png",
-      {
-        digest: "fcf9c874422abe217aca316b57f488e42b8170172cd2bcc7b488cdd77a656a7d",
-        width: 1333,
-        height: 884,
-      },
-    ],
-    [
-      "learning-style-correlations.png",
-      {
-        digest: "3085a313459e51a46b38bf8e80c362f636e1fe724051024c7919874e94c4782a",
-        width: 2683,
-        height: 1330,
-      },
-    ],
+    ["results/performance-by-run.png", ["0f0a3ed5147cab642f663772955301810856966d4cf3e0fba0613dc1a53b0263", 1484, 889]],
+    ["results/mean-performance-by-run.png", ["fcf9c874422abe217aca316b57f488e42b8170172cd2bcc7b488cdd77a656a7d", 1333, 884]],
+    ["results/learning-style-correlations.png", ["3085a313459e51a46b38bf8e80c362f636e1fe724051024c7919874e94c4782a", 2683, 1330]],
+    ["results/model/stage-6/training_curves.png", ["2694d319542285789d680ecead8dcc8ebff507b3f5f848e09ab037ffc50c87e0", 1601, 916]],
+    ["results/model/stage-2/xgboost_permutation_importance.png", ["8837d577188d37a05f3eb37a8ec63296915ab0f6df510d0548a5ad52039c6023", 1591, 1186]],
+    ["results/model/stage-9/final_locked_summary.png", ["073eb191d9d43b0cf573a7dae01eee0e90d62c086d599ab194f2e8ce201cf4c1", 2132, 890]],
+    ["results/model/stage-9/participant_run_difference.png", ["f67705ee7e3aabe6510527ddd5c0e2b9cba3c986922995a88c2bc856e485bdcf", 995, 1240]],
   ]);
 
-  for (const [name, metadata] of expected) {
-    const image = await readFile(path.join(projectRoot, "public/results", name));
-    const digest = createHash("sha256").update(image).digest("hex");
+  for (const [name, [digest, width, height]] of expected) {
+    const image = await readFile(path.join(projectRoot, "public", name));
     assert.equal(image.toString("ascii", 1, 4), "PNG");
-    assert.equal(image.readUInt32BE(16), metadata.width);
-    assert.equal(image.readUInt32BE(20), metadata.height);
-    assert.equal(digest, metadata.digest);
-  }
-
-  const resultFiles = (await walk(path.join(projectRoot, "public/results"))).filter(
-    (file) => file.endsWith(".png"),
-  );
-  assert.equal(resultFiles.length, 15);
-  assert.ok(resultFiles.every((file) => !file.includes(`${path.sep}model${path.sep}`)));
-
-  for (const file of resultFiles) {
-    const image = await readFile(file);
-    assert.equal(image.toString("ascii", 1, 4), "PNG");
-    assert.ok(image.readUInt32BE(16) > 800);
-    assert.ok(image.readUInt32BE(20) > 600);
+    assert.equal(image.readUInt32BE(16), width);
+    assert.equal(image.readUInt32BE(20), height);
+    assert.equal(createHash("sha256").update(image).digest("hex"), digest);
   }
 });
 
@@ -327,6 +301,23 @@ test("does not publish raw research data or hotlinked media", async () => {
   }
 });
 
+test("provides separate Next.js and Sites deployment builds", async () => {
+  const [packageSource, vercelSource] = await Promise.all([
+    readFile(path.join(projectRoot, "package.json"), "utf8"),
+    readFile(path.join(projectRoot, "vercel.json"), "utf8"),
+  ]);
+  const packageJson = JSON.parse(packageSource);
+  const vercel = JSON.parse(vercelSource);
+
+  assert.equal(packageJson.scripts.build, "next build");
+  assert.equal(packageJson.scripts.start, "next start");
+  assert.match(packageJson.scripts["build:sites"], /vinext build/);
+  assert.equal(packageJson.scripts.test, "npm run build:sites && node --test tests/rendered-html.test.mjs");
+  assert.equal(vercel.framework, "nextjs");
+  assert.equal(vercel.buildCommand, "npm run build");
+  assert.equal("outputDirectory" in vercel, false);
+});
+
 test("keeps the site one-page and retires accidental subroutes", async () => {
   for (const route of ["/results", "/methodology", "/api/results"]) {
     const response = await render(route);
@@ -336,14 +327,14 @@ test("keeps the site one-page and retires accidental subroutes", async () => {
 
 test("meets core light and dark theme contrast requirements", () => {
   const pairs = [
-    ["f7fbff", "050b1c"],
-    ["bfd0e7", "050b1c"],
-    ["8ea5c2", "050b1c"],
-    ["102443", "eef6ff"],
-    ["3f5877", "eef6ff"],
-    ["526a87", "eef6ff"],
-    ["1d7759", "dcf4e8"],
-    ["765019", "fff0cb"],
+    ["f5f8ff", "07101f"],
+    ["c5d1e5", "07101f"],
+    ["8799b8", "07101f"],
+    ["10213b", "f4f7fb"],
+    ["3f5675", "f4f7fb"],
+    ["526a87", "f4f7fb"],
+    ["187653", "f4f7fb"],
+    ["8d6212", "f4f7fb"],
   ];
 
   for (const [foreground, background] of pairs) {
@@ -354,15 +345,18 @@ test("meets core light and dark theme contrast requirements", () => {
   }
 });
 
-test("ships a correctly sized, project-local social preview", async () => {
+test("ships correctly sized local social and brain assets", async () => {
   const ogPath = path.join(projectRoot, "public/og.png");
   const fallbackPath = path.join(projectRoot, "public/brain-fallback.png");
-  const [image, details, fallback, fallbackDetails] = await Promise.all([
+  const brainPath = path.join(projectRoot, "public/brain-anatomy.svg");
+  const [image, details, fallback, fallbackDetails, brain] = await Promise.all([
     readFile(ogPath),
     stat(ogPath),
     readFile(fallbackPath),
     stat(fallbackPath),
+    readFile(brainPath, "utf8"),
   ]);
+
   assert.equal(image.toString("ascii", 1, 4), "PNG");
   assert.equal(image.readUInt32BE(16), 1200);
   assert.equal(image.readUInt32BE(20), 630);
@@ -371,17 +365,6 @@ test("ships a correctly sized, project-local social preview", async () => {
   assert.equal(fallback.readUInt32BE(16), 700);
   assert.equal(fallback.readUInt32BE(20), 700);
   assert.ok(fallbackDetails.size < 2_000_000);
-});
-
-test("ships a verified local anatomical brain graphic", async () => {
-  const brainPath = path.join(projectRoot, "public/brain-anatomy.svg");
-  const brain = await readFile(brainPath, "utf8");
-  const digest = createHash("sha256").update(brain).digest("hex");
-
-  assert.equal(
-    digest,
-    "b6884cae09fdb505b0b37b741850ee95f8b4144956f41c8282c25fe499dd1806",
-  );
   assert.match(brain, /viewBox="0 0 1200 1200"/);
   assert.match(brain, /#d78282/i);
   assert.doesNotMatch(brain, /<script|<foreignObject|\bonload=|xlink:href=/i);
