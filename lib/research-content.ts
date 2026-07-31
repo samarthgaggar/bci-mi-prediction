@@ -75,7 +75,7 @@ export const pipelineSteps: readonly PipelineStep[] = [
     side: "left",
     metrics: [
       { value: "2", label: "classes", note: "left or right" },
-      { value: "70%", label: "research goal", note: "set before testing" },
+      { value: "70%", label: "project benchmark", note: "comparison target" },
       { value: "1×", label: "final test", note: "used once" },
     ],
     sources: [primarySources.paper],
@@ -131,7 +131,7 @@ export const pipelineSteps: readonly PipelineStep[] = [
     metrics: [
       { value: "61.92%", label: "Run 3 mean", note: "online accuracy" },
       { value: "64.83%", label: "Run 6 mean", note: "online accuracy" },
-      { value: "−.24 to +.24", label: "ILS correlations", note: "weak patterns" },
+      { value: "−.13 to +.08", label: "personality correlations", note: "EX, AX, TM, IN, and SC" },
     ],
     sources: [primarySources.analysis, primarySources.zenodo],
   },
@@ -197,7 +197,7 @@ export const pipelineSteps: readonly PipelineStep[] = [
     statement:
       "The final MLP reached 68.25% accuracy on 12 participants excluded from development.",
     takeaway:
-      "The result was 1.75 percentage points below the 70% research goal.",
+      "The result was 1.75 percentage points below the 70% project benchmark.",
     visual: "evaluation",
     side: "right",
     metrics: [
@@ -235,13 +235,13 @@ export const pipelineSteps: readonly PipelineStep[] = [
     statement:
       "This is a research result. It is not a clinical tool.",
     takeaway:
-      "The report includes the final score, the missed goal, and the study limits.",
+      "The report includes the final score, the missed benchmark, and the study limits.",
     visual: "communication",
     side: "right",
     metrics: [
       { value: "68.25%", label: "our MLP", note: "final test accuracy" },
       { value: "68.30%", label: "balanced accuracy", note: "final test" },
-      { value: "−1.75 pp", label: "goal difference", note: "accuracy minus goal" },
+      { value: "−1.75 pp", label: "benchmark difference", note: "accuracy minus benchmark" },
       { value: "79", label: "model participants", note: "all three splits" },
     ],
     sources: [
@@ -371,8 +371,8 @@ export const evaluationFigures: readonly FigureChoice[] = [
   },
   {
     id: "summary",
-    label: "Final summary",
-    title: "Participant accuracy summary",
+    label: "Matched participants",
+    title: "Held-out participant comparison",
     note:
       "Across 66 matched participants, the MLP mean was 68.73% and the behavioral BCI mean was 63.74%.",
     src: "/results/model/stage-9/final_locked_summary.png",

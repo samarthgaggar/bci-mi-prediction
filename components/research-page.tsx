@@ -502,7 +502,7 @@ function StepVisual({ visual }: { visual: PipelineStep["visual"] }) {
               data={lockedModels}
               max={70}
               min={50}
-              scaleLabel="Scale: 50 to 70% · research goal at 70%"
+              scaleLabel="Scale: 50 to 70% · project benchmark at 70%"
               showGoal
             />
           ) : null
@@ -662,8 +662,8 @@ function CleaningVisual() {
 
 function ExtraTreesVisual() {
   const models = [
-    { name: "Extra Trees", value: 15.825, width: "93%" },
-    { name: "Random forest", value: 15.914, width: "96%" },
+    { name: "Extra Trees", value: 15.825, width: "98.72%" },
+    { name: "Random forest", value: 15.914, width: "99.27%" },
     { name: "Dummy mean", value: 16.031, width: "100%" },
   ] as const;
   const highestFeatures = [
@@ -825,7 +825,7 @@ function BarComparison({
         <span>{scaleLabel}</span>
         <span>{max}%</span>
       </div>
-      {showGoal && <span className="goal-marker">70% goal</span>}
+      {showGoal && <span className="goal-marker">70% benchmark</span>}
     </div>
   );
 }
@@ -995,7 +995,7 @@ function CommunicationVisual() {
             <i style={{ "--result-width": "63.74%" } as CSSProperties} />
           </div>
           <div>
-            <dt>Research goal</dt>
+            <dt>Project benchmark</dt>
             <dd>70.00%</dd>
             <i style={{ "--result-width": "70%" } as CSSProperties} />
           </div>

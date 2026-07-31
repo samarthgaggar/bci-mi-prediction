@@ -198,6 +198,7 @@ test("publishes only verified, clearly labeled research metrics", async () => {
     "10.036",
     "61.92%",
     "64.83%",
+    "−.13 to +.08",
     "69.10%",
     "66.42%",
     "73.09%",
@@ -219,10 +220,11 @@ test("publishes only verified, clearly labeled research metrics", async () => {
 
   assert.match(html, /balanced accuracy/i);
   assert.match(html, /final test accuracy/i);
-  assert.match(html, /research goal/i);
+  assert.match(html, /project benchmark/i);
   assert.match(html, /not a clinical tool/i);
   assert.match(html, /12 unseen participants/i);
   assert.doesNotMatch(html, /60\.20%|62\.61%|5,280/);
+  assert.doesNotMatch(html, /ILS correlations|−\.24 to \+\.24/);
 });
 
 test("provides graph switchers across exploration, modeling, prediction, evaluation, and validation", async () => {
@@ -235,7 +237,7 @@ test("provides graph switchers across exploration, modeling, prediction, evaluat
     "MLP training",
     "MLP architecture",
     "Final scores",
-    "Final summary",
+    "Matched participants",
     "Split design",
     "Who improved?",
     "Histograms",
