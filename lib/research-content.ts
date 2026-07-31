@@ -18,7 +18,8 @@ export type PipelineVisual =
   | "prediction"
   | "evaluation"
   | "validation"
-  | "communication";
+  | "communication"
+  | "comparison";
 
 export type PipelineStep = {
   id: string;
@@ -228,6 +229,25 @@ export const pipelineSteps: readonly PipelineStep[] = [
       primarySources.paper,
     ],
   },
+  {
+    id: "comparison",
+    number: "10",
+    navLabel: "Compare",
+    title: "Model and Performance Comparison",
+    statement:
+      "For 66 matched participants, we compared held-out model balanced accuracy with each participant's aggregated mean of Perf_RUN_3, Perf_RUN_4, Perf_RUN_5, and Perf_RUN_6.",
+    takeaway:
+      "The model mean was 4.99 percentage points higher and varied less between participants than the aggregated behavioral performance scores.",
+    visual: "comparison",
+    side: "right",
+    metrics: [
+      { value: "68.73%", label: "model mean", note: "held-out balanced accuracy" },
+      { value: "63.74%", label: "performance mean", note: "aggregated Runs 3 to 6" },
+      { value: "13.75 vs 15.80", label: "standard deviation", note: "model vs performance" },
+      { value: "5 vs 15", label: "below 50%", note: "model vs performance" },
+    ],
+    sources: [primarySources.analysis],
+  },
 ] as const;
 
 export const edaFigures: readonly FigureChoice[] = [
@@ -371,5 +391,30 @@ export const validationFigures: readonly FigureChoice[] = [
     width: 1000,
     height: 1200,
     alt: "CSP MLP minus behavioral BCI accuracy for each of 66 matched participants.",
+  },
+] as const;
+
+export const comparisonFigures: readonly FigureChoice[] = [
+  {
+    id: "histograms",
+    label: "Histograms",
+    title: "The model distribution shifts higher",
+    note:
+      "The same 66 participants are shown in both panels. Red lines mark means; dashed lines mark 50% chance.",
+    src: "/results/model/stage-9/final_locked_summary.png",
+    width: 1600,
+    height: 900,
+    alt: "Histograms comparing held-out CSP MLP accuracy with aggregated behavioral BCI accuracy across 66 matched participants.",
+  },
+  {
+    id: "participant-difference",
+    label: "Participant differences",
+    title: "The size of the difference varies by participant",
+    note:
+      "Blue bars show higher model accuracy; red bars show higher aggregated behavioral performance.",
+    src: "/results/model/stage-9/participant_run_difference.png",
+    width: 1000,
+    height: 1200,
+    alt: "Model balanced accuracy minus aggregated behavioral performance for 66 matched participants.",
   },
 ] as const;

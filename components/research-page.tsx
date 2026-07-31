@@ -12,6 +12,7 @@ import {
   type ReactNode,
 } from "react";
 import {
+  comparisonFigures,
   developmentModels,
   edaFigures,
   evaluationFigures,
@@ -517,6 +518,9 @@ function StepVisual({ visual }: { visual: PipelineStep["visual"] }) {
         }
       />
     );
+  }
+  if (visual === "comparison") {
+    return <FigureSwitcher choices={comparisonFigures} />;
   }
   return <CommunicationVisual />;
 }

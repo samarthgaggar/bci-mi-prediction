@@ -1,7 +1,7 @@
 # Motor Imagery BCI Research Website
 
 An evidence-first explanation of a CSP–MLP motor-imagery
-brain–computer-interface study. The site separates the 69.6% descriptive
+brain–computer-interface study. The site separates the 68.73% participant-level
 all-participant mean balanced accuracy from the 68.25% held-out test accuracy,
 then provides the complete metric ledger behind those results.
 

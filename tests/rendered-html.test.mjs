@@ -57,7 +57,7 @@ function contrast(foreground, background) {
   return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 }
 
-test("server-renders the nine-stop visual data-science pipeline", async () => {
+test("server-renders the ten-stop visual data-science pipeline", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
@@ -85,6 +85,7 @@ test("server-renders the nine-stop visual data-science pipeline", async () => {
     />Evaluation</i,
     />Validation</i,
     /Report the Results/i,
+    /Model and Performance Comparison/i,
   ]) {
     assert.match(html, heading);
   }
@@ -107,7 +108,7 @@ test("server-renders the nine-stop visual data-science pipeline", async () => {
   );
 });
 
-test("renders exactly nine stable anchors with compact controls", async () => {
+test("renders exactly ten stable anchors with compact controls", async () => {
   const html = await (await render()).text();
   const anchors = [
     "problem",
@@ -119,6 +120,7 @@ test("renders exactly nine stable anchors with compact controls", async () => {
     "evaluation",
     "validation",
     "communication",
+    "comparison",
   ];
 
   for (const anchor of anchors) {
@@ -197,6 +199,10 @@ test("publishes only verified, clearly labeled research metrics", async () => {
     "2,655",
     "17,219",
     "79",
+    "68.73%",
+    "63.74%",
+    "13.75 vs 15.80",
+    "5 vs 15",
   ]) {
     assert.match(html, new RegExp(value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
@@ -223,6 +229,8 @@ test("provides graph switchers across exploration, modeling, prediction, evaluat
     "Final summary",
     "Split design",
     "Who improved?",
+    "Histograms",
+    "Participant differences",
   ]) {
     assert.match(html, new RegExp(label));
   }
@@ -273,7 +281,7 @@ test("restores the brain journey without restoring the old scroll tunnel", async
   assert.match(brainScene, /function InteriorWorld/);
   assert.match(brainScene, /function CameraSequence/);
   assert.match(brainScene, /branching neuron networks/);
-  assert.equal((content.match(/\n\s+id: "(?:problem|acquisition|cleaning|eda|modeling|prediction|evaluation|validation|communication)"/g) ?? []).length, 9);
+  assert.equal((content.match(/\n\s+number: "\d{2}"/g) ?? []).length, 10);
   assert.doesNotMatch(content, /id: "presentation"|Deployment \/ Presentation/);
 });
 
