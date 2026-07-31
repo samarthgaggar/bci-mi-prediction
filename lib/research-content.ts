@@ -104,14 +104,15 @@ export const pipelineSteps: readonly PipelineStep[] = [
     navLabel: "Clean",
     title: "Preprocessing / Data Cleaning",
     statement:
-      "We kept the raw files unchanged and recorded each cleaning step.",
-    takeaway: "The cleaning process was fixed before we tested the models.",
+      "We removed repeated headings, standardized missing values, and converted analysis fields in Perfomances.csv to numeric data.",
+    takeaway:
+      "The cleaned file has one row per participant and a comparable mean accuracy from Runs 3 to 6.",
     visual: "cleaning",
     side: "left",
     metrics: [
-      { value: "694 / 694", label: "hashes verified", note: "zero failures" },
-      { value: "12", label: "CSP features", note: "six per band" },
-      { value: "220", label: "trials rejected", note: "EMG artifact rule" },
+      { value: "87", label: "participant rows", note: "headings removed" },
+      { value: "73", label: "cleaned columns", note: "numeric and text fields" },
+      { value: "4", label: "runs averaged", note: "Perf_RUN_3 to Perf_RUN_6" },
     ],
     sources: [primarySources.analysis],
   },

@@ -22,8 +22,7 @@ Primary public sources:
 The proportional pink brain in `public/brain-anatomy.svg` is the CC0-licensed
 Wikimedia Commons file
 [Brain-diagram-pink-6289600.svg](https://commons.wikimedia.org/wiki/File:Brain-diagram-pink-6289600.svg).
-Its SHA-256 digest is
-`b6884cae09fdb505b0b37b741850ee95f8b4144956f41c8282c25fe499dd1806`.
+The checked-in SVG matches that linked source file.
 The branching neuron field and signal pulses are original code-based
 illustrations and are not diagnostic models.
 

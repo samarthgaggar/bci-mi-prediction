@@ -185,9 +185,9 @@ test("publishes only verified, clearly labeled research metrics", async () => {
     "694",
     "512 Hz",
     "32",
-    "694 / 694",
+    "73",
+    "4",
     "12",
-    "220",
     "61.92%",
     "64.83%",
     "69.10%",
@@ -255,7 +255,8 @@ test("uses plain report language without em dashes", async () => {
 
   assert.doesNotMatch(writtenCopy, /\u2014|\u2013/);
   assert.doesNotMatch(html, /\u2014|\u2013/);
-  assert.match(html, /We kept the raw files unchanged and recorded each cleaning step\./);
+  assert.match(html, /We removed repeated headings, standardized missing values, and converted analysis fields in Perfomances\.csv to numeric data\./);
+  assert.match(html, /Perfomances_cleaned\.csv/);
   assert.match(
     html,
     /The output is a left or right label\. It does not read a person(?:&#x27;|')s thoughts\./,
@@ -303,18 +304,19 @@ test("keeps every visual and the final result within bounded responsive composit
   assert.match(css, /\.final-score > strong\s*\{[\s\S]*?font-size:\s*clamp\(66px,\s*7vw,\s*104px\)/);
   assert.match(css, /min-height:\s*clamp\(520px,\s*62vh,\s*640px\)/);
   assert.match(css, /\.figure-stage img\s*\{[\s\S]*?height:\s*clamp\(330px,\s*43vh,\s*450px\)/);
-  assert.match(page, /className="network-nodes"/);
+  assert.match(page, /className="prediction-tree"/);
+  assert.match(page, /className="network-connections"/);
   assert.match(
     css,
-    /\.prediction-flow\s*\{[\s\S]*?grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/,
+    /\.prediction-flow\s*\{[\s\S]*?width:\s*min\(100%,\s*900px\)/,
   );
   assert.match(
     css,
-    /\.network-nodes\s*\{[\s\S]*?grid-template-columns:\s*repeat\(4,\s*16px\)/,
+    /\.prediction-tree\s*\{[\s\S]*?width:\s*100%/,
   );
   assert.match(
     css,
-    /\.prediction-layer\s*\{[\s\S]*?min-width:\s*0/,
+    /\.network-connections line\s*\{[\s\S]*?stroke-opacity:\s*0\.17/,
   );
   assert.match(css, /white-space:\s*nowrap/);
   assert.match(css, /overflow:\s*hidden/);

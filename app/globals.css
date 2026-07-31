@@ -1215,102 +1215,79 @@ main {
 }
 
 .prediction-flow {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(18px, 2.4vw, 32px);
   width: min(100%, 900px);
-  align-items: stretch;
-}
-
-.prediction-layer {
-  position: relative;
+  min-height: 390px;
   display: grid;
-  min-width: 0;
-  min-height: 250px;
-  align-content: center;
-  justify-items: center;
-  padding: 24px 16px;
+  align-items: center;
+  padding: 18px;
   border: 1px solid #d6dfeb;
-  background: #f7f9fc;
-  text-align: center;
+  background:
+    radial-gradient(circle at 8% 50%, rgb(87 216 255 / 10%), transparent 24%),
+    radial-gradient(circle at 92% 50%, rgb(255 112 104 / 9%), transparent 20%),
+    #f7f9fc;
 }
 
-.prediction-layer:not(:last-child)::after {
-  position: absolute;
-  z-index: 2;
-  top: 50%;
-  right: calc(clamp(18px, 2.4vw, 32px) * -0.82);
-  content: "→";
-  color: #647995;
-  font-size: 22px;
-  transform: translateY(-50%);
-}
-
-.prediction-layer > span {
+.prediction-tree {
   display: block;
-  margin-bottom: 18px;
-  color: #647995;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.network-connections line {
+  stroke: #70859f;
+  stroke-width: 0.75;
+  stroke-opacity: 0.17;
+}
+
+.network-tree-layer circle {
+  fill: #ffffff;
+  stroke: #087da9;
+  stroke-width: 2.5;
+}
+
+.network-tree-layer.is-hidden circle {
+  fill: #f4efff;
+  stroke: #7c3aed;
+}
+
+.network-tree-layer.is-output circle {
+  fill: #fff1ef;
+  stroke: #ff7068;
+  stroke-width: 3;
+}
+
+.network-tree-layer.is-output > g text {
+  fill: #a53a45;
   font-family: var(--font-mono);
   font-size: 8px;
+  font-weight: 800;
+  text-anchor: middle;
+}
+
+.network-layer-kicker,
+.network-layer-value,
+.network-layer-note {
+  text-anchor: middle;
+}
+
+.network-layer-kicker {
+  fill: #647995;
+  font-family: var(--font-mono);
+  font-size: 9px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.prediction-layer > strong {
-  display: block;
-  margin-top: 18px;
-  font-size: clamp(18px, 2vw, 27px);
-  letter-spacing: -0.035em;
-  line-height: 1.08;
-  overflow-wrap: anywhere;
+.network-layer-value {
+  fill: #10213b;
+  font-size: 16px;
+  font-weight: 800;
 }
 
-.prediction-layer > small {
-  display: block;
-  margin-top: 8px;
-  color: #526a87;
+.network-layer-note {
+  fill: #526a87;
   font-size: 9px;
-}
-
-.network-nodes {
-  display: grid;
-  grid-template-columns: repeat(4, 16px);
-  gap: 8px;
-  justify-content: center;
-}
-
-.network-nodes i {
-  display: grid;
-  width: 16px;
-  height: 16px;
-  place-items: center;
-  border: 2px solid #087da9;
-  background: #ffffff;
-  border-radius: 50%;
-  box-shadow: 0 0 0 3px color-mix(in srgb, #57d8ff 14%, transparent);
-}
-
-.is-hidden .network-nodes i {
-  border-color: #7c3aed;
-  background: color-mix(in srgb, #7c3aed 10%, #ffffff);
-}
-
-.is-output .network-nodes {
-  grid-template-columns: repeat(2, 42px);
-  gap: 12px;
-}
-
-.is-output .network-nodes i {
-  width: 42px;
-  height: 42px;
-  border-color: #ff7068;
-  background: color-mix(in srgb, #ff8c85 12%, #ffffff);
-}
-
-.is-output .network-nodes b {
-  color: #a53a45;
-  font-family: var(--font-mono);
-  font-size: 12px;
 }
 
 .validation-split {
@@ -1653,18 +1630,8 @@ main {
   }
 
   .prediction-flow {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 12px;
-  }
-
-  .prediction-layer {
-    min-height: 230px;
-    padding: 20px 10px;
-  }
-
-  .prediction-layer:not(:last-child)::after {
-    right: -11px;
-    font-size: 16px;
+    min-height: 350px;
+    padding: 12px;
   }
 }
 
@@ -1827,20 +1794,13 @@ main {
   }
 
   .prediction-flow {
-    grid-template-columns: 1fr;
-    gap: 18px;
-    padding-block: 16px;
+    min-height: 300px;
+    padding: 8px;
   }
 
-  .prediction-layer {
-    min-height: 170px;
-  }
-
-  .prediction-layer:not(:last-child)::after {
-    top: auto;
-    right: 50%;
-    bottom: -24px;
-    transform: translateX(50%) rotate(90deg);
+  .prediction-tree {
+    min-width: 620px;
+    transform-origin: left center;
   }
 
   .site-footer {

@@ -581,14 +581,14 @@ function AcquisitionVisual() {
 
 function CleaningVisual() {
   const steps = [
-    ["Raw GDF", "kept unchanged"],
-    ["SHA-256", "verify"],
-    ["Cue window", "0.5 to 3.0 s"],
-    ["Mu + beta", "8 to 13 · 13 to 30 Hz"],
-    ["12 CSP features", "model input"],
+    ["Load CSV", "skip source headings"],
+    ["Participant rows", "keep 87 · no duplicates"],
+    ["Clean values", "trim · standardize missing"],
+    ["Numeric fields", "convert comma decimals"],
+    ["Runs 3 to 6", "calculate mean accuracy"],
   ];
   return (
-    <div className="cleaning-visual" aria-label="Preprocessing flow">
+    <div className="cleaning-visual" aria-label="Performance CSV cleaning flow">
       <ol>
         {steps.map(([title, label], index) => (
           <li key={title}>
@@ -599,8 +599,8 @@ function CleaningVisual() {
         ))}
       </ol>
       <div className="quality-stamp">
-        <strong>Checked</strong>
-        <span>participant groups stayed separate</span>
+        <strong>Saved</strong>
+        <span>Perfomances_cleaned.csv · 87 × 73</span>
       </div>
     </div>
   );
@@ -739,6 +739,15 @@ function PredictionFlow() {
       className: "is-output",
     },
   ] as const;
+  const layerX = [72, 328, 584, 840] as const;
+  const top = 42;
+  const bottom = 350;
+  const nodePositions = layers.map((layer, layerIndex) =>
+    Array.from({ length: layer.nodes }, (_, nodeIndex) => ({
+      x: layerX[layerIndex],
+      y: top + (nodeIndex * (bottom - top)) / (layer.nodes - 1),
+    })),
+  );
 
   return (
     <div
@@ -746,25 +755,65 @@ function PredictionFlow() {
       role="img"
       aria-label="MLP architecture with 12 CSP inputs, hidden layers of 16 and 8 units, and 2 outputs for left-hand and right-hand predictions"
     >
-      {layers.map((layer) => (
-        <div
-          className={`prediction-layer ${layer.className}`}
-          key={layer.label}
-        >
-          <span>{layer.label}</span>
-          <div className="network-nodes" aria-hidden="true">
-            {Array.from({ length: layer.nodes }, (_, index) => (
-              <i key={index}>
-                {layer.className === "is-output" ? (
-                  <b>{index === 0 ? "L" : "R"}</b>
+      <svg
+        className="prediction-tree"
+        viewBox="0 0 912 448"
+        aria-hidden="true"
+      >
+        <g className="network-connections">
+          {nodePositions.slice(0, -1).flatMap((sourceLayer, layerIndex) =>
+            sourceLayer.flatMap((source, sourceIndex) =>
+              nodePositions[layerIndex + 1].map((target, targetIndex) => (
+                <line
+                  key={`${layerIndex}-${sourceIndex}-${targetIndex}`}
+                  x1={source.x}
+                  y1={source.y}
+                  x2={target.x}
+                  y2={target.y}
+                />
+              )),
+            ),
+          )}
+        </g>
+        {nodePositions.map((nodes, layerIndex) => (
+          <g
+            className={`network-tree-layer ${layers[layerIndex].className}`}
+            key={layers[layerIndex].label}
+          >
+            {nodes.map((node, nodeIndex) => (
+              <g key={nodeIndex}>
+                <circle cx={node.x} cy={node.y} r="8" />
+                {layers[layerIndex].className === "is-output" ? (
+                  <text x={node.x} y={node.y + 3.5}>
+                    {nodeIndex === 0 ? "L" : "R"}
+                  </text>
                 ) : null}
-              </i>
+              </g>
             ))}
-          </div>
-          <strong>{layer.value}</strong>
-          <small>{layer.note}</small>
-        </div>
-      ))}
+            <text
+              className="network-layer-kicker"
+              x={layerX[layerIndex]}
+              y="388"
+            >
+              {layers[layerIndex].label}
+            </text>
+            <text
+              className="network-layer-value"
+              x={layerX[layerIndex]}
+              y="414"
+            >
+              {layers[layerIndex].value}
+            </text>
+            <text
+              className="network-layer-note"
+              x={layerX[layerIndex]}
+              y="434"
+            >
+              {layers[layerIndex].note}
+            </text>
+          </g>
+        ))}
+      </svg>
     </div>
   );
 }
