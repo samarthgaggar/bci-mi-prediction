@@ -1045,9 +1045,9 @@ main {
   width: min(100%, 720px);
   min-height: 430px;
   align-content: center;
-  gap: 24px;
+  gap: 18px;
   padding: clamp(26px, 5vw, 58px);
-  color: #10213b;
+  color: var(--ink);
 }
 
 .extra-trees-heading {
@@ -1056,12 +1056,12 @@ main {
   justify-content: space-between;
   gap: 18px;
   padding-bottom: 14px;
-  border-bottom: 1px solid #d6dfeb;
+  border-bottom: 1px solid var(--line-strong);
 }
 
 .extra-trees-heading span,
 .extra-trees-visual > small {
-  color: #647995;
+  color: var(--ink-soft);
   font-family: var(--font-mono);
   font-size: 8px;
   letter-spacing: 0.06em;
@@ -1092,11 +1092,60 @@ main {
   display: block;
   width: var(--tree-width);
   height: 10px;
-  background: #9aacbf;
+  background: color-mix(in srgb, var(--ink-faint) 74%, transparent);
 }
 
 .extra-trees-visual li:first-child i {
   background: linear-gradient(90deg, #087da9, #57d8ff);
+}
+
+.extra-trees-features {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.7fr) minmax(260px, 1.3fr);
+  gap: 18px;
+  align-items: start;
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.extra-trees-features > div strong {
+  display: block;
+  font-size: 11px;
+}
+
+.extra-trees-features > div small {
+  display: block;
+  margin-top: 5px;
+  color: var(--ink-faint);
+  font-family: var(--font-mono);
+  font-size: 7px;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.extra-trees-features ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.extra-trees-features li {
+  display: flex;
+  gap: 7px;
+  padding: 6px 8px;
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+  background: color-mix(in srgb, var(--surface) 68%, transparent);
+  font-family: var(--font-mono);
+  font-size: 7px;
+}
+
+.extra-trees-features li strong {
+  color: var(--cyan);
 }
 
 .extra-trees-warning {
@@ -1105,8 +1154,8 @@ main {
   gap: 16px;
   align-items: start;
   padding: 18px;
-  border: 1px solid color-mix(in srgb, var(--coral) 58%, #d6dfeb);
-  background: color-mix(in srgb, var(--coral) 9%, #ffffff);
+  border: 1px solid color-mix(in srgb, var(--coral) 58%, var(--line));
+  background: color-mix(in srgb, var(--coral) 9%, var(--surface));
 }
 
 .extra-trees-warning strong {
@@ -1119,7 +1168,7 @@ main {
 
 .extra-trees-warning p {
   margin: 0;
-  color: #526a87;
+  color: var(--ink-soft);
   font-size: 10px;
   line-height: 1.55;
 }
@@ -1890,6 +1939,11 @@ main {
 
   .communication-status {
     grid-column: 1;
+  }
+
+  .extra-trees-features,
+  .extra-trees-warning {
+    grid-template-columns: 1fr;
   }
 
   .prediction-flow {

@@ -666,6 +666,13 @@ function ExtraTreesVisual() {
     { name: "Random forest", value: 15.914, width: "96%" },
     { name: "Dummy mean", value: 16.031, width: "100%" },
   ] as const;
+  const highestFeatures = [
+    ["PRE_Motivation", "0.247"],
+    ["PRE_Stim_normal", "0.237"],
+    ["Level of study", "0.152"],
+    ["Vision", "0.143"],
+    ["Q4", "0.111"],
+  ] as const;
 
   return (
     <div
@@ -691,6 +698,20 @@ function ExtraTreesVisual() {
           </li>
         ))}
       </ol>
+      <div className="extra-trees-features">
+        <div>
+          <strong>Highest exploratory features</strong>
+          <small>held-out RMSE increase when shuffled</small>
+        </div>
+        <ul>
+          {highestFeatures.map(([feature, importance]) => (
+            <li key={feature}>
+              <span>{feature}</span>
+              <strong>+{importance}</strong>
+            </li>
+          ))}
+        </ul>
+      </div>
       <div className="extra-trees-warning">
         <strong>Inconclusive</strong>
         <p>

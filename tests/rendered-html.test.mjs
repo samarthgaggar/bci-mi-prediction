@@ -252,6 +252,10 @@ test("provides graph switchers across exploration, modeling, prediction, evaluat
   assert.match(html, /Participant split/);
   assert.match(html, /Inconclusive/);
   assert.match(html, /Profile-feature rankings are exploratory/);
+  assert.match(html, /Highest exploratory features/);
+  assert.match(html, /PRE_Motivation/);
+  assert.match(html, /PRE_Stim_normal/);
+  assert.match(html, /Level of study/);
 });
 
 test("uses plain report language without em dashes", async () => {
@@ -313,6 +317,8 @@ test("keeps every visual and the final result within bounded responsive composit
   assert.match(page, /EMG-informed trial rule/);
   assert.match(page, /className="extra-trees-visual"/);
   assert.match(css, /\.extra-trees-warning\s*\{/);
+  assert.match(css, /\.extra-trees-visual\s*\{[\s\S]*?color:\s*var\(--ink\)/);
+  assert.match(css, /\.extra-trees-features\s*\{/);
   assert.match(css, /\.pipeline-layout\s*\{[\s\S]*?width:\s*min\(1280px,\s*100%\)[\s\S]*?grid-template-columns:\s*minmax\(320px,\s*0\.82fr\)\s*minmax\(560px,\s*1\.18fr\)/);
   assert.match(css, /\.metric-strip\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
   assert.match(css, /\.metric-strip:has\(> div:nth-child\(4\)\)\s*\{[\s\S]*?repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
