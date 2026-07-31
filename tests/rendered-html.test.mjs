@@ -195,6 +195,7 @@ test("publishes only verified, clearly labeled research metrics", async () => {
     "68.46%",
     "−1.75 pp",
     "2,655",
+    "17,219",
     "79",
   ]) {
     assert.match(html, new RegExp(value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));

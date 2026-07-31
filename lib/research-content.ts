@@ -201,7 +201,7 @@ export const pipelineSteps: readonly PipelineStep[] = [
       { value: "55", label: "training people", note: "fit the model" },
       { value: "12", label: "validation people", note: "model selection only" },
       { value: "12", label: "test participants", note: "never used to fit" },
-      { value: "2,655", label: "test trials", note: "after artifact rejection" },
+      { value: "17,219", label: "retained trials", note: "across all three splits" },
     ],
     sources: [primarySources.analysis],
   },
