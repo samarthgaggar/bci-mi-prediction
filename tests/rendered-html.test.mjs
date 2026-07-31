@@ -280,6 +280,11 @@ test("provides graph switchers across exploration, modeling, prediction, evaluat
   assert.match(html, /PRE_Motivation/);
   assert.match(html, /PRE_Stim_normal/);
   assert.match(html, /Level of study/);
+  assert.match(html, /Inspect exploratory profile features/);
+  assert.match(html, /extra-trees-feature-panel/);
+  assert.match(html, /Held-out RMSE increase/);
+  assert.match(html, /Relative to top feature/);
+  assert.match(html, /Permutation importance measures reliance, not direction or causation/);
 });
 
 test("uses plain report language without em dashes", async () => {
@@ -351,6 +356,12 @@ test("keeps every visual and the final result within bounded responsive composit
   assert.match(css, /\.extra-trees-warning\s*\{/);
   assert.match(css, /\.extra-trees-visual\s*\{[\s\S]*?color:\s*var\(--ink\)/);
   assert.match(css, /\.extra-trees-features\s*\{/);
+  assert.match(page, /role="tablist"[\s\S]*?Inspect exploratory profile features/);
+  assert.match(page, /onClick=\{\(\) => setActiveFeatureId\(feature\.id\)\}/);
+  assert.match(page, /className="feature-insight-panel"/);
+  assert.match(css, /\.extra-trees-visual\s*\{[\s\S]*?width:\s*min\(100%,\s*920px\)[\s\S]*?min-height:\s*680px/);
+  assert.match(css, /\.metric-strip dd\s*\{[\s\S]*?font-size:\s*clamp\(26px,\s*2\.4vw,\s*36px\)/);
+  assert.match(css, /\.figure-caption strong\s*\{[\s\S]*?font-size:\s*21px/);
   assert.match(css, /\.pipeline-layout\s*\{[\s\S]*?width:\s*min\(1280px,\s*100%\)[\s\S]*?grid-template-columns:\s*minmax\(320px,\s*0\.82fr\)\s*minmax\(560px,\s*1\.18fr\)/);
   assert.match(css, /\.metric-strip\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
   assert.match(css, /\.metric-strip:has\(> div:nth-child\(4\)\)\s*\{[\s\S]*?repeat\(2,\s*minmax\(0,\s*1fr\)\)/);

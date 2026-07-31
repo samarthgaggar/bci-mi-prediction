@@ -1,7 +1,18 @@
 "use client";
 
 import Image from "next/image";
-import { Activity, Brain, Hand, Monitor } from "lucide-react";
+import {
+  Activity,
+  Brain,
+  Eye,
+  FileQuestion,
+  Gauge,
+  GraduationCap,
+  Hand,
+  Info,
+  Monitor,
+  Waves,
+} from "lucide-react";
 import {
   lazy,
   Suspense,
@@ -1094,17 +1105,68 @@ function ExtraTreesVisual() {
     { name: "Dummy mean", value: 16.031, width: "100%" },
   ] as const;
   const highestFeatures = [
-    ["PRE_Motivation", "0.247"],
-    ["PRE_Stim_normal", "0.237"],
-    ["Level of study", "0.152"],
-    ["Vision", "0.143"],
-    ["Q4", "0.111"],
+    {
+      id: "motivation",
+      label: "PRE_Motivation",
+      value: 0.247,
+      category: "Pre-session self-report",
+      icon: Gauge,
+      insight:
+        "A pre-session motivation score. It produced the largest shuffle-based error increase among the listed profile variables.",
+    },
+    {
+      id: "stimulation",
+      label: "PRE_Stim_normal",
+      value: 0.237,
+      category: "Pre-session profile measure",
+      icon: Waves,
+      insight:
+        "A pre-session measure retained under its source label. Its held-out importance was close to the motivation score.",
+    },
+    {
+      id: "study",
+      label: "Level of study",
+      value: 0.152,
+      category: "Participant profile",
+      icon: GraduationCap,
+      insight:
+        "An education-level profile field. Its shuffle effect was smaller than either leading pre-session measure.",
+    },
+    {
+      id: "vision",
+      label: "Vision",
+      value: 0.143,
+      category: "Participant profile",
+      icon: Eye,
+      insight:
+        "A vision-related participant field. The model used some information from it, but the analysis does not establish why.",
+    },
+    {
+      id: "q4",
+      label: "Q4",
+      value: 0.111,
+      category: "Questionnaire item",
+      icon: FileQuestion,
+      insight:
+        "A questionnaire item retained under its source label. We do not assign it a clearer meaning without verified dataset wording.",
+    },
   ] as const;
+  const [activeFeatureId, setActiveFeatureId] = useState<
+    (typeof highestFeatures)[number]["id"]
+  >(
+    highestFeatures[0].id,
+  );
+  const activeFeature =
+    highestFeatures.find((feature) => feature.id === activeFeatureId) ??
+    highestFeatures[0];
+  const activeRank =
+    highestFeatures.findIndex((feature) => feature.id === activeFeature.id) + 1;
+  const relativeToTop = (activeFeature.value / highestFeatures[0].value) * 100;
+  const ActiveFeatureIcon = activeFeature.icon;
 
   return (
     <div
       className="extra-trees-visual"
-      role="img"
       aria-label="Extra Trees held-out profile analysis was inconclusive"
     >
       <div className="extra-trees-heading">
@@ -1128,17 +1190,81 @@ function ExtraTreesVisual() {
       <div className="extra-trees-features">
         <div>
           <strong>Highest exploratory features</strong>
-          <small>held-out RMSE increase when shuffled</small>
+          <small>Select a feature to inspect its evidence</small>
         </div>
-        <ul>
-          {highestFeatures.map(([feature, importance]) => (
-            <li key={feature}>
-              <span>{feature}</span>
-              <strong>+{importance}</strong>
-            </li>
-          ))}
-        </ul>
+        <div
+          className="feature-tabs"
+          role="tablist"
+          aria-label="Inspect exploratory profile features"
+        >
+          {highestFeatures.map((feature) => {
+            const FeatureIcon = feature.icon;
+            const isActive = feature.id === activeFeature.id;
+            return (
+              <button
+                className={isActive ? "is-active" : ""}
+                key={feature.id}
+                type="button"
+                role="tab"
+                id={`extra-trees-feature-${feature.id}`}
+                aria-selected={isActive}
+                aria-controls="extra-trees-feature-panel"
+                onClick={() => setActiveFeatureId(feature.id)}
+              >
+                <FeatureIcon aria-hidden="true" size={17} strokeWidth={1.8} />
+                <span>{feature.label}</span>
+                <strong>+{feature.value.toFixed(3)}</strong>
+              </button>
+            );
+          })}
+        </div>
       </div>
+      <section
+        className="feature-insight-panel"
+        id="extra-trees-feature-panel"
+        role="tabpanel"
+        aria-labelledby={`extra-trees-feature-${activeFeature.id}`}
+        aria-live="polite"
+      >
+        <header>
+          <ActiveFeatureIcon aria-hidden="true" size={28} strokeWidth={1.8} />
+          <div>
+            <span>Rank {activeRank} · {activeFeature.category}</span>
+            <strong>{activeFeature.label}</strong>
+          </div>
+          <b>+{activeFeature.value.toFixed(3)}</b>
+        </header>
+        <p>{activeFeature.insight}</p>
+        <dl className="feature-insight-metrics">
+          <div><dt>Rank</dt><dd>#{activeRank}</dd></div>
+          <div><dt>Held-out RMSE increase</dt><dd>+{activeFeature.value.toFixed(3)}</dd></div>
+          <div><dt>Relative to top feature</dt><dd>{relativeToTop.toFixed(0)}%</dd></div>
+        </dl>
+        <div
+          className="feature-comparison-chart"
+          role="img"
+          aria-label={`Permutation importance comparison with ${activeFeature.label} selected`}
+        >
+          {highestFeatures.map((feature, index) => (
+            <div
+              className={feature.id === activeFeature.id ? "is-active" : ""}
+              key={feature.id}
+            >
+              <span>{index + 1}</span>
+              <i
+                style={{
+                  "--feature-width": `${(feature.value / highestFeatures[0].value) * 100}%`,
+                } as CSSProperties}
+              />
+              <strong>{feature.value.toFixed(3)}</strong>
+            </div>
+          ))}
+        </div>
+        <small className="feature-insight-limit">
+          <Info aria-hidden="true" size={16} />
+          Permutation importance measures reliance, not direction or causation.
+        </small>
+      </section>
       <div className="extra-trees-warning">
         <strong>Inconclusive</strong>
         <p>
