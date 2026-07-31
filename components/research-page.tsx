@@ -580,27 +580,80 @@ function AcquisitionVisual() {
 }
 
 function CleaningVisual() {
-  const steps = [
+  const [activePipeline, setActivePipeline] = useState<"performance" | "eeg">(
+    "performance",
+  );
+  const performanceSteps = [
     ["Load CSV", "skip source headings"],
     ["Participant rows", "keep 87 · no duplicates"],
     ["Clean values", "trim · standardize missing"],
     ["Numeric fields", "convert comma decimals"],
     ["Runs 3 to 6", "calculate mean accuracy"],
   ];
+  const eegSteps = [
+    ["Load GDF", "separate EEG · EOG · EMG"],
+    ["Reference EEG", "common-average reference"],
+    ["Remove eye noise", "ICA · EOG regression"],
+    ["Filter signals", "mu 8 to 13 · beta 13 to 30 Hz"],
+    ["Cue epochs", "0.5 to 3.0 seconds"],
+    ["Reject muscle noise", "EMG-informed trial rule"],
+  ];
+  const activeSteps =
+    activePipeline === "performance" ? performanceSteps : eegSteps;
+
   return (
-    <div className="cleaning-visual" aria-label="Performance CSV cleaning flow">
-      <ol>
-        {steps.map(([title, label], index) => (
+    <div className="cleaning-visual" aria-label="Data cleaning pipelines">
+      <div
+        className="figure-tabs cleaning-tabs"
+        role="tablist"
+        aria-label="Choose a cleaning pipeline"
+      >
+        <button
+          className={activePipeline === "performance" ? "is-active" : ""}
+          type="button"
+          role="tab"
+          aria-selected={activePipeline === "performance"}
+          aria-controls="performance-cleaning-panel"
+          id="performance-cleaning-tab"
+          onClick={() => setActivePipeline("performance")}
+        >
+          Performance CSV
+        </button>
+        <button
+          className={activePipeline === "eeg" ? "is-active" : ""}
+          type="button"
+          role="tab"
+          aria-selected={activePipeline === "eeg"}
+          aria-controls="eeg-cleaning-panel"
+          id="eeg-cleaning-tab"
+          onClick={() => setActivePipeline("eeg")}
+        >
+          EEG GDF files
+        </button>
+      </div>
+      <div
+        className="cleaning-panel"
+        id={`${activePipeline}-cleaning-panel`}
+        role="tabpanel"
+        aria-labelledby={`${activePipeline}-cleaning-tab`}
+      >
+        <ol>
+          {activeSteps.map(([title, label], index) => (
           <li key={title}>
             <span>{String(index + 1).padStart(2, "0")}</span>
             <strong>{title}</strong>
             <small>{label}</small>
           </li>
-        ))}
-      </ol>
-      <div className="quality-stamp">
-        <strong>Saved</strong>
-        <span>Perfomances_cleaned.csv · 87 × 73</span>
+          ))}
+        </ol>
+        <div className="quality-stamp">
+          <strong>{activePipeline === "performance" ? "Saved" : "Prepared"}</strong>
+          <span>
+            {activePipeline === "performance"
+              ? "Perfomances_cleaned.csv · 87 × 73"
+              : "clean EEG epochs · participant splits preserved"}
+          </span>
+        </div>
       </div>
     </div>
   );

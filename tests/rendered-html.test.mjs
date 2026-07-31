@@ -255,8 +255,10 @@ test("uses plain report language without em dashes", async () => {
 
   assert.doesNotMatch(writtenCopy, /\u2014|\u2013/);
   assert.doesNotMatch(html, /\u2014|\u2013/);
-  assert.match(html, /We removed repeated headings, standardized missing values, and converted analysis fields in Perfomances\.csv to numeric data\./);
+  assert.match(html, /We cleaned participant performance data and EEG recordings in separate, reproducible pipelines\./);
   assert.match(html, /Perfomances_cleaned\.csv/);
+  assert.match(html, /Performance CSV/);
+  assert.match(html, /EEG GDF files/);
   assert.match(
     html,
     /The output is a left or right label\. It does not read a person(?:&#x27;|')s thoughts\./,
@@ -296,6 +298,9 @@ test("keeps every visual and the final result within bounded responsive composit
   assert.match(page, /has-\$\{step\.visual\}/);
   assert.match(page, /className="communication-visual"/);
   assert.match(page, /className="result-context"/);
+  assert.match(page, /aria-label="Choose a cleaning pipeline"/);
+  assert.match(page, /role="tabpanel"/);
+  assert.match(page, /EMG-informed trial rule/);
   assert.match(css, /\.pipeline-layout\s*\{[\s\S]*?width:\s*min\(1280px,\s*100%\)[\s\S]*?grid-template-columns:\s*minmax\(320px,\s*0\.82fr\)\s*minmax\(560px,\s*1\.18fr\)/);
   assert.match(css, /\.metric-strip\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
   assert.match(css, /\.metric-strip:has\(> div:nth-child\(4\)\)\s*\{[\s\S]*?repeat\(2,\s*minmax\(0,\s*1fr\)\)/);

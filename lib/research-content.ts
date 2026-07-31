@@ -104,9 +104,9 @@ export const pipelineSteps: readonly PipelineStep[] = [
     navLabel: "Clean",
     title: "Preprocessing / Data Cleaning",
     statement:
-      "We removed repeated headings, standardized missing values, and converted analysis fields in Perfomances.csv to numeric data.",
+      "We cleaned participant performance data and EEG recordings in separate, reproducible pipelines.",
     takeaway:
-      "The cleaned file has one row per participant and a comparable mean accuracy from Runs 3 to 6.",
+      "The CSV supplies the comparison scores, while the cleaned GDF epochs supply the model inputs.",
     visual: "cleaning",
     side: "left",
     metrics: [
