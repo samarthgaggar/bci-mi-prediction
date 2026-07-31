@@ -27,7 +27,8 @@ import {
 } from "../lib/research-content";
 
 const BrainScene = lazy(() => import("./brain-scene"));
-const AUTO_SCROLL_CELL_DURATION_MS = 20_000;
+const AUTO_SCROLL_CELL_PAUSE_MS = 30_000;
+const AUTO_SCROLL_TRANSITION_MS = 2_000;
 
 function supportsWebGL() {
   try {
@@ -59,8 +60,6 @@ export function ResearchPage() {
   const [sceneReady, setSceneReady] = useState(false);
   const [webGL, setWebGL] = useState(true);
   const autoScrollFrameRef = useRef(0);
-  const autoScrollTimeRef = useRef(0);
-  const autoScrollPauseRef = useRef(0);
 
   useEffect(() => {
     const savedTheme = window.localStorage.getItem("bci-theme");
@@ -129,33 +128,87 @@ export function ResearchPage() {
   useEffect(() => {
     if (!autoScrollEnabled) {
       window.cancelAnimationFrame(autoScrollFrameRef.current);
-      autoScrollTimeRef.current = 0;
-      autoScrollPauseRef.current = 0;
       return;
     }
+
+    const sections = ["intro", ...pipelineSteps.map((step) => step.id)]
+      .map((id) => document.getElementById(id))
+      .filter(Boolean) as HTMLElement[];
+    if (!sections.length) return;
 
     const previousScrollBehavior =
       document.documentElement.style.scrollBehavior;
     document.documentElement.style.scrollBehavior = "auto";
-    const scrollingCellCount = Math.max(pipelineSteps.length, 1);
+    const getHeaderHeight = () =>
+      document.querySelector<HTMLElement>(".site-header")?.offsetHeight ?? 0;
+    const getCurrentIndex = () => {
+      const currentPosition = window.scrollY + getHeaderHeight() + 2;
+      return sections.reduce(
+        (index, section, candidateIndex) =>
+          section.getBoundingClientRect().top + window.scrollY <= currentPosition
+            ? candidateIndex
+            : index,
+        0,
+      );
+    };
+    let currentIndex = getCurrentIndex();
+    let phase: "paused" | "moving" = "paused";
+    let phaseStartedAt = 0;
+    let startY = window.scrollY;
+    let targetY = window.scrollY;
+
+    const getSectionTop = (section: HTMLElement) => {
+      const maximum = Math.max(
+        document.documentElement.scrollHeight - window.innerHeight,
+        0,
+      );
+      const absoluteTop = section.getBoundingClientRect().top + window.scrollY;
+      const offset = section.id === "intro" ? 0 : getHeaderHeight();
+      return Math.min(maximum, Math.max(0, absoluteTop - offset));
+    };
 
     const advance = (time: number) => {
-      if (!autoScrollTimeRef.current) autoScrollTimeRef.current = time;
-      const elapsed = Math.min(time - autoScrollTimeRef.current, 64);
-      autoScrollTimeRef.current = time;
-      const maximum =
-        document.documentElement.scrollHeight - window.innerHeight;
-      const pixelsPerMillisecond =
-        maximum / (scrollingCellCount * AUTO_SCROLL_CELL_DURATION_MS);
+      if (!phaseStartedAt) phaseStartedAt = time;
 
-      if (time >= autoScrollPauseRef.current) {
-        if (window.scrollY >= maximum - 2) {
+      if (
+        phase === "paused" &&
+        time - phaseStartedAt >= AUTO_SCROLL_CELL_PAUSE_MS
+      ) {
+        currentIndex = getCurrentIndex();
+        const nextIndex = (currentIndex + 1) % sections.length;
+
+        if (nextIndex === 0) {
           window.scrollTo(0, 0);
-          autoScrollPauseRef.current = time + 1200;
+          currentIndex = 0;
+          phaseStartedAt = time;
         } else {
-          window.scrollBy(0, pixelsPerMillisecond * elapsed);
+          startY = window.scrollY;
+          targetY = getSectionTop(sections[nextIndex]);
+          currentIndex = nextIndex;
+
+          if (motionEnabled) {
+            phase = "moving";
+          } else {
+            window.scrollTo(0, targetY);
+          }
+          phaseStartedAt = time;
+        }
+      } else if (phase === "moving") {
+        const transitionProgress = clamp(
+          (time - phaseStartedAt) / AUTO_SCROLL_TRANSITION_MS,
+        );
+        window.scrollTo(
+          0,
+          startY + (targetY - startY) * smooth(transitionProgress),
+        );
+
+        if (transitionProgress >= 1) {
+          window.scrollTo(0, targetY);
+          phase = "paused";
+          phaseStartedAt = time;
         }
       }
+
       autoScrollFrameRef.current = window.requestAnimationFrame(advance);
     };
 
@@ -164,7 +217,7 @@ export function ResearchPage() {
       window.cancelAnimationFrame(autoScrollFrameRef.current);
       document.documentElement.style.scrollBehavior = previousScrollBehavior;
     };
-  }, [autoScrollEnabled]);
+  }, [autoScrollEnabled, motionEnabled]);
 
   const activeIndex = useMemo(
     () =>
@@ -226,6 +279,7 @@ export function ResearchPage() {
             type="button"
             onClick={() => setAutoScrollEnabled((value) => !value)}
             aria-pressed={autoScrollEnabled}
+            title="Auto-scroll pauses 30 seconds on each section"
           >
             Auto <b>{autoScrollEnabled ? "On" : "Off"}</b>
           </button>

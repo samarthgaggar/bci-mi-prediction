@@ -350,7 +350,7 @@ test("keeps every visual and the final result within bounded responsive composit
   assert.doesNotMatch(css, /grid-template-columns:\s*minmax\(0,\s*0\.9fr\)\s*minmax\(260px,\s*1\.1fr\)/);
 });
 
-test("implements reversible looping auto scroll and reduced motion", async () => {
+test("pauses on every auto-scroll cell and respects reduced motion", async () => {
   const [page, css] = await Promise.all([
     readFile(path.join(projectRoot, "components/research-page.tsx"), "utf8"),
     readFile(path.join(projectRoot, "app/globals.css"), "utf8"),
@@ -358,15 +358,19 @@ test("implements reversible looping auto scroll and reduced motion", async () =>
 
   assert.match(page, /setAutoScrollEnabled\(\(value\) => !value\)/);
   assert.match(page, /window\.requestAnimationFrame\(advance\)/);
-  assert.match(page, /window\.scrollBy/);
   assert.match(page, /window\.scrollTo\(0, 0\)/);
   assert.match(page, /window\.cancelAnimationFrame/);
-  assert.match(page, /const AUTO_SCROLL_CELL_DURATION_MS = 20_000/);
-  assert.match(page, /const scrollingCellCount = Math\.max\(pipelineSteps\.length, 1\)/);
+  assert.match(page, /const AUTO_SCROLL_CELL_PAUSE_MS = 30_000/);
+  assert.match(page, /const AUTO_SCROLL_TRANSITION_MS = 2_000/);
   assert.match(
     page,
-    /maximum \/ \(scrollingCellCount \* AUTO_SCROLL_CELL_DURATION_MS\)/,
+    /const nextIndex = \(currentIndex \+ 1\) % sections\.length/,
   );
+  assert.match(page, /time - phaseStartedAt >= AUTO_SCROLL_CELL_PAUSE_MS/);
+  assert.match(page, /\(time - phaseStartedAt\) \/ AUTO_SCROLL_TRANSITION_MS/);
+  assert.match(page, /if \(motionEnabled\)/);
+  assert.match(page, /Auto-scroll pauses 30 seconds on each section/);
+  assert.doesNotMatch(page, /window\.scrollBy|pixelsPerMillisecond/);
   assert.match(css, /prefers-reduced-motion:\s*reduce/);
   assert.match(css, /:root\[data-motion="reduced"\]/);
 });
