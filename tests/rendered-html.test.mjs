@@ -203,6 +203,7 @@ test("publishes only verified, clearly labeled research metrics", async () => {
     "63.74%",
     "13.75 vs 15.80",
     "5 vs 15",
+    "18 / 27",
   ]) {
     assert.match(html, new RegExp(value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
@@ -230,7 +231,7 @@ test("provides graph switchers across exploration, modeling, prediction, evaluat
     "Split design",
     "Who improved?",
     "Histograms",
-    "Participant differences",
+    "Bottom 27 overlap",
   ]) {
     assert.match(html, new RegExp(label));
   }
@@ -337,7 +338,7 @@ test("implements reversible looping auto scroll and reduced motion", async () =>
   assert.match(css, /:root\[data-motion="reduced"\]/);
 });
 
-test("ships the seven selected research figures with byte checks", async () => {
+test("ships the eight selected research figures with byte checks", async () => {
   const expected = new Map([
     ["results/performance-by-run.png", ["0f0a3ed5147cab642f663772955301810856966d4cf3e0fba0613dc1a53b0263", 1484, 889]],
     ["results/mean-performance-by-run.png", ["fcf9c874422abe217aca316b57f488e42b8170172cd2bcc7b488cdd77a656a7d", 1333, 884]],
@@ -346,6 +347,7 @@ test("ships the seven selected research figures with byte checks", async () => {
     ["results/model/stage-2/xgboost_permutation_importance.png", ["1970c8d3d70a54c90259be5b504b97437233f97f87e4ae3a55f04daa1d56eafa", 1600, 900]],
     ["results/model/stage-9/final_locked_summary.png", ["6af381a13bdf756027412878c1917b2e72f8fd87aeda52ef7de9857850d9739f", 1600, 900]],
     ["results/model/stage-9/participant_run_difference.png", ["546664e6afcf891f371a2f9da71d471cc4b731a84a458d4a4c895979effac953", 1000, 1200]],
+    ["results/model/stage-9/bottom_27_overlap.png", ["929261c05fb90b565043fdbf0dd4c40fd05c6ed9aa347ac05992c0ddd40bcff7", 1600, 1000]],
   ]);
 
   for (const [name, [digest, width, height]] of expected) {
