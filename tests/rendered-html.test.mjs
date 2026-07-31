@@ -68,12 +68,12 @@ test("server-renders the nine-stop visual data-science pipeline", async () => {
     /<title>Can Computers Read Minds\? · Motor Imagery BCI<\/title>/i,
   );
   assert.match(html, /Can computers <span>read minds\?<\/span>/i);
-  assert.match(html, /Not in the science-fiction sense\./i);
+  assert.match(html, /EEG does not read thoughts\./i);
   assert.match(
     html,
     /We tested whether machine-learning models can recognize those patterns consistently across different people\./i,
   );
-  assert.match(html, /Patterns, not private thoughts\./i);
+  assert.match(html, /The model uses EEG patterns, not private thoughts\./i);
   assert.match(html, /See how we tested it/i);
   for (const heading of [
     /Problem Formulation/i,
@@ -84,19 +84,19 @@ test("server-renders the nine-stop visual data-science pipeline", async () => {
     /Inference (?:&amp;|&) Prediction/i,
     />Evaluation</i,
     />Validation</i,
-    /Communicate the Result/i,
+    /Report the Results/i,
   ]) {
     assert.match(html, heading);
   }
 
-  assert.match(html, /From signal to evidence\./);
+  assert.match(html, /Motor imagery EEG research\./);
   assert.match(
     html,
     /How can we improve the prediction of imagined motor movements while achieving consistent performance across participants with diverse demographic, psychological, and behavioral profiles\?/,
   );
-  assert.match(html, /One clear task\. Two classes\. Unseen participants\./);
-  assert.match(html, /The spread tells the real story\./);
-  assert.match(html, /Reported with limitations/);
+  assert.match(html, /The model predicts left-hand or right-hand motor imagery/);
+  assert.match(html, /results vary from one person to another/);
+  assert.match(html, /Limits included in the report/);
   assert.doesNotMatch(
     html,
     /Signals in Motion|Admit one curious mind|Ride again|Explore the project|Complete results ledger|verified figures|Deployment \/ Presentation|Ready to present/i,
@@ -199,9 +199,9 @@ test("publishes only verified, clearly labeled research metrics", async () => {
   }
 
   assert.match(html, /development accuracy/i);
-  assert.match(html, /locked accuracy/i);
+  assert.match(html, /final test accuracy/i);
   assert.match(html, /research goal/i);
-  assert.match(html, /not a clinical system/i);
+  assert.match(html, /not a clinical tool/i);
   assert.match(html, /22 unseen participants/i);
   assert.doesNotMatch(html, /69\.6%|68\.25%|68\.30%/);
 });
@@ -215,8 +215,8 @@ test("provides graph switchers across exploration, modeling, prediction, evaluat
     "Model scores",
     "MLP training",
     "Classifier path",
-    "XGBoost signal",
-    "Locked scores",
+    "XGBoost features",
+    "Final scores",
     "Final summary",
     "Split design",
     "Who improved?",
@@ -226,10 +226,29 @@ test("provides graph switchers across exploration, modeling, prediction, evaluat
 
   assert.match(html, /Choose a figure/);
   assert.match(html, /Development accuracy by model/);
-  assert.match(html, /Scale: 50–65% participant-run accuracy/);
+  assert.match(html, /Scale: 50 to 65% participant-run accuracy/);
   assert.match(html, /Open full-size chart: Performance varies widely/);
   assert.match(html, /135 EEG features/);
-  assert.match(html, /Participant-disjoint validation/);
+  assert.match(html, /Participant split/);
+});
+
+test("uses plain report language without em dashes", async () => {
+  const [html, page, content, layout] = await Promise.all([
+    render().then((response) => response.text()),
+    readFile(path.join(projectRoot, "components/research-page.tsx"), "utf8"),
+    readFile(path.join(projectRoot, "lib/research-content.ts"), "utf8"),
+    readFile(path.join(projectRoot, "app/layout.tsx"), "utf8"),
+  ]);
+  const writtenCopy = `${page}\n${content}\n${layout}`;
+
+  assert.doesNotMatch(writtenCopy, /\u2014|\u2013/);
+  assert.doesNotMatch(html, /\u2014|\u2013/);
+  assert.match(html, /We kept the raw files unchanged and recorded each cleaning step\./);
+  assert.match(
+    html,
+    /The output is a left or right label\. It does not read a person(?:&#x27;|')s thoughts\./,
+  );
+  assert.match(html, /This is a research result\. It is not a clinical tool\./);
 });
 
 test("restores the brain journey without restoring the old scroll tunnel", async () => {
@@ -272,6 +291,19 @@ test("keeps every visual and the final result within bounded responsive composit
   assert.match(css, /\.final-score > strong\s*\{[\s\S]*?font-size:\s*clamp\(66px,\s*7vw,\s*104px\)/);
   assert.match(css, /min-height:\s*clamp\(520px,\s*62vh,\s*640px\)/);
   assert.match(css, /\.figure-stage img\s*\{[\s\S]*?height:\s*clamp\(330px,\s*43vh,\s*450px\)/);
+  assert.match(page, /className="prediction-classes"/);
+  assert.match(
+    css,
+    /\.prediction-flow\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\)\s*96px\s*minmax\(0,\s*1fr\)/,
+  );
+  assert.match(
+    css,
+    /\.prediction-classes\s*\{[\s\S]*?display:\s*grid[\s\S]*?gap:\s*7px/,
+  );
+  assert.match(
+    css,
+    /\.prediction-input,\s*\n\.prediction-output\s*\{[\s\S]*?min-width:\s*0/,
+  );
   assert.match(css, /white-space:\s*nowrap/);
   assert.match(css, /overflow:\s*hidden/);
   assert.doesNotMatch(page, /presentation-visual|presentation-status|Ready to present/);

@@ -28,14 +28,14 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Can Computers Read Minds?",
     description:
-      "A visual, graph-led study of imagined hand movements, participant variability, and honest locked evaluation.",
+      "This site shows our EEG dataset, models, graphs, and final test results.",
     type: "website",
     images: [
       {
         url: "/og.png",
         width: 1200,
         height: 630,
-        alt: "Predicting Motor Imagery from EEG, shown with a luminous brain and EEG signal pathway.",
+        alt: "Predicting motor imagery from EEG with a brain graphic and EEG line.",
       },
     ],
   },

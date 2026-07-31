@@ -321,7 +321,7 @@ export function ResearchPage() {
       <footer className="site-footer">
         <div>
           <span>Motor Imagery BCI</span>
-          <strong>From signal to evidence.</strong>
+          <strong>Motor imagery EEG research.</strong>
         </div>
         <nav aria-label="Research sources">
           <a href={primarySources.zenodo.href} target="_blank" rel="noreferrer">
@@ -355,8 +355,8 @@ function IntroSection({ active }: { active: boolean }) {
             Can computers <span>read minds?</span>
           </h1>
           <p className="intro-answer">
-            Not in the science-fiction sense. EEG can, however, capture changes
-            in brain activity while someone imagines moving a hand.
+            No. EEG does not read thoughts. It records changes in brain activity
+            while a person imagines moving a hand.
           </p>
           <p className="intro-project">
             We tested whether machine-learning models can recognize those
@@ -383,7 +383,7 @@ function IntroSection({ active }: { active: boolean }) {
         </div>
         <div className="intro-visual-note" aria-hidden="true">
           <span>EEG measures activity</span>
-          <strong>Patterns, not private thoughts.</strong>
+          <strong>The model uses EEG patterns, not private thoughts.</strong>
         </div>
       </div>
     </section>
@@ -472,7 +472,7 @@ function StepVisual({ visual }: { visual: PipelineStep["visual"] }) {
               data={developmentModels}
               max={65}
               min={50}
-              scaleLabel="Scale: 50–65% participant-run accuracy"
+              scaleLabel="Scale: 50 to 65% participant-run accuracy"
             />
           ) : null
         }
@@ -496,11 +496,11 @@ function StepVisual({ visual }: { visual: PipelineStep["visual"] }) {
         renderCustom={(id) =>
           id === "locked" ? (
             <BarComparison
-              ariaLabel="Locked accuracy by system"
+              ariaLabel="Final test accuracy by system"
               data={lockedModels}
               max={70}
               min={50}
-              scaleLabel="Scale: 50–70% · research goal at 70%"
+              scaleLabel="Scale: 50 to 70% · research goal at 70%"
               showGoal
             />
           ) : null
@@ -561,8 +561,8 @@ function AcquisitionVisual() {
       <div className="run-sequence">
         {[
           ["Baseline", "Rest"],
-          ["R1–R2", "Acquire"],
-          ["R3–R6", "Online"],
+          ["R1 to R2", "Acquire"],
+          ["R3 to R6", "Online"],
           ["40 trials", "per run"],
         ].map(([value, label]) => (
           <div key={value}>
@@ -577,10 +577,10 @@ function AcquisitionVisual() {
 
 function CleaningVisual() {
   const steps = [
-    ["Raw GDF", "immutable"],
+    ["Raw GDF", "kept unchanged"],
     ["SHA-256", "verify"],
-    ["Cue window", "0.5–4.5 s"],
-    ["Mu + beta", "8–30 Hz"],
+    ["Cue window", "0.5 to 4.5 s"],
+    ["Mu + beta", "8 to 30 Hz"],
     ["135 features", "model input"],
   ];
   return (
@@ -595,8 +595,8 @@ function CleaningVisual() {
         ))}
       </ol>
       <div className="quality-stamp">
-        <strong>PASS</strong>
-        <span>participant separation preserved</span>
+        <strong>Checked</strong>
+        <span>participant groups stayed separate</span>
       </div>
     </div>
   );
@@ -709,26 +709,26 @@ function PredictionFlow() {
     <div
       className="prediction-flow"
       role="img"
-      aria-label="Cue-locked EEG features enter a frozen classifier and produce one left or right prediction"
+      aria-label="EEG features enter the final classifier and produce one left-hand or right-hand prediction"
     >
       <div className="prediction-input">
         <span>Input</span>
         <strong>135 EEG features</strong>
-        <small>8–30 Hz spectral power</small>
+        <small>8 to 30 Hz spectral power</small>
       </div>
       <div className="prediction-model">
-        <span>Frozen model</span>
+        <span>Final model</span>
         <i aria-hidden="true" />
         <strong>Classify</strong>
       </div>
       <div className="prediction-output">
         <span>Output</span>
-        <div>
-          <strong>Left</strong>
+        <div className="prediction-classes">
+          <strong>Left hand</strong>
           <b>or</b>
-          <strong>Right</strong>
+          <strong>Right hand</strong>
         </div>
-        <small>one class per trial</small>
+        <small>one prediction per trial</small>
       </div>
     </div>
   );
@@ -739,11 +739,11 @@ function ValidationSplit() {
     <div
       className="validation-split"
       role="img"
-      aria-label="Sixty-five development participants and twenty-two locked-test participants remain in separate partitions"
+      aria-label="Sixty-five development participants and twenty-two test participants remain in separate groups"
     >
       <div className="split-heading">
-        <span>Participant-disjoint validation</span>
-        <strong>One person. One side.</strong>
+        <span>Participant split</span>
+        <strong>Participants stay in separate groups.</strong>
       </div>
       <div className="split-groups">
         <div>
@@ -753,7 +753,7 @@ function ValidationSplit() {
           <i style={{ "--split-width": "74.7%" } as CSSProperties} />
         </div>
         <div>
-          <span>Locked test</span>
+          <span>Final test</span>
           <strong>22</strong>
           <small>evaluate once</small>
           <i style={{ "--split-width": "25.3%" } as CSSProperties} />
@@ -771,7 +771,7 @@ function CommunicationVisual() {
   return (
     <div className="communication-visual">
       <div className="final-score">
-        <span>Locked result</span>
+        <span>Final test result</span>
         <strong>60.20%</strong>
         <p>General MLP · 22 unseen participants</p>
       </div>
@@ -797,7 +797,7 @@ function CommunicationVisual() {
       </div>
       <p className="communication-status">
         <span aria-hidden="true">✓</span>
-        Reported with limitations
+        Limits included in the report
       </p>
     </div>
   );

@@ -67,13 +67,14 @@ export const pipelineSteps: readonly PipelineStep[] = [
     title: "Problem Formulation",
     statement:
       "How can we improve the prediction of imagined motor movements while achieving consistent performance across participants with diverse demographic, psychological, and behavioral profiles?",
-    takeaway: "One clear task. Two classes. Unseen participants.",
+    takeaway:
+      "The model predicts left-hand or right-hand motor imagery for people it did not train on.",
     visual: "question",
     side: "left",
     metrics: [
       { value: "2", label: "classes", note: "left or right" },
       { value: "70%", label: "research goal", note: "set before testing" },
-      { value: "1×", label: "locked test", note: "opened once" },
+      { value: "1×", label: "final test", note: "used once" },
     ],
     sources: [primarySources.paper],
   },
@@ -84,7 +85,8 @@ export const pipelineSteps: readonly PipelineStep[] = [
     title: "Data Acquisition",
     statement:
       "A public BCI dataset records motor imagery across 87 participants.",
-    takeaway: "Large enough to compare people—not to ignore their differences.",
+    takeaway:
+      "The dataset lets us compare results across many different participants.",
     visual: "acquisition",
     side: "right",
     metrics: [
@@ -101,8 +103,8 @@ export const pipelineSteps: readonly PipelineStep[] = [
     navLabel: "Clean",
     title: "Preprocessing / Data Cleaning",
     statement:
-      "Raw files stayed unchanged while every transformation remained traceable.",
-    takeaway: "Clean the workflow—not the result.",
+      "We kept the raw files unchanged and recorded each cleaning step.",
+    takeaway: "The cleaning process was fixed before we tested the models.",
     visual: "cleaning",
     side: "left",
     metrics: [
@@ -119,7 +121,8 @@ export const pipelineSteps: readonly PipelineStep[] = [
     title: "Exploratory Data Analysis",
     statement:
       "Performance varies more between people than it changes across online runs.",
-    takeaway: "The average is useful. The spread tells the real story.",
+    takeaway:
+      "The average does not show how much results vary from one person to another.",
     visual: "eda",
     side: "right",
     metrics: [
@@ -135,7 +138,7 @@ export const pipelineSteps: readonly PipelineStep[] = [
     navLabel: "Model",
     title: "Modeling",
     statement:
-      "Simple logistic regression slightly led development; the compact MLP stayed close.",
+      "Logistic regression had the highest development score. The MLP was close behind.",
     takeaway: "More complex did not automatically mean more accurate.",
     visual: "modeling",
     side: "left",
@@ -152,8 +155,9 @@ export const pipelineSteps: readonly PipelineStep[] = [
     navLabel: "Predict",
     title: "Inference & Prediction",
     statement:
-      "Frozen models turn cue-locked EEG features into one left-or-right prediction.",
-    takeaway: "The output is a class estimate—not a thought being read.",
+      "The final models use EEG features from each trial to predict left-hand or right-hand motor imagery.",
+    takeaway:
+      "The output is a left or right label. It does not read a person's thoughts.",
     visual: "prediction",
     side: "right",
     metrics: [
@@ -169,12 +173,13 @@ export const pipelineSteps: readonly PipelineStep[] = [
     navLabel: "Evaluate",
     title: "Evaluation",
     statement:
-      "The frozen MLP reached 60.20% on 22 participants excluded from development.",
-    takeaway: "The model led our systems, missed 70%, and trailed the original BCI.",
+      "The final MLP reached 60.20% on 22 participants excluded from development.",
+    takeaway:
+      "Our MLP was our best model, but it scored below the original BCI and the 70% goal.",
     visual: "evaluation",
     side: "left",
     metrics: [
-      { value: "60.20%", label: "general MLP", note: "locked accuracy" },
+      { value: "60.20%", label: "general MLP", note: "final test accuracy" },
       { value: "62.61%", label: "original BCI", note: "same people and runs" },
       { value: "−2.41 pp", label: "difference", note: "MLP minus original" },
       { value: "5,280", label: "test trials", note: "22 participants" },
@@ -187,15 +192,16 @@ export const pipelineSteps: readonly PipelineStep[] = [
     navLabel: "Validate",
     title: "Validation",
     statement:
-      "Participants—not individual trials—were separated before final testing.",
-    takeaway: "One locked test. No leakage. No tuning after the result.",
+      "We split the data by participant before final testing. Trials from one person stayed in the same group.",
+    takeaway:
+      "We used the test set once and did not change the models afterward.",
     visual: "validation",
     side: "right",
     metrics: [
       { value: "65", label: "development people", note: "model selection only" },
-      { value: "22", label: "locked people", note: "never used to fit" },
-      { value: "5,280", label: "locked trials", note: "Runs 3–6" },
-      { value: "0", label: "post-test changes", note: "model stayed frozen" },
+      { value: "22", label: "test participants", note: "never used to fit" },
+      { value: "5,280", label: "test trials", note: "Runs 3 to 6" },
+      { value: "0", label: "post-test changes", note: "model stayed unchanged" },
     ],
     sources: [primarySources.analysis],
   },
@@ -203,15 +209,16 @@ export const pipelineSteps: readonly PipelineStep[] = [
     id: "communication",
     number: "09",
     navLabel: "Report",
-    title: "Communicate the Result",
+    title: "Report the Results",
     statement:
-      "The final output is a reproducible research result—not a clinical system.",
-    takeaway: "Report the result honestly, including the missed goal and limitations.",
+      "This is a research result. It is not a clinical tool.",
+    takeaway:
+      "The report includes the final score, the missed goal, and the study limits.",
     visual: "communication",
     side: "left",
     metrics: [
-      { value: "60.20%", label: "our MLP", note: "locked accuracy" },
-      { value: "62.61%", label: "original BCI", note: "locked accuracy" },
+      { value: "60.20%", label: "our MLP", note: "final test accuracy" },
+      { value: "62.61%", label: "original BCI", note: "final test accuracy" },
       { value: "−2.41 pp", label: "difference", note: "our MLP minus BCI" },
       { value: "112", label: "checks passed", note: "final package" },
     ],
@@ -248,7 +255,8 @@ export const edaFigures: readonly FigureChoice[] = [
     id: "learning-style",
     label: "Learning style",
     title: "No strong linear pattern",
-    note: "Displayed correlations range from −0.24 to +0.24 and are not causal.",
+    note:
+      "The correlations range from −0.24 to +0.24. They do not show cause and effect.",
     src: "/results/learning-style-correlations.png",
     width: 2683,
     height: 1330,
@@ -268,7 +276,8 @@ export const modelingFigures: readonly FigureChoice[] = [
     id: "comparison",
     label: "Model scores",
     title: "Development comparison",
-    note: "Every score comes from participants excluded from that model’s training fold.",
+    note:
+      "Each score was measured on participants who were not used to train that fold.",
     src: "",
     width: 0,
     height: 0,
@@ -290,8 +299,9 @@ export const predictionFigures: readonly FigureChoice[] = [
   {
     id: "classifier",
     label: "Classifier path",
-    title: "One trial becomes one class",
-    note: "The model receives derived EEG features—not thoughts, words, or images.",
+    title: "One trial produces one prediction",
+    note:
+      "The model receives EEG features. It does not receive thoughts, words, or images.",
     src: "",
     width: 0,
     height: 0,
@@ -299,9 +309,10 @@ export const predictionFigures: readonly FigureChoice[] = [
   },
   {
     id: "xgboost",
-    label: "XGBoost signal",
-    title: "Visual–verbal score led permutation importance",
-    note: "This separate model predicted participant performance; importance is association, not causation.",
+    label: "XGBoost features",
+    title: "Visual-verbal score had the highest importance",
+    note:
+      "This separate model predicted participant performance. The chart shows relationships, not cause and effect.",
     src: "/results/model/stage-2/xgboost_permutation_importance.png",
     width: 1591,
     height: 1186,
@@ -320,9 +331,9 @@ export const lockedModels = [
 export const evaluationFigures: readonly FigureChoice[] = [
   {
     id: "locked",
-    label: "Locked scores",
+    label: "Final scores",
     title: "Final model comparison",
-    note: "The general MLP led our frozen models. The original BCI remained higher.",
+    note: "The general MLP led our models. The original BCI scored higher.",
     src: "",
     width: 0,
     height: 0,
@@ -332,11 +343,12 @@ export const evaluationFigures: readonly FigureChoice[] = [
     id: "summary",
     label: "Final summary",
     title: "Overall and actual-low results",
-    note: "The six-person actual-low subgroup is descriptive and needs independent confirmation.",
+    note:
+      "This subgroup has only six people, so it is too small for a firm conclusion.",
     src: "/results/model/stage-9/final_locked_summary.png",
     width: 2132,
     height: 890,
-    alt: "Final locked-test summary for all participants and the actual-low subgroup.",
+    alt: "Final test summary for all participants and the actual-low subgroup.",
   },
 ] as const;
 
@@ -345,7 +357,7 @@ export const validationFigures: readonly FigureChoice[] = [
     id: "split",
     label: "Split design",
     title: "People stay in one partition",
-    note: "Development and locked evaluation use different participants to limit leakage.",
+    note: "The development and test groups contain different participants.",
     src: "",
     width: 0,
     height: 0,

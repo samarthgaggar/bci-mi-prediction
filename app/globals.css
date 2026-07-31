@@ -1027,6 +1027,7 @@ main {
 
 .figure-switcher {
   display: grid;
+  min-width: 0;
   grid-template-rows: auto minmax(0, 1fr) auto;
   overflow: hidden;
 }
@@ -1069,11 +1070,17 @@ main {
 .figure-stage {
   position: relative;
   display: grid;
+  min-width: 0;
   min-height: 0;
   place-items: center;
   overflow: hidden;
   padding: clamp(16px, 2.4vw, 30px);
   background: #ffffff;
+}
+
+.figure-stage > * {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .figure-stage > a {
@@ -1101,6 +1108,7 @@ main {
   margin-bottom: 7px;
   font-size: 14px;
   font-weight: 650;
+  overflow-wrap: anywhere;
 }
 
 .figure-caption p {
@@ -1109,6 +1117,7 @@ main {
   color: var(--ink-faint);
   font-size: 10px;
   line-height: 1.55;
+  overflow-wrap: anywhere;
 }
 
 .bar-comparison {
@@ -1127,6 +1136,7 @@ main {
 
 .bar-comparison li > div {
   display: flex;
+  min-width: 0;
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
@@ -1134,11 +1144,14 @@ main {
 }
 
 .bar-comparison li span {
+  min-width: 0;
   font-size: 11px;
   font-weight: 650;
+  overflow-wrap: anywhere;
 }
 
 .bar-comparison li strong {
+  flex: 0 0 auto;
   font-family: var(--font-mono);
   font-size: 10px;
 }
@@ -1172,13 +1185,17 @@ main {
 
 .bar-scale {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 12px;
   margin-top: 20px;
   color: #647995;
   font-family: var(--font-mono);
   font-size: 8px;
   text-align: center;
+}
+
+.bar-scale span:nth-child(2) {
+  overflow-wrap: anywhere;
 }
 
 .goal-marker {
@@ -1192,21 +1209,25 @@ main {
 
 .prediction-flow,
 .validation-split {
-  width: min(100%, 660px);
+  width: min(100%, 720px);
   min-height: 390px;
   color: #10213b;
 }
 
 .prediction-flow {
   display: grid;
-  grid-template-columns: minmax(130px, 1fr) auto minmax(150px, 1fr);
-  gap: clamp(18px, 3vw, 38px);
+  grid-template-columns: minmax(0, 1fr) 96px minmax(0, 1fr);
+  gap: clamp(14px, 2.2vw, 28px);
   align-items: center;
 }
 
 .prediction-input,
 .prediction-output {
-  padding: 26px 22px;
+  display: grid;
+  min-width: 0;
+  min-height: 250px;
+  align-content: center;
+  padding: 24px 20px;
   border: 1px solid #d6dfeb;
   background: #f7f9fc;
 }
@@ -1228,6 +1249,8 @@ main {
   display: block;
   font-size: clamp(18px, 2vw, 27px);
   letter-spacing: -0.035em;
+  line-height: 1.08;
+  overflow-wrap: anywhere;
 }
 
 .prediction-input small,
@@ -1240,8 +1263,9 @@ main {
 
 .prediction-model {
   display: grid;
-  min-width: 96px;
+  min-width: 0;
   place-items: center;
+  text-align: center;
 }
 
 .prediction-model > span {
@@ -1264,18 +1288,25 @@ main {
   font-size: 9px;
 }
 
-.prediction-output > div {
+.prediction-classes {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 8px;
-  align-items: center;
+  gap: 7px;
 }
 
-.prediction-output b {
+.prediction-classes strong {
+  padding: 10px 12px;
+  border: 1px solid #d6dfeb;
+  background: #ffffff;
+  font-size: clamp(15px, 1.5vw, 20px);
+  text-align: center;
+}
+
+.prediction-classes b {
   color: #647995;
   font-family: var(--font-mono);
   font-size: 8px;
   font-weight: 500;
+  text-align: center;
 }
 
 .validation-split {
@@ -1285,6 +1316,8 @@ main {
 
 .split-heading {
   display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
   align-items: end;
   justify-content: space-between;
   gap: 24px;
@@ -1300,18 +1333,23 @@ main {
 }
 
 .split-heading strong {
+  min-width: 0;
+  max-width: 16ch;
   font-size: clamp(22px, 3vw, 38px);
   letter-spacing: -0.045em;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
 }
 
 .split-groups {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
 }
 
 .split-groups > div {
   position: relative;
+  min-width: 0;
   padding: 24px;
   border: 1px solid #d6dfeb;
   background: #f7f9fc;
@@ -1324,6 +1362,7 @@ main {
   font-family: var(--font-mono);
   font-size: 8px;
   text-transform: uppercase;
+  overflow-wrap: anywhere;
 }
 
 .split-groups strong {
@@ -1608,6 +1647,28 @@ main {
   .final-score > strong {
     font-size: clamp(64px, 7.5vw, 84px);
   }
+
+  .prediction-flow {
+    grid-template-columns: minmax(0, 1fr) 72px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .prediction-input,
+  .prediction-output {
+    min-height: 230px;
+    padding: 20px 16px;
+  }
+
+  .prediction-model i {
+    width: 54px;
+    height: 54px;
+    border-width: 8px;
+  }
+
+  .prediction-classes strong {
+    padding-inline: 8px;
+    font-size: 15px;
+  }
 }
 
 @media (max-width: 809px) {
@@ -1774,8 +1835,13 @@ main {
     padding-block: 16px;
   }
 
+  .prediction-input,
+  .prediction-output {
+    min-height: 170px;
+  }
+
   .prediction-model {
-    min-height: 104px;
+    min-height: 88px;
   }
 
   .prediction-model i {
