@@ -462,6 +462,7 @@ function StepVisual({ visual }: { visual: PipelineStep["visual"] }) {
   if (visual === "acquisition") return <AcquisitionVisual />;
   if (visual === "cleaning") return <CleaningVisual />;
   if (visual === "eda") return <FigureSwitcher choices={edaFigures} />;
+  if (visual === "extra-trees") return <ExtraTreesVisual />;
   if (visual === "modeling") {
     return (
       <FigureSwitcher
@@ -655,6 +656,53 @@ function CleaningVisual() {
           </span>
         </div>
       </div>
+    </div>
+  );
+}
+
+function ExtraTreesVisual() {
+  const models = [
+    { name: "Extra Trees", value: 15.825, width: "93%" },
+    { name: "Random forest", value: 15.914, width: "96%" },
+    { name: "Dummy mean", value: 16.031, width: "100%" },
+  ] as const;
+
+  return (
+    <div
+      className="extra-trees-visual"
+      role="img"
+      aria-label="Extra Trees held-out profile analysis was inconclusive"
+    >
+      <div className="extra-trees-heading">
+        <span>Repeated nested cross-validation</span>
+        <strong>Lower RMSE is better</strong>
+      </div>
+      <ol>
+        {models.map((model) => (
+          <li key={model.name}>
+            <div>
+              <span>{model.name}</span>
+              <strong>{model.value.toFixed(3)}</strong>
+            </div>
+            <i
+              style={{ "--tree-width": model.width } as CSSProperties}
+              aria-hidden="true"
+            />
+          </li>
+        ))}
+      </ol>
+      <div className="extra-trees-warning">
+        <strong>Inconclusive</strong>
+        <p>
+          The RMSE gain over the dummy was only 0.206 points. Held-out R² was
+          negative, and RMSE rose from 5.789 in training to 15.825 on held-out
+          participants.
+        </p>
+      </div>
+      <small>
+        Profile-feature rankings are exploratory and require an independent
+        participant cohort.
+      </small>
     </div>
   );
 }

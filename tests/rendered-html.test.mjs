@@ -57,7 +57,7 @@ function contrast(foreground, background) {
   return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 }
 
-test("server-renders the ten-stop visual data-science pipeline", async () => {
+test("server-renders the eleven-stop visual data-science pipeline", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
@@ -80,6 +80,7 @@ test("server-renders the ten-stop visual data-science pipeline", async () => {
     /Data Acquisition/i,
     /Preprocessing \/ Data Cleaning/i,
     /Exploratory Data Analysis/i,
+    /Extra Trees Profile Analysis/i,
     />Modeling</i,
     /Inference (?:&amp;|&) Prediction/i,
     />Evaluation</i,
@@ -90,6 +91,8 @@ test("server-renders the ten-stop visual data-science pipeline", async () => {
     assert.match(html, heading);
   }
   assert.ok(html.indexOf('id="prediction"') < html.indexOf('id="modeling"'));
+  assert.ok(html.indexOf('id="eda"') < html.indexOf('id="extra-trees"'));
+  assert.ok(html.indexOf('id="extra-trees"') < html.indexOf('id="prediction"'));
 
   assert.match(html, /Motor imagery EEG research\./);
   assert.match(
@@ -109,13 +112,14 @@ test("server-renders the ten-stop visual data-science pipeline", async () => {
   );
 });
 
-test("renders exactly ten stable anchors with compact controls", async () => {
+test("renders exactly eleven stable anchors with compact controls", async () => {
   const html = await (await render()).text();
   const anchors = [
     "problem",
     "acquisition",
     "cleaning",
     "eda",
+    "extra-trees",
     "modeling",
     "prediction",
     "evaluation",
@@ -188,6 +192,10 @@ test("publishes only verified, clearly labeled research metrics", async () => {
     "73",
     "4",
     "12",
+    "15.825",
+    "16.031",
+    "-0.071",
+    "10.036",
     "61.92%",
     "64.83%",
     "69.10%",
@@ -242,6 +250,8 @@ test("provides graph switchers across exploration, modeling, prediction, evaluat
   assert.match(html, /Open full-size chart: Performance varies widely/);
   assert.match(html, /12 CSP features/);
   assert.match(html, /Participant split/);
+  assert.match(html, /Inconclusive/);
+  assert.match(html, /Profile-feature rankings are exploratory/);
 });
 
 test("uses plain report language without em dashes", async () => {
@@ -285,7 +295,7 @@ test("restores the brain journey without restoring the old scroll tunnel", async
   assert.match(brainScene, /function InteriorWorld/);
   assert.match(brainScene, /function CameraSequence/);
   assert.match(brainScene, /branching neuron networks/);
-  assert.equal((content.match(/\n\s+number: "\d{2}"/g) ?? []).length, 10);
+  assert.equal((content.match(/\n\s+number: "\d{2}"/g) ?? []).length, 11);
   assert.doesNotMatch(content, /id: "presentation"|Deployment \/ Presentation/);
 });
 
@@ -301,6 +311,8 @@ test("keeps every visual and the final result within bounded responsive composit
   assert.match(page, /aria-label="Choose a cleaning pipeline"/);
   assert.match(page, /role="tabpanel"/);
   assert.match(page, /EMG-informed trial rule/);
+  assert.match(page, /className="extra-trees-visual"/);
+  assert.match(css, /\.extra-trees-warning\s*\{/);
   assert.match(css, /\.pipeline-layout\s*\{[\s\S]*?width:\s*min\(1280px,\s*100%\)[\s\S]*?grid-template-columns:\s*minmax\(320px,\s*0\.82fr\)\s*minmax\(560px,\s*1\.18fr\)/);
   assert.match(css, /\.metric-strip\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
   assert.match(css, /\.metric-strip:has\(> div:nth-child\(4\)\)\s*\{[\s\S]*?repeat\(2,\s*minmax\(0,\s*1fr\)\)/);

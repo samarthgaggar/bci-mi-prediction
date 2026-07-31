@@ -14,6 +14,7 @@ export type PipelineVisual =
   | "acquisition"
   | "cleaning"
   | "eda"
+  | "extra-trees"
   | "modeling"
   | "prediction"
   | "evaluation"
@@ -135,8 +136,27 @@ export const pipelineSteps: readonly PipelineStep[] = [
     sources: [primarySources.analysis, primarySources.zenodo],
   },
   {
-    id: "prediction",
+    id: "extra-trees",
     number: "05",
+    navLabel: "Profiles",
+    title: "Extra Trees Profile Analysis",
+    statement:
+      "Extra Trees explored whether participant profiles could predict average BCI performance, but the results were inconclusive.",
+    takeaway:
+      "It ranked first among the tested profile models, but barely improved on the dummy baseline and did not generalize reliably.",
+    visual: "extra-trees",
+    side: "left",
+    metrics: [
+      { value: "15.825", label: "Extra Trees RMSE", note: "held-out percentage points" },
+      { value: "16.031", label: "dummy RMSE", note: "mean-only prediction" },
+      { value: "-0.071", label: "held-out R²", note: "no reliable explained variance" },
+      { value: "10.036", label: "overfit gap", note: "test minus train RMSE" },
+    ],
+    sources: [primarySources.analysis],
+  },
+  {
+    id: "prediction",
+    number: "06",
     navLabel: "Predict",
     title: "Inference & Prediction",
     statement:
@@ -144,7 +164,7 @@ export const pipelineSteps: readonly PipelineStep[] = [
     takeaway:
       "The output is a left or right label. It does not read a person's thoughts.",
     visual: "prediction",
-    side: "left",
+    side: "right",
     metrics: [
       { value: "12", label: "input features", note: "mu + beta CSP" },
       { value: "16 → 8", label: "hidden units", note: "two ReLU layers" },
@@ -154,14 +174,14 @@ export const pipelineSteps: readonly PipelineStep[] = [
   },
   {
     id: "modeling",
-    number: "06",
+    number: "07",
     navLabel: "Model",
     title: "Modeling",
     statement:
       "The CSP MLP reached 69.10% balanced accuracy in participant-held-out training folds and 66.42% on validation participants.",
     takeaway: "Every development score kept participants in separate groups.",
     visual: "modeling",
-    side: "right",
+    side: "left",
     metrics: [
       { value: "69.10%", label: "training OOF", note: "balanced accuracy" },
       { value: "66.42%", label: "validation", note: "balanced accuracy" },
@@ -171,7 +191,7 @@ export const pipelineSteps: readonly PipelineStep[] = [
   },
   {
     id: "evaluation",
-    number: "07",
+    number: "08",
     navLabel: "Evaluate",
     title: "Evaluation",
     statement:
@@ -179,7 +199,7 @@ export const pipelineSteps: readonly PipelineStep[] = [
     takeaway:
       "The result was 1.75 percentage points below the 70% research goal.",
     visual: "evaluation",
-    side: "left",
+    side: "right",
     metrics: [
       { value: "68.25%", label: "test accuracy", note: "held-out participants" },
       { value: "68.30%", label: "balanced accuracy", note: "left and right weighted equally" },
@@ -190,7 +210,7 @@ export const pipelineSteps: readonly PipelineStep[] = [
   },
   {
     id: "validation",
-    number: "08",
+    number: "09",
     navLabel: "Validate",
     title: "Validation",
     statement:
@@ -198,7 +218,7 @@ export const pipelineSteps: readonly PipelineStep[] = [
     takeaway:
       "We used the test set once and did not change the models afterward.",
     visual: "validation",
-    side: "right",
+    side: "left",
     metrics: [
       { value: "55", label: "training people", note: "fit the model" },
       { value: "12", label: "validation people", note: "model selection only" },
@@ -209,7 +229,7 @@ export const pipelineSteps: readonly PipelineStep[] = [
   },
   {
     id: "communication",
-    number: "09",
+    number: "10",
     navLabel: "Report",
     title: "Report the Results",
     statement:
@@ -217,7 +237,7 @@ export const pipelineSteps: readonly PipelineStep[] = [
     takeaway:
       "The report includes the final score, the missed goal, and the study limits.",
     visual: "communication",
-    side: "left",
+    side: "right",
     metrics: [
       { value: "68.25%", label: "our MLP", note: "final test accuracy" },
       { value: "68.30%", label: "balanced accuracy", note: "final test" },
@@ -232,7 +252,7 @@ export const pipelineSteps: readonly PipelineStep[] = [
   },
   {
     id: "comparison",
-    number: "10",
+    number: "11",
     navLabel: "Compare",
     title: "Model and Performance Comparison",
     statement:
@@ -240,7 +260,7 @@ export const pipelineSteps: readonly PipelineStep[] = [
     takeaway:
       "The model mean was 4.99 percentage points higher and varied less between participants than the aggregated behavioral performance scores.",
     visual: "comparison",
-    side: "right",
+    side: "left",
     metrics: [
       { value: "68.73%", label: "model mean", note: "held-out balanced accuracy" },
       { value: "63.74%", label: "performance mean", note: "aggregated Runs 3 to 6" },
