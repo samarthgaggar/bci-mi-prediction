@@ -78,10 +78,11 @@ test("server-renders the BCI primer and eleven-stop data-science pipeline", asyn
   assert.match(html, /What is a BCI\?/i);
   assert.match(html, /brain-computer interface/i);
   assert.match(html, /Electroencephalography/i);
-  assert.match(html, /Sensors on the scalp record tiny electrical changes/i);
-  assert.match(html, /This is not mind reading\./i);
-  assert.match(html, /Brain → EEG → BCI/i);
-  assert.match(html, /Explore how a brain-computer interface works/i);
+  assert.match(html, /EEG only measures\./i);
+  assert.match(html, /does not read private thoughts/i);
+  assert.match(html, /Brain activity → EEG signal → computer decision/i);
+  assert.match(html, /Automatic visual walkthrough/i);
+  assert.match(html, /Playing automatically/i);
   for (const heading of [
     /Problem Formulation/i,
     /Data Acquisition/i,
@@ -183,16 +184,18 @@ test("keeps the landing page and BCI primer separate from the numbered pipeline"
   ]);
 
   assert.match(page, /<IntroSection active=\{introActive\} \/>/);
-  assert.match(page, /<BciBasicsSection active=\{basicsActive\} \/>/);
+  assert.match(page, /<BciBasicsSection[\s\S]*?active=\{basicsActive\}[\s\S]*?motionEnabled=\{motionEnabled\}[\s\S]*?\/>/);
   assert.match(page, /function IntroSection/);
   assert.match(page, /function BciBasicsSection/);
+  assert.match(page, /function SineWaveCanvas/);
   assert.match(page, /useState\("intro"\)/);
   assert.match(page, /const BCI_BASICS_ID = "bci-basics"/);
   assert.match(page, /const PAGE_SECTION_IDS = \[/);
   assert.match(page, /!introActive && !basicsActive/);
   assert.match(css, /\.intro-section\s*\{[\s\S]*?min-height:\s*100svh/);
-  assert.match(css, /\.bci-basics-section\s*\{[\s\S]*?min-height:\s*max\(720px,\s*calc\(100svh - var\(--header-height\)\)\)/);
-  assert.match(css, /\.bci-basics-layout\s*\{[\s\S]*?grid-template-columns:\s*minmax\(330px,\s*0\.76fr\)\s*minmax\(600px,\s*1\.24fr\)/);
+  assert.match(css, /\.bci-basics-section\s*\{[\s\S]*?min-height:\s*max\(860px,\s*calc\(100svh - var\(--header-height\)\)\)/);
+  assert.match(css, /\.bci-basics-layout\s*\{[\s\S]*?width:\s*min\(1540px,\s*100%\)/);
+  assert.match(css, /\.bci-basics-heading\s*\{[\s\S]*?grid-template-columns:\s*minmax\(420px,\s*0\.88fr\)\s*minmax\(560px,\s*1\.12fr\)/);
   assert.match(css, /\.intro-layout\s*\{[\s\S]*?width:\s*min\(1280px,\s*100%\)/);
   assert.match(css, /\.intro-copy h1\s*\{[\s\S]*?font-size:\s*clamp\(68px,\s*7\.2vw,\s*112px\)/);
   assert.match(css, /\.intro-facts\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
@@ -332,9 +335,13 @@ test("keeps every visual and the final result within bounded responsive composit
   assert.match(page, /has-\$\{step\.visual\}/);
   assert.match(page, /className="communication-visual"/);
   assert.match(page, /className="bci-basics-visual"/);
-  assert.match(page, /className="bci-flow-selector"/);
-  assert.match(page, /aria-pressed=\{stage\.id === activeStage\}/);
-  assert.match(page, /aria-live="polite"/);
+  assert.match(page, /className="bci-stage-track"/);
+  assert.match(page, /const BCI_BASICS_STAGE_MS = 8_000/);
+  assert.match(page, /window\.setInterval/);
+  assert.match(page, /className="bci-sine-canvas"/);
+  assert.match(page, /new ResizeObserver\(resize\)/);
+  assert.match(page, /window\.requestAnimationFrame\(animate\)/);
+  assert.doesNotMatch(page, /setActiveStage\(|className="bci-flow-selector"/);
   assert.match(page, /className="result-context"/);
   assert.match(page, /aria-label="Choose a cleaning pipeline"/);
   assert.match(page, /role="tabpanel"/);
@@ -347,9 +354,10 @@ test("keeps every visual and the final result within bounded responsive composit
   assert.match(css, /\.metric-strip\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
   assert.match(css, /\.metric-strip:has\(> div:nth-child\(4\)\)\s*\{[\s\S]*?repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
   assert.match(css, /\.communication-visual\s*\{[\s\S]*?grid-template-columns:\s*1fr/);
-  assert.match(css, /\.bci-flow-selector\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
-  assert.match(css, /\.bci-flow-scene\s*\{[\s\S]*?grid-template-columns:\s*minmax\(110px,\s*1fr\)/);
-  assert.match(css, /\.bci-stage-explanation\s*\{[\s\S]*?min-height:\s*132px/);
+  assert.match(css, /\.bci-stage-track\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(css, /\.bci-flow-scene\s*\{[\s\S]*?grid-template-columns:\s*minmax\(230px,\s*0\.88fr\)/);
+  assert.match(css, /\.bci-eeg-display\s*\{[\s\S]*?height:\s*192px/);
+  assert.match(css, /\.bci-stage-explanation\s*\{[\s\S]*?min-height:\s*126px/);
   assert.match(css, /\.final-score\s*\{[\s\S]*?grid-template:[\s\S]*?"label score"[\s\S]*?"meta score"/);
   assert.match(css, /\.final-score > strong\s*\{[\s\S]*?font-size:\s*clamp\(66px,\s*7vw,\s*104px\)/);
   assert.match(css, /min-height:\s*clamp\(520px,\s*62vh,\s*640px\)/);

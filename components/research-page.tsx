@@ -1,13 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import {
-  Activity,
-  Brain,
-  Hand,
-  Monitor,
-  MousePointerClick,
-} from "lucide-react";
+import { Activity, Brain, Hand, Monitor } from "lucide-react";
 import {
   lazy,
   Suspense,
@@ -36,6 +30,7 @@ import {
 const BrainScene = lazy(() => import("./brain-scene"));
 const AUTO_SCROLL_CELL_PAUSE_MS = 30_000;
 const AUTO_SCROLL_TRANSITION_MS = 2_000;
+const BCI_BASICS_STAGE_MS = 8_000;
 const BCI_BASICS_ID = "bci-basics";
 const PAGE_SECTION_IDS = [
   "intro",
@@ -74,8 +69,6 @@ const BCI_BASICS_STAGES = [
     icon: Monitor,
   },
 ] as const;
-
-type BciBasicsStage = (typeof BCI_BASICS_STAGES)[number]["id"];
 
 function supportsWebGL() {
   try {
@@ -415,7 +408,12 @@ export function ResearchPage() {
 
       <main>
         <IntroSection active={introActive} />
-        <BciBasicsSection active={basicsActive} />
+        <BciBasicsSection
+          active={basicsActive}
+          dark={theme === "dark"}
+          key={basicsActive ? "bci-basics-active" : "bci-basics-idle"}
+          motionEnabled={motionEnabled}
+        />
         {pipelineSteps.map((step, index) => (
           <PipelineSection
             active={step.id === activeId}
@@ -498,12 +496,153 @@ function IntroSection({ active }: { active: boolean }) {
   );
 }
 
-function BciBasicsSection({ active }: { active: boolean }) {
-  const [activeStage, setActiveStage] =
-    useState<BciBasicsStage>("brain");
-  const selectedStage =
-    BCI_BASICS_STAGES.find((stage) => stage.id === activeStage) ??
-    BCI_BASICS_STAGES[0];
+function SineWaveCanvas({
+  active,
+  dark,
+  motionEnabled,
+}: {
+  active: boolean;
+  dark: boolean;
+  motionEnabled: boolean;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const context = canvas.getContext("2d");
+    if (!context) return;
+
+    let animationFrame = 0;
+    let width = 0;
+    let height = 0;
+
+    const draw = (time: number) => {
+      if (!width || !height) return;
+
+      const styles = window.getComputedStyle(document.documentElement);
+      const cyan = styles.getPropertyValue("--cyan").trim();
+      const coral = styles.getPropertyValue("--coral").trim();
+      const gold = styles.getPropertyValue("--gold").trim();
+      const line = styles.getPropertyValue("--line").trim();
+      const center = height / 2;
+      const phase = motionEnabled ? time * 0.00135 : 0;
+
+      context.clearRect(0, 0, width, height);
+      context.lineWidth = 1;
+      context.strokeStyle = line;
+      context.globalAlpha = 0.72;
+      for (let row = 1; row < 4; row += 1) {
+        const y = (height / 4) * row;
+        context.beginPath();
+        context.moveTo(0, y);
+        context.lineTo(width, y);
+        context.stroke();
+      }
+
+      const waves = [
+        { amplitude: 0.27, color: cyan, frequency: 2.25, offset: 0, width: 4.5 },
+        { amplitude: 0.16, color: coral, frequency: 3.8, offset: 1.7, width: 2.5 },
+        { amplitude: 0.1, color: gold, frequency: 5.6, offset: 3.4, width: 1.7 },
+      ];
+
+      waves.forEach((wave, waveIndex) => {
+        context.beginPath();
+        context.globalAlpha = waveIndex === 0 ? 1 : 0.64;
+        context.lineCap = "round";
+        context.lineJoin = "round";
+        context.lineWidth = wave.width;
+        context.strokeStyle = wave.color;
+        context.shadowBlur = waveIndex === 0 ? 18 : 8;
+        context.shadowColor = wave.color;
+
+        for (let x = 0; x <= width; x += 2) {
+          const normalizedX = x / width;
+          const carrier = Math.sin(
+            normalizedX * Math.PI * 2 * wave.frequency +
+              phase * (1 + waveIndex * 0.16) +
+              wave.offset,
+          );
+          const modulation = Math.sin(
+            normalizedX * Math.PI * 2 * 0.82 - phase * 0.42 + waveIndex,
+          );
+          const y =
+            center +
+            carrier * height * wave.amplitude * (0.78 + modulation * 0.2);
+
+          if (x === 0) context.moveTo(x, y);
+          else context.lineTo(x, y);
+        }
+        context.stroke();
+      });
+
+      context.globalAlpha = 1;
+      context.shadowBlur = 0;
+    };
+
+    const animate = (time: number) => {
+      draw(time);
+      if (active && motionEnabled) {
+        animationFrame = window.requestAnimationFrame(animate);
+      }
+    };
+
+    const resize = () => {
+      window.cancelAnimationFrame(animationFrame);
+      const bounds = canvas.getBoundingClientRect();
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+      width = Math.max(bounds.width, 1);
+      height = Math.max(bounds.height, 1);
+      canvas.width = Math.round(width * pixelRatio);
+      canvas.height = Math.round(height * pixelRatio);
+      context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+      animationFrame = window.requestAnimationFrame(animate);
+    };
+
+    const observer = new ResizeObserver(resize);
+    observer.observe(canvas);
+    resize();
+
+    return () => {
+      observer.disconnect();
+      window.cancelAnimationFrame(animationFrame);
+    };
+  }, [active, dark, motionEnabled]);
+
+  return (
+    <canvas
+      className="bci-sine-canvas"
+      ref={canvasRef}
+      role="img"
+      aria-label="Animated EEG-like sine waves representing changing voltage over time"
+    />
+  );
+}
+
+function BciBasicsSection({
+  active,
+  dark,
+  motionEnabled,
+}: {
+  active: boolean;
+  dark: boolean;
+  motionEnabled: boolean;
+}) {
+  const [activeStageIndex, setActiveStageIndex] = useState(0);
+  const activeStage = BCI_BASICS_STAGES[activeStageIndex];
+
+  useEffect(() => {
+    if (!active || !motionEnabled) return;
+
+    const interval = window.setInterval(() => {
+      setActiveStageIndex(
+        (current) => (current + 1) % BCI_BASICS_STAGES.length,
+      );
+    }, BCI_BASICS_STAGE_MS);
+
+    return () => window.clearInterval(interval);
+  }, [active, motionEnabled]);
 
   return (
     <section
@@ -512,129 +651,132 @@ function BciBasicsSection({ active }: { active: boolean }) {
       aria-labelledby="bci-basics-title"
     >
       <div className="bci-basics-layout">
-        <div className="bci-basics-copy">
-          <p className="bci-basics-kicker">Start here · two terms to know</p>
-          <h1 id="bci-basics-title">What is a BCI?</h1>
-          <p className="bci-basics-lede">
-            A <strong>brain-computer interface</strong>, or BCI, connects
-            measurable brain activity to a computer output.
-          </p>
-          <div className="bci-definitions">
-            <div>
-              <strong>EEG</strong>
-              <p>
-                Electroencephalography. Sensors on the scalp record tiny
-                electrical changes produced by brain activity.
-              </p>
-            </div>
-            <div>
-              <strong>BCI</strong>
-              <p>
-                Software uses a trained pattern in that signal to communicate
-                or control something on a computer.
-              </p>
-            </div>
+        <div className="bci-basics-heading">
+          <div>
+            <p className="bci-basics-kicker">
+              Before the pipeline · the basic idea
+            </p>
+            <h1 id="bci-basics-title">What is a BCI?</h1>
           </div>
-          <p className="bci-basics-takeaway">
-            <strong>This is not mind reading.</strong> Our system only asks a
-            narrow question: does this EEG pattern look more like imagined left
-            hand or imagined right hand?
+          <p className="bci-basics-lede">
+            A <strong>brain-computer interface</strong> turns measured brain
+            activity into a simple computer command. <strong>EEG</strong>, or
+            electroencephalography, is the noninvasive recording method used
+            here.
           </p>
-          <a
-            className="bci-basics-source"
-            href={primarySources.paper.href}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Scientific Data paper ↗
-          </a>
         </div>
 
         <div className="bci-basics-visual">
           <div className="bci-visual-heading">
             <div>
-              <span>Follow the signal</span>
-              <strong>Brain → EEG → BCI</strong>
+              <span>Automatic visual walkthrough</span>
+              <strong>Brain activity → EEG signal → computer decision</strong>
             </div>
             <small>
-              <MousePointerClick aria-hidden="true" size={15} />
-              Select a step
+              <i aria-hidden="true" />
+              {motionEnabled ? "Playing automatically" : "Motion paused"}
             </small>
           </div>
 
-          <div
-            className="bci-flow-selector"
-            role="group"
-            aria-label="Explore how a brain-computer interface works"
-          >
+          <ol className="bci-stage-track" aria-label="Three stages of a BCI">
             {BCI_BASICS_STAGES.map((stage, index) => {
               const Icon = stage.icon;
+              const isActive = index === activeStageIndex;
               return (
-                <button
-                  className={stage.id === activeStage ? "is-active" : ""}
-                  type="button"
+                <li
+                  className={isActive || !motionEnabled ? "is-active" : ""}
                   key={stage.id}
-                  onClick={() => setActiveStage(stage.id)}
-                  aria-pressed={stage.id === activeStage}
+                  aria-current={isActive ? "step" : undefined}
                 >
                   <span>{String(index + 1).padStart(2, "0")}</span>
-                  <Icon aria-hidden="true" size={22} strokeWidth={1.7} />
-                  <strong>{stage.label}</strong>
-                  <small>{stage.note}</small>
-                </button>
+                  <Icon aria-hidden="true" size={34} strokeWidth={1.65} />
+                  <div>
+                    <strong>{stage.label}</strong>
+                    <small>{stage.note}</small>
+                  </div>
+                  <i aria-hidden="true" />
+                </li>
               );
             })}
-          </div>
+          </ol>
 
           <div
             className="bci-flow-scene"
-            data-active={activeStage}
-            aria-hidden="true"
+            data-active={motionEnabled ? activeStage.id : "all"}
           >
             <div className="bci-demo-node bci-brain-node">
+              <span className="bci-node-number">01 · BRAIN</span>
               <div className="bci-head-shell">
-                <Brain size={62} strokeWidth={1.35} />
+                <Brain aria-hidden="true" size={126} strokeWidth={1.25} />
                 <div className="bci-electrodes">
-                  {Array.from({ length: 7 }, (_, index) => (
+                  {Array.from({ length: 9 }, (_, index) => (
                     <i key={index} />
                   ))}
                 </div>
               </div>
               <div className="bci-imagined-hands">
-                <Hand size={22} strokeWidth={1.5} />
-                <Hand size={22} strokeWidth={1.5} />
+                <Hand aria-hidden="true" size={36} strokeWidth={1.4} />
+                <span>OR</span>
+                <Hand aria-hidden="true" size={36} strokeWidth={1.4} />
               </div>
-              <span>imagine movement</span>
+              <strong>Imagine left or right</strong>
             </div>
 
-            <i className="bci-flow-connector" />
+            <div className="bci-flow-connector" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+            </div>
 
             <div className="bci-demo-node bci-eeg-node">
-              <Activity size={44} strokeWidth={1.4} />
-              <div className="bci-mini-wave">
-                {Array.from({ length: 17 }, (_, index) => (
-                  <i key={index} />
-                ))}
+              <span className="bci-node-number">02 · EEG</span>
+              <div className="bci-eeg-display">
+                <div className="bci-eeg-labels" aria-hidden="true">
+                  <span>VOLTAGE</span>
+                  <span>TIME →</span>
+                </div>
+                <SineWaveCanvas
+                  active={active}
+                  dark={dark}
+                  motionEnabled={motionEnabled}
+                />
               </div>
-              <span>record pattern</span>
+              <strong>Record scalp voltage</strong>
             </div>
 
-            <i className="bci-flow-connector" />
+            <div className="bci-flow-connector" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+            </div>
 
             <div className="bci-demo-node bci-computer-node">
-              <Monitor size={48} strokeWidth={1.35} />
-              <div className="bci-output-choices">
-                <span>L</span>
-                <span>R</span>
+              <span className="bci-node-number">03 · BCI</span>
+              <Monitor aria-hidden="true" size={102} strokeWidth={1.25} />
+              <div className="bci-output-choices" aria-label="Possible outputs">
+                <span>
+                  <Hand aria-hidden="true" size={24} /> LEFT
+                </span>
+                <span>
+                  <Hand aria-hidden="true" size={24} /> RIGHT
+                </span>
               </div>
-              <span>choose a label</span>
+              <strong>Predict one label</strong>
             </div>
           </div>
 
-          <div className="bci-stage-explanation" aria-live="polite">
-            <span>{selectedStage.eyebrow}</span>
-            <strong>{selectedStage.title}</strong>
-            <p>{selectedStage.description}</p>
+          <div className="bci-stage-explanation" key={activeStage.id}>
+            <span>{activeStage.eyebrow}</span>
+            <strong>{activeStage.title}</strong>
+            <p>{activeStage.description}</p>
+          </div>
+
+          <div className="bci-plain-language">
+            <strong>EEG only measures.</strong>
+            <span>
+              It does not read private thoughts, and the scalp sensors do not
+              send electricity into the brain.
+            </span>
           </div>
         </div>
       </div>
