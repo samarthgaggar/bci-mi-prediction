@@ -26,6 +26,14 @@ import {
   type FigureChoice,
   type PipelineStep,
 } from "../lib/research-content";
+import {
+  matchedDistributions,
+  participantDifferences,
+  personalityFactors,
+  runDistributions,
+  runMeans,
+  trainingHistory,
+} from "../lib/chart-data";
 
 const BrainScene = lazy(() => import("./brain-scene"));
 const AUTO_SCROLL_CELL_PAUSE_MS = 30_000;
@@ -854,7 +862,18 @@ function StepVisual({ visual }: { visual: PipelineStep["visual"] }) {
   if (visual === "question") return <ProblemVisual />;
   if (visual === "acquisition") return <AcquisitionVisual />;
   if (visual === "cleaning") return <CleaningVisual />;
-  if (visual === "eda") return <FigureSwitcher choices={edaFigures} />;
+  if (visual === "eda") {
+    return (
+      <FigureSwitcher
+        choices={edaFigures}
+        renderCustom={(id) => {
+          if (id === "spread") return <RunDistributionChart />;
+          if (id === "run-means") return <RunMeanChart />;
+          return <PersonalityFactorsChart />;
+        }}
+      />
+    );
+  }
   if (visual === "extra-trees") return <ExtraTreesVisual />;
   if (visual === "modeling") {
     return (
@@ -869,7 +888,9 @@ function StepVisual({ visual }: { visual: PipelineStep["visual"] }) {
               min={50}
               scaleLabel="Scale: 50 to 70% balanced accuracy"
             />
-          ) : null
+          ) : (
+            <TrainingHistoryChart />
+          )
         }
       />
     );
@@ -898,7 +919,9 @@ function StepVisual({ visual }: { visual: PipelineStep["visual"] }) {
               scaleLabel="Scale: 50 to 70% · project benchmark at 70%"
               showGoal
             />
-          ) : null
+          ) : (
+            <ParticipantDifferenceChart />
+          )
         }
       />
     );
@@ -914,7 +937,18 @@ function StepVisual({ visual }: { visual: PipelineStep["visual"] }) {
     );
   }
   if (visual === "comparison") {
-    return <FigureSwitcher choices={comparisonFigures} />;
+    return (
+      <FigureSwitcher
+        choices={comparisonFigures}
+        renderCustom={(id) =>
+          id === "histograms" ? (
+            <MatchedDistributionChart />
+          ) : (
+            <BottomOverlapChart />
+          )
+        }
+      />
+    );
   }
   return <CommunicationVisual />;
 }
@@ -1126,11 +1160,11 @@ function FigureSwitcher({
   renderCustom,
 }: {
   choices: readonly FigureChoice[];
-  renderCustom?: (id: string) => ReactNode;
+  renderCustom: (id: string) => ReactNode;
 }) {
   const [activeId, setActiveId] = useState(choices[0].id);
   const active = choices.find((choice) => choice.id === activeId) ?? choices[0];
-  const custom = renderCustom?.(active.id);
+  const custom = renderCustom(active.id);
 
   return (
     <div className="figure-switcher">
@@ -1147,29 +1181,228 @@ function FigureSwitcher({
           </button>
         ))}
       </div>
-      <div className="figure-stage">
-        {custom ??
-          (active.src ? (
-            <a
-              href={active.src}
-              target="_blank"
-              rel="noreferrer"
-              aria-label={`Open full-size chart: ${active.title}`}
-            >
-              <Image
-                src={active.src}
-                alt={active.alt}
-                width={active.width}
-                height={active.height}
-                sizes="(max-width: 809px) calc(100vw - 32px), 54vw"
-              />
-            </a>
-          ) : null)}
-      </div>
+      <div className="figure-stage">{custom}</div>
       <div className="figure-caption">
         <strong>{active.title}</strong>
         <p>{active.note}</p>
       </div>
+    </div>
+  );
+}
+
+function RunDistributionChart() {
+  const maxCount = 17;
+
+  return (
+    <div
+      className="native-chart run-distribution-chart"
+      role="img"
+      aria-label="Four distributions of participant online BCI accuracy from Runs 3 through 6, with means between 61.92 and 64.83 percent"
+    >
+      <div className="chart-summary">
+        <span>4 online runs</span>
+        <strong>Wide spread, similar centers</strong>
+        <small>Each bar covers 5 percentage points</small>
+      </div>
+      <div className="run-distribution-grid">
+        {runDistributions.map((item, runIndex) => (
+          <section key={item.run}>
+            <header>
+              <div>
+                <span>{item.run}</span>
+                <small>n = {item.n}</small>
+              </div>
+              <strong>{item.mean.toFixed(2)}%</strong>
+            </header>
+            <div className="histogram-bars" aria-hidden="true">
+              <span className="chance-line" />
+              {item.counts.map((count, index) => (
+                <i
+                  key={`${item.run}-${index}`}
+                  style={
+                    {
+                      "--bar-height": `${(count / maxCount) * 100}%`,
+                      "--bar-delay": `${runIndex * 70 + index * 12}ms`,
+                    } as CSSProperties
+                  }
+                />
+              ))}
+            </div>
+            <div className="mini-axis"><span>0</span><span>50 chance</span><span>100%</span></div>
+          </section>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function RunMeanChart() {
+  const xPositions = [92, 274, 456, 638];
+  const y = (value: number) => 300 - ((value - 55) / 16) * 230;
+  const points = runMeans.map((item, index) => `${xPositions[index]},${y(item.mean)}`).join(" ");
+
+  return (
+    <div
+      className="native-chart run-mean-chart"
+      role="img"
+      aria-label="Mean online BCI performance from Run 3 to Run 6 with overlapping 95 percent confidence intervals"
+    >
+      <div className="chart-summary is-horizontal">
+        <div><span>Run 3 to Run 6</span><strong>+2.91 points</strong></div>
+        <p>Means rise slightly, but the 95% confidence intervals overlap.</p>
+      </div>
+      <svg viewBox="0 0 730 360" aria-hidden="true">
+        {[55, 60, 65, 70].map((tick) => (
+          <g className="chart-gridline" key={tick}>
+            <line x1="64" x2="680" y1={y(tick)} y2={y(tick)} />
+            <text x="48" y={y(tick) + 4}>{tick}%</text>
+          </g>
+        ))}
+        <polyline className="mean-path" points={points} />
+        {runMeans.map((item, index) => (
+          <g className="mean-point" key={item.run}>
+            <line x1={xPositions[index]} x2={xPositions[index]} y1={y(item.high)} y2={y(item.low)} />
+            <line x1={xPositions[index] - 8} x2={xPositions[index] + 8} y1={y(item.high)} y2={y(item.high)} />
+            <line x1={xPositions[index] - 8} x2={xPositions[index] + 8} y1={y(item.low)} y2={y(item.low)} />
+            <circle cx={xPositions[index]} cy={y(item.mean)} r="8" />
+            <text className="point-value" x={xPositions[index]} y={y(item.mean) - 17}>{item.mean.toFixed(2)}%</text>
+            <text className="point-label" x={xPositions[index]} y="334">{item.run}</text>
+          </g>
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+function PersonalityFactorsChart() {
+  return (
+    <div
+      className="native-chart personality-chart"
+      role="img"
+      aria-label="Five aggregated personality factor plots, all showing weak correlations with BCI performance"
+    >
+      <div className="chart-summary is-horizontal">
+        <div><span>Strongest absolute correlation</span><strong>|r| = 0.13</strong></div>
+        <p>No broad personality factor shows a strong linear relationship.</p>
+      </div>
+      <div className="factor-grid">
+        {personalityFactors.map((factor) => {
+          const points = factor.points.map((point) => {
+            const x = 24 + ((point.x - factor.min) / (factor.max - factor.min)) * 212;
+            const y = 118 - ((point.y - 52) / 20) * 92;
+            return { ...point, px: x, py: y };
+          });
+          return (
+            <section key={factor.id}>
+              <header><span>{factor.id}</span><div><strong>{factor.label}</strong><small>r = {factor.corr.toFixed(2)}</small></div></header>
+              <svg viewBox="0 0 260 140" aria-hidden="true">
+                <line className="factor-chance" x1="20" x2="240" y1="118" y2="118" />
+                <polyline className="factor-path" points={points.map((point) => `${point.px},${point.py}`).join(" ")} />
+                {points.map((point, index) => <circle key={index} cx={point.px} cy={point.py} r={3 + Math.sqrt(point.n) / 1.7} />)}
+              </svg>
+            </section>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function TrainingHistoryChart() {
+  const x = (epoch: number) => 56 + ((epoch - 1) / 59) * 540;
+  const lossY = (value: number) => 238 - ((value - 0.55) / 0.11) * 174;
+  const accuracyY = (value: number) => 238 - ((value - 0.64) / 0.04) * 174;
+  const trainingPoints = trainingHistory.epochs.map((epoch, index) => `${x(epoch)},${lossY(trainingHistory.trainingLoss[index])}`).join(" ");
+  const validationPoints = trainingHistory.epochs.map((epoch, index) => `${x(epoch)},${lossY(trainingHistory.validationLoss[index])}`).join(" ");
+  const accuracyPoints = trainingHistory.epochs.map((epoch, index) => `${x(epoch)},${accuracyY(trainingHistory.validationBalancedAccuracy[index])}`).join(" ");
+
+  return (
+    <div
+      className="native-chart training-history-chart"
+      role="img"
+      aria-label="CSP MLP training and validation history across 60 epochs, with the selected checkpoint at epoch 48"
+    >
+      <div className="training-readout">
+        <span>Selected checkpoint</span><strong>Epoch 48</strong><small>lowest validation loss</small>
+      </div>
+      <div className="training-plot">
+        <div className="chart-legend"><span className="is-training">Training loss</span><span className="is-validation">Validation loss</span><span className="is-accuracy">Validation BA</span></div>
+        <svg viewBox="0 0 650 300" aria-hidden="true">
+          {[64, 122, 180, 238].map((line) => <line className="training-gridline" key={line} x1="56" x2="596" y1={line} y2={line} />)}
+          <line className="checkpoint-line" x1={x(48)} x2={x(48)} y1="48" y2="248" />
+          <polyline className="training-loss-line" points={trainingPoints} />
+          <polyline className="validation-loss-line" points={validationPoints} />
+          <polyline className="accuracy-line" points={accuracyPoints} />
+          <text className="axis-note" x="56" y="278">Epoch 1</text><text className="axis-note" x="548" y="278">Epoch 60</text>
+        </svg>
+      </div>
+      <dl className="training-metrics"><div><dt>Final validation BA</dt><dd>66.8%</dd></div><div><dt>Final validation loss</dt><dd>0.5991</dd></div></dl>
+    </div>
+  );
+}
+
+function ParticipantDifferenceChart() {
+  return (
+    <div
+      className="native-chart participant-difference-chart"
+      role="img"
+      aria-label="Ranked model minus behavioral BCI differences for 66 matched participants: 48 favor the model, 18 favor behavioral BCI, and the average is plus 4.99 percentage points"
+    >
+      <div className="difference-head"><div><span>Average difference</span><strong>+4.99 pp</strong></div><p><b>48</b> model higher <i /> <b>18</b> behavior higher</p></div>
+      <div className="difference-bars" aria-hidden="true">
+        <span className="difference-zero">0</span>
+        {participantDifferences.map((value, index) => (
+          <i
+            className={value >= 0 ? "is-positive" : "is-negative"}
+            key={index}
+            style={{ "--difference-size": `${(Math.abs(value) / 31.4) * 46}%`, "--bar-delay": `${index * 10}ms` } as CSSProperties}
+          />
+        ))}
+      </div>
+      <div className="difference-axis"><span>Model higher</span><span>Ranked matched participants</span><span>Behavior higher</span></div>
+    </div>
+  );
+}
+
+function MatchedDistributionChart() {
+  return (
+    <div
+      className="native-chart matched-distribution-chart"
+      role="img"
+      aria-label="Matched participant distributions: held-out CSP MLP mean 68.73 percent and behavioral BCI mean 63.74 percent"
+    >
+      <div className="distribution-delta"><span>Same 66 people</span><strong>+4.99 pp</strong><small>model mean minus behavior mean</small></div>
+      <div className="matched-panels">
+        {matchedDistributions.map((distribution) => (
+          <section className={`is-${distribution.id}`} key={distribution.id}>
+            <header><span>{distribution.label}</span><strong>{distribution.mean.toFixed(2)}%</strong></header>
+            <div className="matched-histogram" aria-hidden="true">
+              <span className="matched-chance" /><span className="matched-mean" style={{ "--mean-position": `${((distribution.mean - 40) / 60) * 100}%` } as CSSProperties} />
+              {distribution.counts.map((count, index) => <i key={index} style={{ "--bar-height": `${(count / 13) * 100}%`, "--bar-delay": `${index * 28}ms` } as CSSProperties} />)}
+            </div>
+            <div className="mini-axis"><span>40%</span><span>50 chance</span><span>100%</span></div>
+          </section>
+        ))}
+      </div>
+      <div className="matched-legend"><span>Dashed line: chance</span><span>Solid line: group mean</span></div>
+    </div>
+  );
+}
+
+function BottomOverlapChart() {
+  return (
+    <div
+      className="native-chart overlap-chart"
+      role="img"
+      aria-label="Bottom 27 overlap: 9 participants appear only in the model list, 18 are shared, and 9 appear only in the behavioral performance list"
+    >
+      <div className="overlap-copy"><span>Bottom 27 lists</span><strong>66.7%</strong><p>of low performers appear in both lists</p></div>
+      <div className="overlap-venn" aria-hidden="true">
+        <div className="is-model"><span>9</span><small>model only</small></div>
+        <div className="is-shared"><span>18</span><small>shared</small></div>
+        <div className="is-behavior"><span>9</span><small>behavior only</small></div>
+      </div>
+      <p className="overlap-note">The same participants tend to struggle in both systems, but the match is not perfect.</p>
     </div>
   );
 }

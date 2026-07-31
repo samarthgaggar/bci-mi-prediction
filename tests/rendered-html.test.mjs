@@ -269,7 +269,8 @@ test("provides graph switchers across exploration, modeling, prediction, evaluat
   assert.match(html, /Choose a figure/);
   assert.match(html, /Development balanced accuracy/);
   assert.match(html, /Scale: 50 to 70% balanced accuracy/);
-  assert.match(html, /Open full-size chart: Performance varies widely/);
+  assert.match(html, /Wide spread, similar centers/);
+  assert.match(html, /Same 66 people/);
   assert.match(html, /12 CSP features/);
   assert.match(html, /Participant split/);
   assert.equal((html.match(/Who improved\?/gi) ?? []).length, 1);
@@ -361,7 +362,8 @@ test("keeps every visual and the final result within bounded responsive composit
   assert.match(css, /\.final-score\s*\{[\s\S]*?grid-template:[\s\S]*?"label score"[\s\S]*?"meta score"/);
   assert.match(css, /\.final-score > strong\s*\{[\s\S]*?font-size:\s*clamp\(66px,\s*7vw,\s*104px\)/);
   assert.match(css, /min-height:\s*clamp\(520px,\s*62vh,\s*640px\)/);
-  assert.match(css, /\.figure-stage img\s*\{[\s\S]*?height:\s*clamp\(330px,\s*43vh,\s*450px\)/);
+  assert.match(css, /\.native-chart\s*\{[\s\S]*?width:\s*min\(100%,\s*900px\)/);
+  assert.match(css, /\.figure-stage\s*\{[\s\S]*?color-mix\(in srgb, var\(--page-deep\)/);
   assert.match(page, /className="prediction-tree"/);
   assert.match(page, /className="network-connections"/);
   assert.match(
@@ -408,7 +410,34 @@ test("pauses on every auto-scroll cell and respects reduced motion", async () =>
   assert.match(css, /:root\[data-motion="reduced"\]/);
 });
 
-test("ships the seven selected research figures with byte checks", async () => {
+test("keeps the seven source snapshots while rebuilding every chart natively", async () => {
+  const [page, content, chartData, css] = await Promise.all([
+    readFile(path.join(projectRoot, "components/research-page.tsx"), "utf8"),
+    readFile(path.join(projectRoot, "lib/research-content.ts"), "utf8"),
+    readFile(path.join(projectRoot, "lib/chart-data.ts"), "utf8"),
+    readFile(path.join(projectRoot, "app/globals.css"), "utf8"),
+  ]);
+  const renderedSource = `${page}\n${content}`;
+
+  for (const component of [
+    "RunDistributionChart",
+    "RunMeanChart",
+    "PersonalityFactorsChart",
+    "TrainingHistoryChart",
+    "ParticipantDifferenceChart",
+    "MatchedDistributionChart",
+    "BottomOverlapChart",
+  ]) {
+    assert.match(page, new RegExp(`function ${component}\\(`));
+  }
+
+  assert.doesNotMatch(renderedSource, /\/results\/(?:performance-by-run|mean-performance-by-run|eda\/personality-vs-performance|model\/stage-6\/training_curves|model\/stage-9\/(?:final_locked_summary|participant_run_difference|bottom_27_overlap))\.png/);
+  assert.doesNotMatch(renderedSource, /Open full-size chart/);
+  assert.match(chartData, /selectedEpoch:\s*48/);
+  assert.match(chartData, /mean:\s*68\.73/);
+  assert.match(css, /\.matched-distribution-chart\s*\{/);
+  assert.match(css, /var\(--cyan\)/);
+
   const expected = new Map([
     ["results/performance-by-run.png", ["0f0a3ed5147cab642f663772955301810856966d4cf3e0fba0613dc1a53b0263", 1484, 889]],
     ["results/mean-performance-by-run.png", ["fcf9c874422abe217aca316b57f488e42b8170172cd2bcc7b488cdd77a656a7d", 1333, 884]],

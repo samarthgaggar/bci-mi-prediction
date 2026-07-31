@@ -40,10 +40,6 @@ export type FigureChoice = {
   label: string;
   title: string;
   note: string;
-  src: string;
-  width: number;
-  height: number;
-  alt: string;
 };
 
 export const primarySources = {
@@ -278,20 +274,12 @@ export const edaFigures: readonly FigureChoice[] = [
     label: "Participant spread",
     title: "Performance varies widely",
     note: "Each histogram is one online run. The broad spread appears in all four.",
-    src: "/results/performance-by-run.png",
-    width: 1484,
-    height: 889,
-    alt: "Four histograms showing participant online BCI accuracy for Runs 3 through 6.",
   },
   {
     id: "run-means",
     label: "Run means",
     title: "The run averages stay close",
     note: "Overlapping confidence intervals do not show a clear run-to-run improvement.",
-    src: "/results/mean-performance-by-run.png",
-    width: 1333,
-    height: 884,
-    alt: "Mean online BCI accuracy for Runs 3 through 6 with 95 percent confidence intervals.",
   },
   {
     id: "personality",
@@ -299,10 +287,6 @@ export const edaFigures: readonly FigureChoice[] = [
     title: "Broad personality factors do not separate performance",
     note:
       "EX, AX, TM, IN, and SC scores overlap widely across performance levels, so these plots do not show a reliable predictive pattern.",
-    src: "/results/eda/personality-vs-performance.png",
-    width: 2083,
-    height: 1183,
-    alt: "Five scatter plots comparing Extraversion, Anxiety, Tough-Mindedness, Independence, and Self-Control scores with mean online BCI performance.",
   },
 ] as const;
 
@@ -319,20 +303,12 @@ export const modelingFigures: readonly FigureChoice[] = [
     title: "Development comparison",
     note:
       "Each score was measured on participants who were not used to train that fold.",
-    src: "",
-    width: 0,
-    height: 0,
-    alt: "",
   },
   {
     id: "training",
     label: "MLP training",
     title: "Validation leveled near 66%",
     note: "The selected checkpoint had the lowest validation loss at epoch 48.",
-    src: "/results/model/stage-6/training_curves.png",
-    width: 1600,
-    height: 900,
-    alt: "Training loss, validation loss, and validation balanced accuracy across 60 CSP MLP epochs.",
   },
 ] as const;
 
@@ -343,10 +319,6 @@ export const predictionFigures: readonly FigureChoice[] = [
     title: "Twelve CSP features pass through two hidden layers",
     note:
       "The 12 inputs feed 16 ReLU units, then 8 ReLU units, before the model produces two output scores.",
-    src: "",
-    width: 0,
-    height: 0,
-    alt: "",
   },
 ] as const;
 
@@ -364,10 +336,6 @@ export const evaluationFigures: readonly FigureChoice[] = [
     label: "Final scores",
     title: "Final test metrics",
     note: "Accuracy, balanced accuracy, precision, recall, and F1 all stayed near 68%.",
-    src: "",
-    width: 0,
-    height: 0,
-    alt: "",
   },
   {
     id: "differences",
@@ -375,10 +343,6 @@ export const evaluationFigures: readonly FigureChoice[] = [
     title: "Results differ by person",
     note:
       "Blue favors the MLP; red favors the behavioral BCI. One average hides this variation.",
-    src: "/results/model/stage-9/participant_run_difference.png",
-    width: 1000,
-    height: 1200,
-    alt: "CSP MLP minus behavioral BCI accuracy for each of 66 matched participants.",
   },
 ] as const;
 
@@ -388,10 +352,6 @@ export const validationFigures: readonly FigureChoice[] = [
     label: "Split design",
     title: "People stay in one partition",
     note: "The 55 training, 12 validation, and 12 test participants never overlap.",
-    src: "",
-    width: 0,
-    height: 0,
-    alt: "",
   },
 ] as const;
 
@@ -402,10 +362,6 @@ export const comparisonFigures: readonly FigureChoice[] = [
     title: "The model distribution shifts higher",
     note:
       "The same 66 participants are shown in both panels. Red lines mark means; dashed lines mark 50% chance.",
-    src: "/results/model/stage-9/final_locked_summary.png",
-    width: 1600,
-    height: 900,
-    alt: "Histograms comparing held-out CSP MLP accuracy with aggregated behavioral BCI accuracy across 66 matched participants.",
   },
   {
     id: "bottom-27-overlap",
@@ -413,9 +369,5 @@ export const comparisonFigures: readonly FigureChoice[] = [
     title: "Most low performers appear in both lists",
     note:
       "Eighteen participants are shared, while nine appear only in each bottom-27 list.",
-    src: "/results/model/stage-9/bottom_27_overlap.png",
-    width: 1600,
-    height: 1000,
-    alt: "Overlap diagram showing 18 shared participants, 9 model-only participants, and 9 performance-only participants in the two bottom-27 lists.",
   },
 ] as const;
