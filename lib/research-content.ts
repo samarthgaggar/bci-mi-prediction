@@ -288,9 +288,9 @@ export const modelingFigures: readonly FigureChoice[] = [
     title: "Validation leveled near 66%",
     note: "The selected checkpoint had the lowest validation loss at epoch 48.",
     src: "/results/model/stage-6/training_curves.png",
-    width: 1601,
-    height: 916,
-    alt: "Validation accuracy by epoch for three compact neural-network architectures.",
+    width: 1600,
+    height: 900,
+    alt: "Training loss, validation loss, and validation balanced accuracy across 60 CSP MLP epochs.",
   },
 ] as const;
 
@@ -308,14 +308,14 @@ export const predictionFigures: readonly FigureChoice[] = [
   },
   {
     id: "xgboost",
-    label: "XGBoost features",
-    title: "Visual-verbal score had the highest importance",
+    label: "Profile factors",
+    title: "Motivation had the highest mean importance",
     note:
-      "This separate model predicted participant performance. The chart shows relationships, not cause and effect.",
+      "This separate Extra Trees analysis predicted participant performance. Wide error bars show substantial uncertainty.",
     src: "/results/model/stage-2/xgboost_permutation_importance.png",
-    width: 1591,
-    height: 1186,
-    alt: "Held-out permutation importance for the participant-performance XGBoost model.",
+    width: 1600,
+    height: 900,
+    alt: "Held-out permutation importance for the participant-performance profile model.",
   },
 ] as const;
 
@@ -345,9 +345,9 @@ export const evaluationFigures: readonly FigureChoice[] = [
     note:
       "Across 66 matched participants, the MLP mean was 68.73% and the behavioral BCI mean was 63.74%.",
     src: "/results/model/stage-9/final_locked_summary.png",
-    width: 2132,
-    height: 890,
-    alt: "Final test summary for all participants and the actual-low subgroup.",
+    width: 1600,
+    height: 900,
+    alt: "Histograms comparing held-out CSP MLP accuracy with behavioral BCI accuracy across 66 matched participants.",
   },
 ] as const;
 
@@ -365,11 +365,11 @@ export const validationFigures: readonly FigureChoice[] = [
   {
     id: "differences",
     label: "Who improved?",
-    title: "Results differ by person and run",
-    note: "Blue favors the MLP; red favors the original BCI. One average hides this variation.",
+    title: "Results differ by person",
+    note: "Blue favors the MLP; red favors the behavioral BCI. One average hides this variation.",
     src: "/results/model/stage-9/participant_run_difference.png",
-    width: 995,
-    height: 1240,
-    alt: "Heatmap of general MLP minus original BCI accuracy by participant and run.",
+    width: 1000,
+    height: 1200,
+    alt: "CSP MLP minus behavioral BCI accuracy for each of 66 matched participants.",
   },
 ] as const;

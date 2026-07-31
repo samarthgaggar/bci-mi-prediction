@@ -217,7 +217,7 @@ test("provides graph switchers across exploration, modeling, prediction, evaluat
     "Model scores",
     "MLP training",
     "Classifier path",
-    "XGBoost features",
+    "Profile factors",
     "Final scores",
     "Final summary",
     "Split design",
@@ -333,10 +333,10 @@ test("ships the seven selected research figures with byte checks", async () => {
     ["results/performance-by-run.png", ["0f0a3ed5147cab642f663772955301810856966d4cf3e0fba0613dc1a53b0263", 1484, 889]],
     ["results/mean-performance-by-run.png", ["fcf9c874422abe217aca316b57f488e42b8170172cd2bcc7b488cdd77a656a7d", 1333, 884]],
     ["results/learning-style-correlations.png", ["3085a313459e51a46b38bf8e80c362f636e1fe724051024c7919874e94c4782a", 2683, 1330]],
-    ["results/model/stage-6/training_curves.png", ["2694d319542285789d680ecead8dcc8ebff507b3f5f848e09ab037ffc50c87e0", 1601, 916]],
-    ["results/model/stage-2/xgboost_permutation_importance.png", ["8837d577188d37a05f3eb37a8ec63296915ab0f6df510d0548a5ad52039c6023", 1591, 1186]],
-    ["results/model/stage-9/final_locked_summary.png", ["073eb191d9d43b0cf573a7dae01eee0e90d62c086d599ab194f2e8ce201cf4c1", 2132, 890]],
-    ["results/model/stage-9/participant_run_difference.png", ["f67705ee7e3aabe6510527ddd5c0e2b9cba3c986922995a88c2bc856e485bdcf", 995, 1240]],
+    ["results/model/stage-6/training_curves.png", ["3636d7c4f0fa9a576e6cbf99b27e6921ce884f28e50b9a4e897a487f32b3e79b", 1600, 900]],
+    ["results/model/stage-2/xgboost_permutation_importance.png", ["1970c8d3d70a54c90259be5b504b97437233f97f87e4ae3a55f04daa1d56eafa", 1600, 900]],
+    ["results/model/stage-9/final_locked_summary.png", ["6af381a13bdf756027412878c1917b2e72f8fd87aeda52ef7de9857850d9739f", 1600, 900]],
+    ["results/model/stage-9/participant_run_difference.png", ["546664e6afcf891f371a2f9da71d471cc4b731a84a458d4a4c895979effac953", 1000, 1200]],
   ]);
 
   for (const [name, [digest, width, height]] of expected) {
