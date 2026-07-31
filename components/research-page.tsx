@@ -2,6 +2,13 @@
 
 import Image from "next/image";
 import {
+  Activity,
+  Brain,
+  Hand,
+  Monitor,
+  MousePointerClick,
+} from "lucide-react";
+import {
   lazy,
   Suspense,
   useEffect,
@@ -29,6 +36,46 @@ import {
 const BrainScene = lazy(() => import("./brain-scene"));
 const AUTO_SCROLL_CELL_PAUSE_MS = 30_000;
 const AUTO_SCROLL_TRANSITION_MS = 2_000;
+const BCI_BASICS_ID = "bci-basics";
+const PAGE_SECTION_IDS = [
+  "intro",
+  BCI_BASICS_ID,
+  ...pipelineSteps.map((step) => step.id),
+];
+const BCI_BASICS_STAGES = [
+  {
+    id: "brain",
+    label: "Brain",
+    note: "creates a signal",
+    eyebrow: "Step 1 · Brain activity",
+    title: "Imagine a hand movement",
+    description:
+      "Even without moving, imagining the left or right hand changes activity around the brain's movement areas.",
+    icon: Brain,
+  },
+  {
+    id: "eeg",
+    label: "EEG",
+    note: "records the signal",
+    eyebrow: "Step 2 · EEG recording",
+    title: "Measure, do not read",
+    description:
+      "Electroencephalography uses small sensors on the scalp to measure tiny voltage changes. The sensors listen; they do not put electricity into the brain.",
+    icon: Activity,
+  },
+  {
+    id: "bci",
+    label: "BCI",
+    note: "uses the signal",
+    eyebrow: "Step 3 · Computer output",
+    title: "Turn a pattern into one choice",
+    description:
+      "A trained model looks for a familiar EEG pattern and produces a limited output. Here, it chooses imagined left hand or imagined right hand.",
+    icon: Monitor,
+  },
+] as const;
+
+type BciBasicsStage = (typeof BCI_BASICS_STAGES)[number]["id"];
 
 function supportsWebGL() {
   try {
@@ -88,7 +135,7 @@ export function ResearchPage() {
   }, [motionEnabled]);
 
   useEffect(() => {
-    const sections = ["intro", ...pipelineSteps.map((step) => step.id)]
+    const sections = PAGE_SECTION_IDS
       .map((id) => document.getElementById(id))
       .filter(Boolean) as HTMLElement[];
     const observer = new IntersectionObserver(
@@ -131,7 +178,7 @@ export function ResearchPage() {
       return;
     }
 
-    const sections = ["intro", ...pipelineSteps.map((step) => step.id)]
+    const sections = PAGE_SECTION_IDS
       .map((id) => document.getElementById(id))
       .filter(Boolean) as HTMLElement[];
     if (!sections.length) return;
@@ -228,6 +275,7 @@ export function ResearchPage() {
     [activeId],
   );
   const introActive = activeId === "intro";
+  const basicsActive = activeId === BCI_BASICS_ID;
   const journeyProgress = motionEnabled
     ? progress
     : activeIndex / (pipelineSteps.length - 1);
@@ -307,7 +355,7 @@ export function ResearchPage() {
         <span style={{ transform: `scaleX(${progress})` }} />
       </div>
 
-      {!introActive && (
+      {!introActive && !basicsActive && (
         <div
           className="pipeline-position"
           aria-live="polite"
@@ -326,6 +374,7 @@ export function ResearchPage() {
         aria-hidden="true"
         data-phase={
           introActive ||
+          basicsActive ||
           activeIndex === 0 ||
           activeIndex === pipelineSteps.length - 1
             ? "surface"
@@ -366,6 +415,7 @@ export function ResearchPage() {
 
       <main>
         <IntroSection active={introActive} />
+        <BciBasicsSection active={basicsActive} />
         {pipelineSteps.map((step, index) => (
           <PipelineSection
             active={step.id === activeId}
@@ -434,14 +484,158 @@ function IntroSection({ active }: { active: boolean }) {
               <dt>imagined movements</dt>
             </div>
           </dl>
-          <a className="intro-action" href="#problem">
-            <span>See how we tested it</span>
+          <a className="intro-action" href={`#${BCI_BASICS_ID}`}>
+            <span>First, learn what BCI and EEG mean</span>
             <b aria-hidden="true">↓</b>
           </a>
         </div>
         <div className="intro-visual-note" aria-hidden="true">
           <span>EEG measures activity</span>
           <strong>The model uses EEG patterns, not private thoughts.</strong>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BciBasicsSection({ active }: { active: boolean }) {
+  const [activeStage, setActiveStage] =
+    useState<BciBasicsStage>("brain");
+  const selectedStage =
+    BCI_BASICS_STAGES.find((stage) => stage.id === activeStage) ??
+    BCI_BASICS_STAGES[0];
+
+  return (
+    <section
+      className={`bci-basics-section ${active ? "is-active" : ""}`}
+      id={BCI_BASICS_ID}
+      aria-labelledby="bci-basics-title"
+    >
+      <div className="bci-basics-layout">
+        <div className="bci-basics-copy">
+          <p className="bci-basics-kicker">Start here · two terms to know</p>
+          <h1 id="bci-basics-title">What is a BCI?</h1>
+          <p className="bci-basics-lede">
+            A <strong>brain-computer interface</strong>, or BCI, connects
+            measurable brain activity to a computer output.
+          </p>
+          <div className="bci-definitions">
+            <div>
+              <strong>EEG</strong>
+              <p>
+                Electroencephalography. Sensors on the scalp record tiny
+                electrical changes produced by brain activity.
+              </p>
+            </div>
+            <div>
+              <strong>BCI</strong>
+              <p>
+                Software uses a trained pattern in that signal to communicate
+                or control something on a computer.
+              </p>
+            </div>
+          </div>
+          <p className="bci-basics-takeaway">
+            <strong>This is not mind reading.</strong> Our system only asks a
+            narrow question: does this EEG pattern look more like imagined left
+            hand or imagined right hand?
+          </p>
+          <a
+            className="bci-basics-source"
+            href={primarySources.paper.href}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Scientific Data paper ↗
+          </a>
+        </div>
+
+        <div className="bci-basics-visual">
+          <div className="bci-visual-heading">
+            <div>
+              <span>Follow the signal</span>
+              <strong>Brain → EEG → BCI</strong>
+            </div>
+            <small>
+              <MousePointerClick aria-hidden="true" size={15} />
+              Select a step
+            </small>
+          </div>
+
+          <div
+            className="bci-flow-selector"
+            role="group"
+            aria-label="Explore how a brain-computer interface works"
+          >
+            {BCI_BASICS_STAGES.map((stage, index) => {
+              const Icon = stage.icon;
+              return (
+                <button
+                  className={stage.id === activeStage ? "is-active" : ""}
+                  type="button"
+                  key={stage.id}
+                  onClick={() => setActiveStage(stage.id)}
+                  aria-pressed={stage.id === activeStage}
+                >
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <Icon aria-hidden="true" size={22} strokeWidth={1.7} />
+                  <strong>{stage.label}</strong>
+                  <small>{stage.note}</small>
+                </button>
+              );
+            })}
+          </div>
+
+          <div
+            className="bci-flow-scene"
+            data-active={activeStage}
+            aria-hidden="true"
+          >
+            <div className="bci-demo-node bci-brain-node">
+              <div className="bci-head-shell">
+                <Brain size={62} strokeWidth={1.35} />
+                <div className="bci-electrodes">
+                  {Array.from({ length: 7 }, (_, index) => (
+                    <i key={index} />
+                  ))}
+                </div>
+              </div>
+              <div className="bci-imagined-hands">
+                <Hand size={22} strokeWidth={1.5} />
+                <Hand size={22} strokeWidth={1.5} />
+              </div>
+              <span>imagine movement</span>
+            </div>
+
+            <i className="bci-flow-connector" />
+
+            <div className="bci-demo-node bci-eeg-node">
+              <Activity size={44} strokeWidth={1.4} />
+              <div className="bci-mini-wave">
+                {Array.from({ length: 17 }, (_, index) => (
+                  <i key={index} />
+                ))}
+              </div>
+              <span>record pattern</span>
+            </div>
+
+            <i className="bci-flow-connector" />
+
+            <div className="bci-demo-node bci-computer-node">
+              <Monitor size={48} strokeWidth={1.35} />
+              <div className="bci-output-choices">
+                <span>L</span>
+                <span>R</span>
+              </div>
+              <span>choose a label</span>
+            </div>
+          </div>
+
+          <div className="bci-stage-explanation" aria-live="polite">
+            <span>{selectedStage.eyebrow}</span>
+            <strong>{selectedStage.title}</strong>
+            <p>{selectedStage.description}</p>
+          </div>
         </div>
       </div>
     </section>
