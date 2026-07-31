@@ -89,6 +89,7 @@ test("server-renders the ten-stop visual data-science pipeline", async () => {
   ]) {
     assert.match(html, heading);
   }
+  assert.ok(html.indexOf('id="prediction"') < html.indexOf('id="modeling"'));
 
   assert.match(html, /Motor imagery EEG research\./);
   assert.match(
@@ -224,8 +225,7 @@ test("provides graph switchers across exploration, modeling, prediction, evaluat
     "Learning style",
     "Model scores",
     "MLP training",
-    "Classifier path",
-    "Profile factors",
+    "MLP architecture",
     "Final scores",
     "Final summary",
     "Split design",
@@ -303,18 +303,18 @@ test("keeps every visual and the final result within bounded responsive composit
   assert.match(css, /\.final-score > strong\s*\{[\s\S]*?font-size:\s*clamp\(66px,\s*7vw,\s*104px\)/);
   assert.match(css, /min-height:\s*clamp\(520px,\s*62vh,\s*640px\)/);
   assert.match(css, /\.figure-stage img\s*\{[\s\S]*?height:\s*clamp\(330px,\s*43vh,\s*450px\)/);
-  assert.match(page, /className="prediction-classes"/);
+  assert.match(page, /className="network-nodes"/);
   assert.match(
     css,
-    /\.prediction-flow\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\)\s*96px\s*minmax\(0,\s*1fr\)/,
+    /\.prediction-flow\s*\{[\s\S]*?grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/,
   );
   assert.match(
     css,
-    /\.prediction-classes\s*\{[\s\S]*?display:\s*grid[\s\S]*?gap:\s*7px/,
+    /\.network-nodes\s*\{[\s\S]*?grid-template-columns:\s*repeat\(4,\s*16px\)/,
   );
   assert.match(
     css,
-    /\.prediction-input,\s*\n\.prediction-output\s*\{[\s\S]*?min-width:\s*0/,
+    /\.prediction-layer\s*\{[\s\S]*?min-width:\s*0/,
   );
   assert.match(css, /white-space:\s*nowrap/);
   assert.match(css, /overflow:\s*hidden/);
@@ -338,13 +338,12 @@ test("implements reversible looping auto scroll and reduced motion", async () =>
   assert.match(css, /:root\[data-motion="reduced"\]/);
 });
 
-test("ships the eight selected research figures with byte checks", async () => {
+test("ships the seven selected research figures with byte checks", async () => {
   const expected = new Map([
     ["results/performance-by-run.png", ["0f0a3ed5147cab642f663772955301810856966d4cf3e0fba0613dc1a53b0263", 1484, 889]],
     ["results/mean-performance-by-run.png", ["fcf9c874422abe217aca316b57f488e42b8170172cd2bcc7b488cdd77a656a7d", 1333, 884]],
     ["results/learning-style-correlations.png", ["3085a313459e51a46b38bf8e80c362f636e1fe724051024c7919874e94c4782a", 2683, 1330]],
     ["results/model/stage-6/training_curves.png", ["3636d7c4f0fa9a576e6cbf99b27e6921ce884f28e50b9a4e897a487f32b3e79b", 1600, 900]],
-    ["results/model/stage-2/xgboost_permutation_importance.png", ["1970c8d3d70a54c90259be5b504b97437233f97f87e4ae3a55f04daa1d56eafa", 1600, 900]],
     ["results/model/stage-9/final_locked_summary.png", ["6af381a13bdf756027412878c1917b2e72f8fd87aeda52ef7de9857850d9739f", 1600, 900]],
     ["results/model/stage-9/participant_run_difference.png", ["546664e6afcf891f371a2f9da71d471cc4b731a84a458d4a4c895979effac953", 1000, 1200]],
     ["results/model/stage-9/bottom_27_overlap.png", ["929261c05fb90b565043fdbf0dd4c40fd05c6ed9aa347ac05992c0ddd40bcff7", 1600, 1000]],

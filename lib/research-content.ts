@@ -134,39 +134,39 @@ export const pipelineSteps: readonly PipelineStep[] = [
     sources: [primarySources.analysis, primarySources.zenodo],
   },
   {
-    id: "modeling",
+    id: "prediction",
     number: "05",
+    navLabel: "Predict",
+    title: "Inference & Prediction",
+    statement:
+      "The final model uses 12 CSP features from each trial to predict left-hand or right-hand motor imagery.",
+    takeaway:
+      "The output is a left or right label. It does not read a person's thoughts.",
+    visual: "prediction",
+    side: "left",
+    metrics: [
+      { value: "12", label: "input features", note: "mu + beta CSP" },
+      { value: "16 → 8", label: "hidden units", note: "two ReLU layers" },
+      { value: "2", label: "output classes", note: "left or right" },
+    ],
+    sources: [primarySources.analysis, primarySources.paper],
+  },
+  {
+    id: "modeling",
+    number: "06",
     navLabel: "Model",
     title: "Modeling",
     statement:
       "The CSP MLP reached 69.10% balanced accuracy in participant-held-out training folds and 66.42% on validation participants.",
     takeaway: "Every development score kept participants in separate groups.",
     visual: "modeling",
-    side: "left",
+    side: "right",
     metrics: [
       { value: "69.10%", label: "training OOF", note: "balanced accuracy" },
       { value: "66.42%", label: "validation", note: "balanced accuracy" },
       { value: "73.09%", label: "validation AUC", note: "held-out participants" },
     ],
     sources: [primarySources.analysis],
-  },
-  {
-    id: "prediction",
-    number: "06",
-    navLabel: "Predict",
-    title: "Inference & Prediction",
-    statement:
-      "The final models use EEG features from each trial to predict left-hand or right-hand motor imagery.",
-    takeaway:
-      "The output is a left or right label. It does not read a person's thoughts.",
-    visual: "prediction",
-    side: "right",
-    metrics: [
-      { value: "12", label: "input features", note: "mu + beta CSP" },
-      { value: "2", label: "output classes", note: "left or right" },
-      { value: "1", label: "prediction", note: "for each trial" },
-    ],
-    sources: [primarySources.analysis, primarySources.paper],
   },
   {
     id: "evaluation",
@@ -318,25 +318,14 @@ export const modelingFigures: readonly FigureChoice[] = [
 export const predictionFigures: readonly FigureChoice[] = [
   {
     id: "classifier",
-    label: "Classifier path",
-    title: "One trial produces one prediction",
+    label: "MLP architecture",
+    title: "Twelve CSP features pass through two hidden layers",
     note:
-      "The model receives EEG features. It does not receive thoughts, words, or images.",
+      "The 12 inputs feed 16 ReLU units, then 8 ReLU units, before the model produces two output scores.",
     src: "",
     width: 0,
     height: 0,
     alt: "",
-  },
-  {
-    id: "xgboost",
-    label: "Profile factors",
-    title: "Motivation had the highest mean importance",
-    note:
-      "This separate Extra Trees analysis predicted participant performance. Wide error bars show substantial uncertainty.",
-    src: "/results/model/stage-2/xgboost_permutation_importance.png",
-    width: 1600,
-    height: 900,
-    alt: "Held-out permutation importance for the participant-performance profile model.",
   },
 ] as const;
 

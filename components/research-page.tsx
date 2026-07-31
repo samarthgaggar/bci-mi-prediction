@@ -709,31 +709,62 @@ function BarComparison({
 }
 
 function PredictionFlow() {
+  const layers = [
+    {
+      label: "Input layer",
+      value: "12 CSP inputs",
+      note: "6 mu · 6 beta",
+      nodes: 12,
+      className: "is-input",
+    },
+    {
+      label: "Hidden layer 1",
+      value: "16 units",
+      note: "ReLU activation",
+      nodes: 16,
+      className: "is-hidden",
+    },
+    {
+      label: "Hidden layer 2",
+      value: "8 units",
+      note: "ReLU activation",
+      nodes: 8,
+      className: "is-hidden",
+    },
+    {
+      label: "Output layer",
+      value: "2 outputs",
+      note: "left · right",
+      nodes: 2,
+      className: "is-output",
+    },
+  ] as const;
+
   return (
     <div
       className="prediction-flow"
       role="img"
-      aria-label="EEG features enter the final classifier and produce one left-hand or right-hand prediction"
+      aria-label="MLP architecture with 12 CSP inputs, hidden layers of 16 and 8 units, and 2 outputs for left-hand and right-hand predictions"
     >
-      <div className="prediction-input">
-        <span>Input</span>
-        <strong>12 CSP features</strong>
-        <small>six mu · six beta</small>
-      </div>
-      <div className="prediction-model">
-        <span>Final model</span>
-        <i aria-hidden="true" />
-        <strong>Classify</strong>
-      </div>
-      <div className="prediction-output">
-        <span>Output</span>
-        <div className="prediction-classes">
-          <strong>Left hand</strong>
-          <b>or</b>
-          <strong>Right hand</strong>
+      {layers.map((layer) => (
+        <div
+          className={`prediction-layer ${layer.className}`}
+          key={layer.label}
+        >
+          <span>{layer.label}</span>
+          <div className="network-nodes" aria-hidden="true">
+            {Array.from({ length: layer.nodes }, (_, index) => (
+              <i key={index}>
+                {layer.className === "is-output" ? (
+                  <b>{index === 0 ? "L" : "R"}</b>
+                ) : null}
+              </i>
+            ))}
+          </div>
+          <strong>{layer.value}</strong>
+          <small>{layer.note}</small>
         </div>
-        <small>one prediction per trial</small>
-      </div>
+      ))}
     </div>
   );
 }

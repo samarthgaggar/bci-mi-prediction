@@ -1216,27 +1216,39 @@ main {
 
 .prediction-flow {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 96px minmax(0, 1fr);
-  gap: clamp(14px, 2.2vw, 28px);
-  align-items: center;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(18px, 2.4vw, 32px);
+  width: min(100%, 900px);
+  align-items: stretch;
 }
 
-.prediction-input,
-.prediction-output {
+.prediction-layer {
+  position: relative;
   display: grid;
   min-width: 0;
   min-height: 250px;
   align-content: center;
-  padding: 24px 20px;
+  justify-items: center;
+  padding: 24px 16px;
   border: 1px solid #d6dfeb;
   background: #f7f9fc;
+  text-align: center;
 }
 
-.prediction-input > span,
-.prediction-output > span,
-.prediction-model > span {
+.prediction-layer:not(:last-child)::after {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  right: calc(clamp(18px, 2.4vw, 32px) * -0.82);
+  content: "→";
+  color: #647995;
+  font-size: 22px;
+  transform: translateY(-50%);
+}
+
+.prediction-layer > span {
   display: block;
-  margin-bottom: 22px;
+  margin-bottom: 18px;
   color: #647995;
   font-family: var(--font-mono);
   font-size: 8px;
@@ -1244,69 +1256,61 @@ main {
   text-transform: uppercase;
 }
 
-.prediction-input strong,
-.prediction-output strong {
+.prediction-layer > strong {
   display: block;
+  margin-top: 18px;
   font-size: clamp(18px, 2vw, 27px);
   letter-spacing: -0.035em;
   line-height: 1.08;
   overflow-wrap: anywhere;
 }
 
-.prediction-input small,
-.prediction-output small {
+.prediction-layer > small {
   display: block;
-  margin-top: 10px;
+  margin-top: 8px;
   color: #526a87;
   font-size: 9px;
 }
 
-.prediction-model {
+.network-nodes {
   display: grid;
-  min-width: 0;
+  grid-template-columns: repeat(4, 16px);
+  gap: 8px;
+  justify-content: center;
+}
+
+.network-nodes i {
+  display: grid;
+  width: 16px;
+  height: 16px;
   place-items: center;
-  text-align: center;
-}
-
-.prediction-model > span {
-  margin-bottom: 10px;
-}
-
-.prediction-model i {
-  display: block;
-  width: 72px;
-  height: 72px;
-  border: 10px solid #57d8ff;
-  border-right-color: #ff8c85;
-  border-radius: 50%;
-  transform: rotate(-30deg);
-}
-
-.prediction-model strong {
-  margin-top: 12px;
-  font-family: var(--font-mono);
-  font-size: 9px;
-}
-
-.prediction-classes {
-  display: grid;
-  gap: 7px;
-}
-
-.prediction-classes strong {
-  padding: 10px 12px;
-  border: 1px solid #d6dfeb;
+  border: 2px solid #087da9;
   background: #ffffff;
-  font-size: clamp(15px, 1.5vw, 20px);
-  text-align: center;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #57d8ff 14%, transparent);
 }
 
-.prediction-classes b {
-  color: #647995;
+.is-hidden .network-nodes i {
+  border-color: #7c3aed;
+  background: color-mix(in srgb, #7c3aed 10%, #ffffff);
+}
+
+.is-output .network-nodes {
+  grid-template-columns: repeat(2, 42px);
+  gap: 12px;
+}
+
+.is-output .network-nodes i {
+  width: 42px;
+  height: 42px;
+  border-color: #ff7068;
+  background: color-mix(in srgb, #ff8c85 12%, #ffffff);
+}
+
+.is-output .network-nodes b {
+  color: #a53a45;
   font-family: var(--font-mono);
-  font-size: 8px;
-  font-weight: 500;
-  text-align: center;
+  font-size: 12px;
 }
 
 .validation-split {
@@ -1649,25 +1653,18 @@ main {
   }
 
   .prediction-flow {
-    grid-template-columns: minmax(0, 1fr) 72px minmax(0, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 12px;
   }
 
-  .prediction-input,
-  .prediction-output {
+  .prediction-layer {
     min-height: 230px;
-    padding: 20px 16px;
+    padding: 20px 10px;
   }
 
-  .prediction-model i {
-    width: 54px;
-    height: 54px;
-    border-width: 8px;
-  }
-
-  .prediction-classes strong {
-    padding-inline: 8px;
-    font-size: 15px;
+  .prediction-layer:not(:last-child)::after {
+    right: -11px;
+    font-size: 16px;
   }
 }
 
@@ -1835,19 +1832,15 @@ main {
     padding-block: 16px;
   }
 
-  .prediction-input,
-  .prediction-output {
+  .prediction-layer {
     min-height: 170px;
   }
 
-  .prediction-model {
-    min-height: 88px;
-  }
-
-  .prediction-model i {
-    width: 56px;
-    height: 56px;
-    border-width: 8px;
+  .prediction-layer:not(:last-child)::after {
+    top: auto;
+    right: 50%;
+    bottom: -24px;
+    transform: translateX(50%) rotate(90deg);
   }
 
   .site-footer {
