@@ -183,27 +183,29 @@ test("publishes only verified, clearly labeled research metrics", async () => {
     "512 Hz",
     "32",
     "694 / 694",
-    "135",
+    "12",
+    "220",
     "61.92%",
     "64.83%",
-    "60.40%",
-    "60.07%",
-    "58.58%",
-    "60.20%",
-    "62.61%",
-    "−2.41 pp",
-    "5,280",
-    "112",
+    "69.10%",
+    "66.42%",
+    "73.09%",
+    "68.25%",
+    "68.30%",
+    "68.46%",
+    "−1.75 pp",
+    "2,655",
+    "79",
   ]) {
     assert.match(html, new RegExp(value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
 
-  assert.match(html, /development accuracy/i);
+  assert.match(html, /balanced accuracy/i);
   assert.match(html, /final test accuracy/i);
   assert.match(html, /research goal/i);
   assert.match(html, /not a clinical tool/i);
-  assert.match(html, /22 unseen participants/i);
-  assert.doesNotMatch(html, /69\.6%|68\.25%|68\.30%/);
+  assert.match(html, /12 unseen participants/i);
+  assert.doesNotMatch(html, /60\.20%|62\.61%|5,280/);
 });
 
 test("provides graph switchers across exploration, modeling, prediction, evaluation, and validation", async () => {
@@ -225,10 +227,10 @@ test("provides graph switchers across exploration, modeling, prediction, evaluat
   }
 
   assert.match(html, /Choose a figure/);
-  assert.match(html, /Development accuracy by model/);
-  assert.match(html, /Scale: 50 to 65% participant-run accuracy/);
+  assert.match(html, /Development balanced accuracy/);
+  assert.match(html, /Scale: 50 to 70% balanced accuracy/);
   assert.match(html, /Open full-size chart: Performance varies widely/);
-  assert.match(html, /135 EEG features/);
+  assert.match(html, /12 CSP features/);
   assert.match(html, /Participant split/);
 });
 

@@ -109,8 +109,8 @@ export const pipelineSteps: readonly PipelineStep[] = [
     side: "left",
     metrics: [
       { value: "694 / 694", label: "hashes verified", note: "zero failures" },
-      { value: "135", label: "EEG features", note: "spectral inputs" },
-      { value: "0", label: "post-test changes", note: "no refit or tuning" },
+      { value: "12", label: "CSP features", note: "six per band" },
+      { value: "220", label: "trials rejected", note: "EMG artifact rule" },
     ],
     sources: [primarySources.analysis],
   },
@@ -138,14 +138,14 @@ export const pipelineSteps: readonly PipelineStep[] = [
     navLabel: "Model",
     title: "Modeling",
     statement:
-      "Logistic regression had the highest development score. The MLP was close behind.",
-    takeaway: "More complex did not automatically mean more accurate.",
+      "The CSP MLP reached 69.10% balanced accuracy in participant-held-out training folds and 66.42% on validation participants.",
+    takeaway: "Every development score kept participants in separate groups.",
     visual: "modeling",
     side: "left",
     metrics: [
-      { value: "60.40%", label: "logistic", note: "development accuracy" },
-      { value: "60.07%", label: "general MLP", note: "development accuracy" },
-      { value: "58.58%", label: "XGBoost", note: "development accuracy" },
+      { value: "69.10%", label: "training OOF", note: "balanced accuracy" },
+      { value: "66.42%", label: "validation", note: "balanced accuracy" },
+      { value: "73.09%", label: "validation AUC", note: "held-out participants" },
     ],
     sources: [primarySources.analysis],
   },
@@ -161,7 +161,7 @@ export const pipelineSteps: readonly PipelineStep[] = [
     visual: "prediction",
     side: "right",
     metrics: [
-      { value: "135", label: "input features", note: "mu + beta power" },
+      { value: "12", label: "input features", note: "mu + beta CSP" },
       { value: "2", label: "output classes", note: "left or right" },
       { value: "1", label: "prediction", note: "for each trial" },
     ],
@@ -173,16 +173,16 @@ export const pipelineSteps: readonly PipelineStep[] = [
     navLabel: "Evaluate",
     title: "Evaluation",
     statement:
-      "The final MLP reached 60.20% on 22 participants excluded from development.",
+      "The final MLP reached 68.25% accuracy on 12 participants excluded from development.",
     takeaway:
-      "Our MLP was our best model, but it scored below the original BCI and the 70% goal.",
+      "The result was 1.75 percentage points below the 70% research goal.",
     visual: "evaluation",
     side: "left",
     metrics: [
-      { value: "60.20%", label: "general MLP", note: "final test accuracy" },
-      { value: "62.61%", label: "original BCI", note: "same people and runs" },
-      { value: "−2.41 pp", label: "difference", note: "MLP minus original" },
-      { value: "5,280", label: "test trials", note: "22 participants" },
+      { value: "68.25%", label: "test accuracy", note: "held-out participants" },
+      { value: "68.30%", label: "balanced accuracy", note: "left and right weighted equally" },
+      { value: "68.46%", label: "macro precision", note: "average across classes" },
+      { value: "2,655", label: "test trials", note: "12 participants" },
     ],
     sources: [primarySources.analysis, primarySources.paper],
   },
@@ -192,16 +192,16 @@ export const pipelineSteps: readonly PipelineStep[] = [
     navLabel: "Validate",
     title: "Validation",
     statement:
-      "We split the data by participant before final testing. Trials from one person stayed in the same group.",
+      "We split the data into training, validation, and test groups by participant. Trials from one person stayed in the same group.",
     takeaway:
       "We used the test set once and did not change the models afterward.",
     visual: "validation",
     side: "right",
     metrics: [
-      { value: "65", label: "development people", note: "model selection only" },
-      { value: "22", label: "test participants", note: "never used to fit" },
-      { value: "5,280", label: "test trials", note: "Runs 3 to 6" },
-      { value: "0", label: "post-test changes", note: "model stayed unchanged" },
+      { value: "55", label: "training people", note: "fit the model" },
+      { value: "12", label: "validation people", note: "model selection only" },
+      { value: "12", label: "test participants", note: "never used to fit" },
+      { value: "2,655", label: "test trials", note: "after artifact rejection" },
     ],
     sources: [primarySources.analysis],
   },
@@ -217,10 +217,10 @@ export const pipelineSteps: readonly PipelineStep[] = [
     visual: "communication",
     side: "left",
     metrics: [
-      { value: "60.20%", label: "our MLP", note: "final test accuracy" },
-      { value: "62.61%", label: "original BCI", note: "final test accuracy" },
-      { value: "−2.41 pp", label: "difference", note: "our MLP minus BCI" },
-      { value: "112", label: "checks passed", note: "final package" },
+      { value: "68.25%", label: "our MLP", note: "final test accuracy" },
+      { value: "68.30%", label: "balanced accuracy", note: "final test" },
+      { value: "−1.75 pp", label: "goal difference", note: "accuracy minus goal" },
+      { value: "79", label: "model participants", note: "all three splits" },
     ],
     sources: [
       primarySources.analysis,
@@ -265,10 +265,9 @@ export const edaFigures: readonly FigureChoice[] = [
 ] as const;
 
 export const developmentModels = [
-  { name: "Logistic", value: 60.4, label: "60.40%", selected: true },
-  { name: "General MLP", value: 60.07, label: "60.07%", selected: false },
-  { name: "XGBoost", value: 58.58, label: "58.58%", selected: false },
-  { name: "Chance", value: 51.07, label: "51.07%", selected: false },
+  { name: "Training OOF", value: 69.1, label: "69.10%", selected: false },
+  { name: "Validation", value: 66.42, label: "66.42%", selected: true },
+  { name: "Chance", value: 50, label: "50.00%", selected: false },
 ] as const;
 
 export const modelingFigures: readonly FigureChoice[] = [
@@ -286,8 +285,8 @@ export const modelingFigures: readonly FigureChoice[] = [
   {
     id: "training",
     label: "MLP training",
-    title: "Validation leveled near 60%",
-    note: "The compact networks improved quickly, then flattened. The final model used nine epochs.",
+    title: "Validation leveled near 66%",
+    note: "The selected checkpoint had the lowest validation loss at epoch 48.",
     src: "/results/model/stage-6/training_curves.png",
     width: 1601,
     height: 916,
@@ -321,19 +320,19 @@ export const predictionFigures: readonly FigureChoice[] = [
 ] as const;
 
 export const lockedModels = [
-  { name: "Original BCI", value: 62.61, label: "62.61%", selected: false },
-  { name: "General MLP", value: 60.2, label: "60.20%", selected: true },
-  { name: "Routed", value: 59.32, label: "59.32%", selected: false },
-  { name: "Logistic", value: 58.81, label: "58.81%", selected: false },
-  { name: "Specialist", value: 58.04, label: "58.04%", selected: false },
+  { name: "Accuracy", value: 68.25, label: "68.25%", selected: true },
+  { name: "Balanced accuracy", value: 68.3, label: "68.30%", selected: false },
+  { name: "Macro F1", value: 68.19, label: "68.19%", selected: false },
+  { name: "Macro precision", value: 68.46, label: "68.46%", selected: false },
+  { name: "Macro recall", value: 68.3, label: "68.30%", selected: false },
 ] as const;
 
 export const evaluationFigures: readonly FigureChoice[] = [
   {
     id: "locked",
     label: "Final scores",
-    title: "Final model comparison",
-    note: "The general MLP led our models. The original BCI scored higher.",
+    title: "Final test metrics",
+    note: "Accuracy, balanced accuracy, precision, recall, and F1 all stayed near 68%.",
     src: "",
     width: 0,
     height: 0,
@@ -342,9 +341,9 @@ export const evaluationFigures: readonly FigureChoice[] = [
   {
     id: "summary",
     label: "Final summary",
-    title: "Overall and actual-low results",
+    title: "Participant accuracy summary",
     note:
-      "This subgroup has only six people, so it is too small for a firm conclusion.",
+      "Across 66 matched participants, the MLP mean was 68.73% and the behavioral BCI mean was 63.74%.",
     src: "/results/model/stage-9/final_locked_summary.png",
     width: 2132,
     height: 890,
@@ -357,7 +356,7 @@ export const validationFigures: readonly FigureChoice[] = [
     id: "split",
     label: "Split design",
     title: "People stay in one partition",
-    note: "The development and test groups contain different participants.",
+    note: "The 55 training, 12 validation, and 12 test participants never overlap.",
     src: "",
     width: 0,
     height: 0,

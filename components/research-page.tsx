@@ -468,11 +468,11 @@ function StepVisual({ visual }: { visual: PipelineStep["visual"] }) {
         renderCustom={(id) =>
           id === "comparison" ? (
             <BarComparison
-              ariaLabel="Development accuracy by model"
+              ariaLabel="Development balanced accuracy"
               data={developmentModels}
-              max={65}
+              max={70}
               min={50}
-              scaleLabel="Scale: 50 to 65% participant-run accuracy"
+              scaleLabel="Scale: 50 to 70% balanced accuracy"
             />
           ) : null
         }
@@ -579,9 +579,9 @@ function CleaningVisual() {
   const steps = [
     ["Raw GDF", "kept unchanged"],
     ["SHA-256", "verify"],
-    ["Cue window", "0.5 to 4.5 s"],
-    ["Mu + beta", "8 to 30 Hz"],
-    ["135 features", "model input"],
+    ["Cue window", "0.5 to 3.0 s"],
+    ["Mu + beta", "8 to 13 · 13 to 30 Hz"],
+    ["12 CSP features", "model input"],
   ];
   return (
     <div className="cleaning-visual" aria-label="Preprocessing flow">
@@ -713,8 +713,8 @@ function PredictionFlow() {
     >
       <div className="prediction-input">
         <span>Input</span>
-        <strong>135 EEG features</strong>
-        <small>8 to 30 Hz spectral power</small>
+        <strong>12 CSP features</strong>
+        <small>six mu · six beta</small>
       </div>
       <div className="prediction-model">
         <span>Final model</span>
@@ -739,7 +739,7 @@ function ValidationSplit() {
     <div
       className="validation-split"
       role="img"
-      aria-label="Sixty-five development participants and twenty-two test participants remain in separate groups"
+      aria-label="Sixty-seven development participants and twelve test participants remain in separate groups"
     >
       <div className="split-heading">
         <span>Participant split</span>
@@ -748,15 +748,15 @@ function ValidationSplit() {
       <div className="split-groups">
         <div>
           <span>Development</span>
-          <strong>65</strong>
-          <small>fit · compare · select</small>
-          <i style={{ "--split-width": "74.7%" } as CSSProperties} />
+          <strong>67</strong>
+          <small>55 train · 12 validate</small>
+          <i style={{ "--split-width": "84.8%" } as CSSProperties} />
         </div>
         <div>
           <span>Final test</span>
-          <strong>22</strong>
+          <strong>12</strong>
           <small>evaluate once</small>
-          <i style={{ "--split-width": "25.3%" } as CSSProperties} />
+          <i style={{ "--split-width": "15.2%" } as CSSProperties} />
         </div>
       </div>
       <p>
@@ -772,21 +772,21 @@ function CommunicationVisual() {
     <div className="communication-visual">
       <div className="final-score">
         <span>Final test result</span>
-        <strong>60.20%</strong>
-        <p>General MLP · 22 unseen participants</p>
+        <strong>68.25%</strong>
+        <p>CSP MLP · 12 unseen participants</p>
       </div>
       <div className="result-context">
         <span>Result in context</span>
         <dl>
           <div>
-            <dt>Our MLP</dt>
-            <dd>60.20%</dd>
-            <i style={{ "--result-width": "60.2%" } as CSSProperties} />
+            <dt>Participant mean MLP</dt>
+            <dd>68.73%</dd>
+            <i style={{ "--result-width": "68.73%" } as CSSProperties} />
           </div>
           <div>
-            <dt>Original BCI</dt>
-            <dd>62.61%</dd>
-            <i style={{ "--result-width": "62.61%" } as CSSProperties} />
+            <dt>Behavioral BCI mean</dt>
+            <dd>63.74%</dd>
+            <i style={{ "--result-width": "63.74%" } as CSSProperties} />
           </div>
           <div>
             <dt>Research goal</dt>
