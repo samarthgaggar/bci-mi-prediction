@@ -294,15 +294,15 @@ export const edaFigures: readonly FigureChoice[] = [
     alt: "Mean online BCI accuracy for Runs 3 through 6 with 95 percent confidence intervals.",
   },
   {
-    id: "learning-style",
-    label: "Learning style",
-    title: "No strong linear pattern",
+    id: "personality",
+    label: "Personality factors",
+    title: "Broad personality factors do not separate performance",
     note:
-      "The correlations range from −0.24 to +0.24. They do not show cause and effect.",
-    src: "/results/learning-style-correlations.png",
-    width: 2683,
-    height: 1330,
-    alt: "Scatter plots comparing learning-style scores with mean online BCI performance.",
+      "EX, AX, TM, IN, and SC scores overlap widely across performance levels, so these plots do not show a reliable predictive pattern.",
+    src: "/results/eda/personality-vs-performance.png",
+    width: 2083,
+    height: 1183,
+    alt: "Five scatter plots comparing Extraversion, Anxiety, Tough-Mindedness, Independence, and Self-Control scores with mean online BCI performance.",
   },
 ] as const;
 

@@ -230,7 +230,7 @@ test("provides graph switchers across exploration, modeling, prediction, evaluat
   for (const label of [
     "Participant spread",
     "Run means",
-    "Learning style",
+    "Personality factors",
     "Model scores",
     "MLP training",
     "MLP architecture",
@@ -367,7 +367,7 @@ test("ships the seven selected research figures with byte checks", async () => {
   const expected = new Map([
     ["results/performance-by-run.png", ["0f0a3ed5147cab642f663772955301810856966d4cf3e0fba0613dc1a53b0263", 1484, 889]],
     ["results/mean-performance-by-run.png", ["fcf9c874422abe217aca316b57f488e42b8170172cd2bcc7b488cdd77a656a7d", 1333, 884]],
-    ["results/learning-style-correlations.png", ["3085a313459e51a46b38bf8e80c362f636e1fe724051024c7919874e94c4782a", 2683, 1330]],
+    ["results/eda/personality-vs-performance.png", ["7255ff2fce37b01d23bb2a8d2c697cd1a5f253c6f8bfca04b8e94e71971b6c72", 2083, 1183]],
     ["results/model/stage-6/training_curves.png", ["3636d7c4f0fa9a576e6cbf99b27e6921ce884f28e50b9a4e897a487f32b3e79b", 1600, 900]],
     ["results/model/stage-9/final_locked_summary.png", ["6af381a13bdf756027412878c1917b2e72f8fd87aeda52ef7de9857850d9739f", 1600, 900]],
     ["results/model/stage-9/participant_run_difference.png", ["546664e6afcf891f371a2f9da71d471cc4b731a84a458d4a4c895979effac953", 1000, 1200]],
