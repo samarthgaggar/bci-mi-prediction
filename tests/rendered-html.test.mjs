@@ -238,7 +238,7 @@ test("provides graph switchers across exploration, modeling, prediction, evaluat
     "MLP training",
     "MLP architecture",
     "Final scores",
-    "Matched participants",
+    "Who improved?",
     "Split design",
     "Histograms",
     "Bottom 27 overlap",
@@ -252,7 +252,7 @@ test("provides graph switchers across exploration, modeling, prediction, evaluat
   assert.match(html, /Open full-size chart: Performance varies widely/);
   assert.match(html, /12 CSP features/);
   assert.match(html, /Participant split/);
-  assert.doesNotMatch(html, /Who improved\?/i);
+  assert.equal((html.match(/Who improved\?/gi) ?? []).length, 1);
   assert.match(html, /Inconclusive/);
   assert.match(html, /Profile-feature rankings are exploratory/);
   assert.match(html, /Highest exploratory features/);

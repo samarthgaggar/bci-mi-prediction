@@ -370,15 +370,15 @@ export const evaluationFigures: readonly FigureChoice[] = [
     alt: "",
   },
   {
-    id: "summary",
-    label: "Matched participants",
-    title: "Held-out participant comparison",
+    id: "differences",
+    label: "Who improved?",
+    title: "Results differ by person",
     note:
-      "Across 66 matched participants, the MLP mean was 68.73% and the behavioral BCI mean was 63.74%.",
-    src: "/results/model/stage-9/final_locked_summary.png",
-    width: 1600,
-    height: 900,
-    alt: "Histograms comparing held-out CSP MLP accuracy with behavioral BCI accuracy across 66 matched participants.",
+      "Blue favors the MLP; red favors the behavioral BCI. One average hides this variation.",
+    src: "/results/model/stage-9/participant_run_difference.png",
+    width: 1000,
+    height: 1200,
+    alt: "CSP MLP minus behavioral BCI accuracy for each of 66 matched participants.",
   },
 ] as const;
 
