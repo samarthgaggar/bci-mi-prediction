@@ -27,6 +27,7 @@ import {
 } from "../lib/research-content";
 
 const BrainScene = lazy(() => import("./brain-scene"));
+const AUTO_SCROLL_CELL_DURATION_MS = 20_000;
 
 function supportsWebGL() {
   try {
@@ -136,7 +137,7 @@ export function ResearchPage() {
     const previousScrollBehavior =
       document.documentElement.style.scrollBehavior;
     document.documentElement.style.scrollBehavior = "auto";
-    const pixelsPerSecond = motionEnabled ? 82 : 44;
+    const scrollingCellCount = Math.max(pipelineSteps.length, 1);
 
     const advance = (time: number) => {
       if (!autoScrollTimeRef.current) autoScrollTimeRef.current = time;
@@ -144,13 +145,15 @@ export function ResearchPage() {
       autoScrollTimeRef.current = time;
       const maximum =
         document.documentElement.scrollHeight - window.innerHeight;
+      const pixelsPerMillisecond =
+        maximum / (scrollingCellCount * AUTO_SCROLL_CELL_DURATION_MS);
 
       if (time >= autoScrollPauseRef.current) {
         if (window.scrollY >= maximum - 2) {
           window.scrollTo(0, 0);
           autoScrollPauseRef.current = time + 1200;
         } else {
-          window.scrollBy(0, (pixelsPerSecond * elapsed) / 1000);
+          window.scrollBy(0, pixelsPerMillisecond * elapsed);
         }
       }
       autoScrollFrameRef.current = window.requestAnimationFrame(advance);
@@ -161,7 +164,7 @@ export function ResearchPage() {
       window.cancelAnimationFrame(autoScrollFrameRef.current);
       document.documentElement.style.scrollBehavior = previousScrollBehavior;
     };
-  }, [autoScrollEnabled, motionEnabled]);
+  }, [autoScrollEnabled]);
 
   const activeIndex = useMemo(
     () =>

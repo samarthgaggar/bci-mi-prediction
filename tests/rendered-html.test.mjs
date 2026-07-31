@@ -361,7 +361,12 @@ test("implements reversible looping auto scroll and reduced motion", async () =>
   assert.match(page, /window\.scrollBy/);
   assert.match(page, /window\.scrollTo\(0, 0\)/);
   assert.match(page, /window\.cancelAnimationFrame/);
-  assert.match(page, /const pixelsPerSecond = motionEnabled \? 82 : 44/);
+  assert.match(page, /const AUTO_SCROLL_CELL_DURATION_MS = 20_000/);
+  assert.match(page, /const scrollingCellCount = Math\.max\(pipelineSteps\.length, 1\)/);
+  assert.match(
+    page,
+    /maximum \/ \(scrollingCellCount \* AUTO_SCROLL_CELL_DURATION_MS\)/,
+  );
   assert.match(css, /prefers-reduced-motion:\s*reduce/);
   assert.match(css, /:root\[data-motion="reduced"\]/);
 });
