@@ -190,27 +190,8 @@ export const pipelineSteps: readonly PipelineStep[] = [
     sources: [primarySources.analysis],
   },
   {
-    id: "evaluation",
-    number: "08",
-    navLabel: "Evaluate",
-    title: "Evaluation",
-    statement:
-      "The final MLP reached 68.25% accuracy on 12 participants excluded from development.",
-    takeaway:
-      "The result was 1.75 percentage points below the 70% project benchmark.",
-    visual: "evaluation",
-    side: "right",
-    metrics: [
-      { value: "68.25%", label: "test accuracy", note: "held-out participants" },
-      { value: "68.30%", label: "balanced accuracy", note: "left and right weighted equally" },
-      { value: "68.46%", label: "macro precision", note: "average across classes" },
-      { value: "2,655", label: "test trials", note: "12 participants" },
-    ],
-    sources: [primarySources.analysis, primarySources.paper],
-  },
-  {
     id: "validation",
-    number: "09",
+    number: "08",
     navLabel: "Validate",
     title: "Validation",
     statement:
@@ -218,7 +199,7 @@ export const pipelineSteps: readonly PipelineStep[] = [
     takeaway:
       "We used the test set once and did not change the models afterward.",
     visual: "validation",
-    side: "left",
+    side: "right",
     metrics: [
       { value: "55", label: "training people", note: "fit the model" },
       { value: "12", label: "validation people", note: "model selection only" },
@@ -226,6 +207,25 @@ export const pipelineSteps: readonly PipelineStep[] = [
       { value: "17,219", label: "retained trials", note: "across all three splits" },
     ],
     sources: [primarySources.analysis],
+  },
+  {
+    id: "evaluation",
+    number: "09",
+    navLabel: "Evaluate",
+    title: "Evaluation",
+    statement:
+      "The final MLP reached 68.25% accuracy on 12 participants excluded from development.",
+    takeaway:
+      "The result was 1.75 percentage points below the 70% project benchmark.",
+    visual: "evaluation",
+    side: "left",
+    metrics: [
+      { value: "68.25%", label: "test accuracy", note: "held-out participants" },
+      { value: "68.30%", label: "balanced accuracy", note: "left and right weighted equally" },
+      { value: "68.46%", label: "macro precision", note: "average across classes" },
+      { value: "2,655", label: "test trials", note: "12 participants" },
+    ],
+    sources: [primarySources.analysis, primarySources.paper],
   },
   {
     id: "communication",
@@ -392,16 +392,6 @@ export const validationFigures: readonly FigureChoice[] = [
     width: 0,
     height: 0,
     alt: "",
-  },
-  {
-    id: "differences",
-    label: "Who improved?",
-    title: "Results differ by person",
-    note: "Blue favors the MLP; red favors the behavioral BCI. One average hides this variation.",
-    src: "/results/model/stage-9/participant_run_difference.png",
-    width: 1000,
-    height: 1200,
-    alt: "CSP MLP minus behavioral BCI accuracy for each of 66 matched participants.",
   },
 ] as const;
 

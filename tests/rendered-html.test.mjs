@@ -93,6 +93,7 @@ test("server-renders the eleven-stop visual data-science pipeline", async () => 
   assert.ok(html.indexOf('id="prediction"') < html.indexOf('id="modeling"'));
   assert.ok(html.indexOf('id="eda"') < html.indexOf('id="extra-trees"'));
   assert.ok(html.indexOf('id="extra-trees"') < html.indexOf('id="prediction"'));
+  assert.ok(html.indexOf('id="validation"') < html.indexOf('id="evaluation"'));
 
   assert.match(html, /Motor imagery EEG research\./);
   assert.match(
@@ -239,7 +240,6 @@ test("provides graph switchers across exploration, modeling, prediction, evaluat
     "Final scores",
     "Matched participants",
     "Split design",
-    "Who improved?",
     "Histograms",
     "Bottom 27 overlap",
   ]) {
@@ -252,6 +252,7 @@ test("provides graph switchers across exploration, modeling, prediction, evaluat
   assert.match(html, /Open full-size chart: Performance varies widely/);
   assert.match(html, /12 CSP features/);
   assert.match(html, /Participant split/);
+  assert.doesNotMatch(html, /Who improved\?/i);
   assert.match(html, /Inconclusive/);
   assert.match(html, /Profile-feature rankings are exploratory/);
   assert.match(html, /Highest exploratory features/);
